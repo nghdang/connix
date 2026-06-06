@@ -1,0 +1,190 @@
+/* Full-width content area */
+.wy-nav-content {
+    max-width: none;
+}
+
+.wy-nav-content-wrap {
+    background: #fcfcfc;
+}
+
+/* ---------- Theme toggle button ---------- */
+#theme-toggle {
+    position: fixed;
+    bottom: 1.25rem;
+    right: 1.25rem;
+    z-index: 9999;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+    background: #fff;
+    color: #333;
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+#theme-toggle:hover {
+    background: #e8e8e8;
+    border-color: #999;
+}
+
+/* ---------- Dark mode styles ---------- */
+/*
+  Applied when:
+    1. JS sets [data-theme="dark"] on <html>  (toggle or stored pref)
+    2. OS is dark and no JS override (media query fallback)
+*/
+
+[data-theme="dark"] .wy-nav-content-wrap,
+[data-theme="dark"] .wy-nav-content {
+    background: #1a1a1a;
+    color: #d4d4d4;
+}
+
+[data-theme="dark"] .wy-nav-side,
+[data-theme="dark"] .wy-menu-vertical {
+    background: #0f0f0f;
+}
+
+[data-theme="dark"] .wy-side-nav-search {
+    background: #1c3a5a;
+}
+
+[data-theme="dark"] .wy-menu-vertical a {
+    color: #c8c8c8;
+}
+
+[data-theme="dark"] .wy-menu-vertical a:hover,
+[data-theme="dark"] .wy-menu-vertical li.current > a {
+    background: #2a2a2a;
+    color: #fff;
+}
+
+[data-theme="dark"] .wy-menu-vertical li.toctree-l1.current > a,
+[data-theme="dark"] .wy-menu-vertical li.toctree-l2.current > a {
+    background: #2c2c2c;
+    color: #fff;
+}
+
+[data-theme="dark"] .highlight,
+[data-theme="dark"] .highlight pre,
+[data-theme="dark"] div[class*="highlight"] {
+    background: #2b2b2b !important;
+    color: #f8f8f2;
+    border: 1px solid #444;
+}
+
+[data-theme="dark"] code,
+[data-theme="dark"] tt {
+    background: #2b2b2b;
+    color: #e0e0e0;
+    border: 1px solid #444;
+}
+
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6 {
+    color: #e8e8e8;
+}
+
+[data-theme="dark"] a {
+    color: #6ab0de;
+}
+
+[data-theme="dark"] a:hover {
+    color: #8fc4e8;
+}
+
+[data-theme="dark"] .wy-table-responsive table td,
+[data-theme="dark"] .wy-table-responsive table th {
+    background: #222;
+    border-color: #444;
+    color: #d4d4d4;
+}
+
+[data-theme="dark"] .wy-table-odd td,
+[data-theme="dark"] .wy-table-striped tr:nth-child(2n-1) td {
+    background: #2a2a2a;
+}
+
+[data-theme="dark"] .admonition,
+[data-theme="dark"] .note,
+[data-theme="dark"] .warning,
+[data-theme="dark"] .tip,
+[data-theme="dark"] .important {
+    background: #252525;
+    border-color: #555;
+}
+
+[data-theme="dark"] .admonition-title {
+    background: #333;
+}
+
+[data-theme="dark"] footer span,
+[data-theme="dark"] footer a {
+    color: #888;
+}
+
+[data-theme="dark"] footer,
+[data-theme="dark"] .rst-footer-buttons {
+    border-color: #444;
+}
+
+[data-theme="dark"] input[type="text"] {
+    background: #2b2b2b;
+    color: #d4d4d4;
+    border-color: #555;
+}
+
+[data-theme="dark"] .wy-breadcrumbs li a {
+    color: #6ab0de;
+}
+
+[data-theme="dark"] .wy-breadcrumbs li.wy-breadcrumbs-aside a {
+    color: #888;
+}
+
+[data-theme="dark"] #theme-toggle {
+    background: #2a2a2a;
+    border-color: #555;
+    color: #d4d4d4;
+}
+
+[data-theme="dark"] #theme-toggle:hover {
+    background: #3a3a3a;
+    border-color: #888;
+}
+
+/* OS-level dark fallback (no JS / no stored pref) */
+@media (prefers-color-scheme: dark) {
+    html:not([data-theme="light"]) .wy-nav-content-wrap,
+    html:not([data-theme="light"]) .wy-nav-content { background: #1a1a1a; color: #d4d4d4; }
+    html:not([data-theme="light"]) .wy-nav-side,
+    html:not([data-theme="light"]) .wy-menu-vertical { background: #0f0f0f; }
+    html:not([data-theme="light"]) .wy-side-nav-search { background: #1c3a5a; }
+    html:not([data-theme="light"]) .wy-menu-vertical a { color: #c8c8c8; }
+    html:not([data-theme="light"]) .wy-menu-vertical a:hover,
+    html:not([data-theme="light"]) .wy-menu-vertical li.current > a { background: #2a2a2a; color: #fff; }
+    html:not([data-theme="light"]) .highlight,
+    html:not([data-theme="light"]) .highlight pre { background: #2b2b2b !important; color: #f8f8f2; border: 1px solid #444; }
+    html:not([data-theme="light"]) code,
+    html:not([data-theme="light"]) tt { background: #2b2b2b; color: #e0e0e0; border: 1px solid #444; }
+    html:not([data-theme="light"]) h1,
+    html:not([data-theme="light"]) h2,
+    html:not([data-theme="light"]) h3,
+    html:not([data-theme="light"]) h4,
+    html:not([data-theme="light"]) h5,
+    html:not([data-theme="light"]) h6 { color: #e8e8e8; }
+    html:not([data-theme="light"]) a { color: #6ab0de; }
+    html:not([data-theme="light"]) input[type="text"] { background: #2b2b2b; color: #d4d4d4; border-color: #555; }
+    html:not([data-theme="light"]) #theme-toggle { background: #2a2a2a; border-color: #555; color: #d4d4d4; }
+}

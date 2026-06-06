@@ -67,3 +67,6 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+# Sphinx build output
+docs/requirements/_build/
