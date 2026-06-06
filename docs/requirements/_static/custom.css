@@ -56,20 +56,48 @@
     background: #1c3a5a;
 }
 
-[data-theme="dark"] .wy-menu-vertical a {
+/* All toctree levels — reset RTD's per-level light backgrounds */
+[data-theme="dark"] .wy-menu-vertical a,
+[data-theme="dark"] .wy-menu-vertical li.toctree-l1 a,
+[data-theme="dark"] .wy-menu-vertical li.toctree-l2 a,
+[data-theme="dark"] .wy-menu-vertical li.toctree-l3 a,
+[data-theme="dark"] .wy-menu-vertical li.toctree-l4 a {
     color: #c8c8c8;
+    background: transparent;
 }
 
-[data-theme="dark"] .wy-menu-vertical a:hover,
-[data-theme="dark"] .wy-menu-vertical li.current > a {
+/* Captions (section group headings) */
+[data-theme="dark"] .wy-menu-vertical p.caption,
+[data-theme="dark"] .wy-menu-vertical p.caption span.caption-text {
+    color: #888;
+}
+
+/* Hover — all levels */
+[data-theme="dark"] .wy-menu-vertical li.toctree-l1 a:hover,
+[data-theme="dark"] .wy-menu-vertical li.toctree-l2 a:hover,
+[data-theme="dark"] .wy-menu-vertical li.toctree-l3 a:hover,
+[data-theme="dark"] .wy-menu-vertical li.toctree-l4 a:hover {
     background: #2a2a2a;
     color: #fff;
 }
 
+/* Active / current — all levels */
+[data-theme="dark"] .wy-menu-vertical li.current > a,
 [data-theme="dark"] .wy-menu-vertical li.toctree-l1.current > a,
-[data-theme="dark"] .wy-menu-vertical li.toctree-l2.current > a {
-    background: #2c2c2c;
+[data-theme="dark"] .wy-menu-vertical li.toctree-l2.current > a,
+[data-theme="dark"] .wy-menu-vertical li.toctree-l3.current > a,
+[data-theme="dark"] .wy-menu-vertical li.toctree-l4.current > a {
+    background: #1e3a52;
     color: #fff;
+    border-color: #2980B9;
+}
+
+/* Expanded sub-list backgrounds */
+[data-theme="dark"] .wy-menu-vertical li.toctree-l1.current li.toctree-l2 > a,
+[data-theme="dark"] .wy-menu-vertical li.toctree-l2.current li.toctree-l3 > a,
+[data-theme="dark"] .wy-menu-vertical li.toctree-l3.current li.toctree-l4 > a {
+    background: #161616;
+    color: #b8b8b8;
 }
 
 [data-theme="dark"] .highlight,
@@ -171,9 +199,24 @@
     html:not([data-theme="light"]) .wy-nav-side,
     html:not([data-theme="light"]) .wy-menu-vertical { background: #0f0f0f; }
     html:not([data-theme="light"]) .wy-side-nav-search { background: #1c3a5a; }
-    html:not([data-theme="light"]) .wy-menu-vertical a { color: #c8c8c8; }
-    html:not([data-theme="light"]) .wy-menu-vertical a:hover,
-    html:not([data-theme="light"]) .wy-menu-vertical li.current > a { background: #2a2a2a; color: #fff; }
+    html:not([data-theme="light"]) .wy-menu-vertical a,
+    html:not([data-theme="light"]) .wy-menu-vertical li.toctree-l1 a,
+    html:not([data-theme="light"]) .wy-menu-vertical li.toctree-l2 a,
+    html:not([data-theme="light"]) .wy-menu-vertical li.toctree-l3 a,
+    html:not([data-theme="light"]) .wy-menu-vertical li.toctree-l4 a { color: #c8c8c8; background: transparent; }
+    html:not([data-theme="light"]) .wy-menu-vertical p.caption,
+    html:not([data-theme="light"]) .wy-menu-vertical p.caption span.caption-text { color: #888; }
+    html:not([data-theme="light"]) .wy-menu-vertical li.toctree-l1 a:hover,
+    html:not([data-theme="light"]) .wy-menu-vertical li.toctree-l2 a:hover,
+    html:not([data-theme="light"]) .wy-menu-vertical li.toctree-l3 a:hover,
+    html:not([data-theme="light"]) .wy-menu-vertical li.toctree-l4 a:hover { background: #2a2a2a; color: #fff; }
+    html:not([data-theme="light"]) .wy-menu-vertical li.current > a,
+    html:not([data-theme="light"]) .wy-menu-vertical li.toctree-l1.current > a,
+    html:not([data-theme="light"]) .wy-menu-vertical li.toctree-l2.current > a,
+    html:not([data-theme="light"]) .wy-menu-vertical li.toctree-l3.current > a,
+    html:not([data-theme="light"]) .wy-menu-vertical li.toctree-l4.current > a { background: #1e3a52; color: #fff; border-color: #2980B9; }
+    html:not([data-theme="light"]) .wy-menu-vertical li.toctree-l1.current li.toctree-l2 > a,
+    html:not([data-theme="light"]) .wy-menu-vertical li.toctree-l2.current li.toctree-l3 > a { background: #161616; color: #b8b8b8; }
     html:not([data-theme="light"]) .highlight,
     html:not([data-theme="light"]) .highlight pre { background: #2b2b2b !important; color: #f8f8f2; border: 1px solid #444; }
     html:not([data-theme="light"]) code,
