@@ -1,2 +1,10 @@
 # Project specifics
 Connix
+
+# Private name
+Volere
+
+# Linux
+curl
+socat
+netcat
