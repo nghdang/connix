@@ -1,3 +1,6 @@
+# Project specific
+.reviews
+
 # Prerequisites
 *.d
 
@@ -48,7 +51,6 @@ build-*/
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
-Makefile
 install_manifest.txt
 compile_commands.json
 
@@ -67,3 +69,6 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+# Sphinx build output
+docs/requirements/_build/
