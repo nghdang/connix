@@ -1,3 +1,6 @@
+# Project specific
+.reviews
+
 # Prerequisites
 *.d
 

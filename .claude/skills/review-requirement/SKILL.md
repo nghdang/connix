@@ -32,7 +32,7 @@ to a per-branch markdown report.
 
 ## Report persistence
 
-**Location:** `.claude/requirement-reviews/<sanitized-branch>.md`
+**Location:** `.reviews/<sanitized-branch>.md`
 
 Branch name sanitization: replace every `/` with `-`.
 Example: `req/add-software-requirements` -> `req-add-software-requirements.md`.
@@ -105,8 +105,8 @@ grep -Pn '[^\x00-\x7F]' <file>
 # 2. UK English spellings
 grep -Pin '\b(organisation|behaviour|colour|analyse|centre|programme)\b' <file>
 
-# 3. Lines over 120 characters
-awk 'length>120 {print NR": "length" chars: "$0}' <file>
+# 3. Lines over 100 characters
+awk 'length>100 {print NR": "length" chars: "$0}' <file>
 
 # 4. Leftover todo directive
 grep -n '\.\. todo::' <file>
@@ -122,6 +122,9 @@ For each paragraph or list item, assess:
 - **Grammar** -- subject-verb agreement, tense consistency, punctuation.
 - **Clarity** -- would a new contributor understand this without additional context?
 - **Conciseness** -- can any sentence be shortened without losing meaning?
+- **Sentence style** -- each sentence should express one idea. Flag compound sentences
+  that can be split. Flag clauses joined by "and", "but", or semicolons where the
+  clauses are independent.
 - **Cohesion** -- do sentences within a section build a single coherent point?
 - **Necessity** -- is this sentence or item load-bearing? If removing it loses no
   information a reader needs, flag it as unnecessary (Should fix).
@@ -161,7 +164,7 @@ Compare names and facts in the reviewed file against the canonical definitions:
 
 1. Run `git rev-parse --abbrev-ref HEAD` to get the branch name.
 2. Compute the commit range (base..HEAD) using the commands above.
-3. Derive the report path: `.claude/requirement-reviews/<sanitized-branch>.md`.
+3. Derive the report path: `.reviews/<sanitized-branch>.md`.
 4. Apply the decision logic (create / read-same / overwrite).
 5. Read the target `.rst` file (path from user or invocation args).
 6. Read `docs/requirements/01_project_drivers/purpose.rst`,

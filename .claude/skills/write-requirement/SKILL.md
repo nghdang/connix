@@ -45,7 +45,10 @@ Use: `organization`, `behavior`, `color`, `analyze`, `center`, `license`, `progr
 - Straight apostrophe (`'`) not `'` or `'` (U+2018/2019)
 - Three dots (`...`) not `...` (U+2026)
 
-**Line length.** Wrap all lines at 120 characters or fewer.
+**Line length.** Wrap all lines at 100 characters or fewer.
+
+**Sentence style.** Use simple sentences. One idea per sentence. Avoid compound sentences joined
+by "and", "but", or semicolons when the clauses can stand alone.
 
 **Tables.** Use `.. list-table::` for any tabular content.
 
@@ -74,8 +77,8 @@ grep -Pn '[^\x00-\x7F]' <file>
 # 2. No UK English spellings
 grep -Pin '\b(organisation|behaviour|colour|analyse|centre|programme)\b' <file>
 
-# 3. No lines over 120 characters
-awk 'length>120 {print NR": "length" chars: "$0}' <file>
+# 3. No lines over 100 characters
+awk 'length>100 {print NR": "length" chars: "$0}' <file>
 
 # 4. No leftover todo directive
 grep -n '\.\. todo::' <file>
