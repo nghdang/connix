@@ -20,7 +20,7 @@ Built in modern C++, it provides a unified interface for interacting with multip
 
 ## Architecture
 
-- `connix-cli` — CLI application  
+- `connix` — CLI application  
 - `connix-core` — core static library  
 - `connix-gui` — optional GUI client  
 
