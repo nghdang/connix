@@ -5,9 +5,10 @@ The Situation
 -------------
 
 Developers working with networked systems frequently switch between several tools: ``curl`` for
-REST APIs, ``netcat`` or ``socat`` for raw TCP/UDP sockets, and ``socat`` for Unix Domain Sockets.
+REST APIs, ``netcat`` or ``socat`` for raw TCP/UDP sockets, and ``socat`` for Unix Domain
+Sockets (``socat`` supports both).
 Each tool carries its own syntax, output format, and mental model, making cross-protocol scripting
-and debugging slow and error-prone. There is no single, lightweight, composable tool that addresses
+and debugging slow and error-prone. There is no single, lightweight, scriptable tool that addresses
 all three protocol families under a uniform interface.
 
 The Goal

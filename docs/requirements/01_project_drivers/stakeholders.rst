@@ -1,8 +1,7 @@
 Stakeholders
 ============
 
-The following parties have an interest in the Connix product. Each stakeholder's win condition describes what
-a successful outcome looks like from their perspective; the loss condition describes what constitutes failure.
+The following parties have an interest in the Connix product.
 
 .. list-table::
    :header-rows: 1
@@ -14,22 +13,22 @@ a successful outcome looks like from their perspective; the loss condition descr
      - Loss Condition
 
    * - **Project author / maintainer**
-     - Designs, builds, and maintains all three Connix components (``connix-cli``, ``connix-core``,
+     - Designs, builds, and maintains all three Connix components (``connix``, ``connix-core``,
        ``connix-gui``).
      - Codebase stays clean and maintainable; the tool sees active adoption; contributions are easy
        to accept.
      - Codebase becomes hard to maintain; no external adoption; contributor friction is high.
 
    * - **CLI user** (network or systems developer)
-     - Uses ``connix-cli`` daily as a scriptable replacement for ``curl``, ``netcat``, and ``socat``.
+     - Uses ``connix`` daily as a scriptable replacement for ``curl``, ``netcat``, and ``socat``.
      - Single tool covers all three protocol families with a consistent interface; fast enough for
        production scripting.
-     - Still requires multiple tools for different protocols; ``connix-cli`` is slower or harder to
+     - Still requires multiple tools for different protocols; ``connix`` is slower or harder to
        use than the tools it replaces.
 
    * - **Library consumer** (application integrator)
      - Embeds ``connix-core`` as a static library in their own C++ application to gain programmatic
-       access to REST, TCP/UDP, and Unix socket communication.
+       access to REST, TCP/UDP, and Unix Domain Socket communication.
      - Stable, well-documented public API; straightforward CMake and Conan v2 integration; no
        unexpected breaking changes between releases.
      - Frequent breaking API changes; poor documentation; difficult to link or package.
