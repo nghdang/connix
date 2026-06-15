@@ -1,7 +1,6 @@
 # Connix
 
-**Connix** is a lightweight, CLI-first networking client for **REST APIs, TCP/UDP, and Unix sockets**.  
-Built in modern C++, it provides a unified interface for interacting with multiple protocols from a single tool.
+**Connix** is a programmable, event-driven network interaction engine that unifies multi-protocol communication, automation, and observability in a single tool.
 
 ---
 
@@ -20,9 +19,9 @@ Built in modern C++, it provides a unified interface for interacting with multip
 
 ## Architecture
 
-- `connix` — CLI application  
-- `connix-core` — core static library  
-- `connix-gui` — optional GUI client  
+- `connix` — CLI application
+- `connix-core` — core static library
+- `connix-gui` — optional GUI client
 
 ---
 
