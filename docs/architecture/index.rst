@@ -7,3 +7,4 @@ Connix Architecture
    :caption: Contents:
 
    01_introduction_goals/01_introduction_goals
+   02_constraints/02_constraints
