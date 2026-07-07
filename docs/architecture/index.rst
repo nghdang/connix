@@ -8,3 +8,4 @@ Connix Architecture
 
    01_introduction_goals/01_introduction_goals
    02_constraints/02_constraints
+   03_context_scope/03_context_scope
