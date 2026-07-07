@@ -1,0 +1,32 @@
+@startuml Technical Context
+
+left to right direction
+
+rectangle "Connix CLI" {
+    actor Developers
+    [connix] as connix_cli
+    [user application] as user_app_cli
+
+    Developers -- connix_cli : CLI
+    connix_cli -- user_app_cli : TCP/UDP/Unix Socket
+}
+
+rectangle "Connix Core" {
+    actor Integrators
+    [connix-core] as connix_core
+    [user application] as user_app_core
+
+    Integrators -- connix_core : integrate
+    connix_core -- user_app_core : Static API
+}
+
+rectangle "Connix GUI" {
+    actor Users
+    [connix-gui] as connix_gui
+    [user application] as user_app_gui
+
+    Users -- connix_gui : GUI
+    connix_gui -- user_app_gui : TCP/UDP/Unix Socket
+}
+
+@enduml
