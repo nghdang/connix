@@ -2,7 +2,11 @@
 
 #include <array>
 #include <chrono>
+#include <ctime>
+#include <iomanip>
 #include <iostream>
+#include <sstream>
+#include <string>
 #include <thread>
 #include <unistd.h>
 
@@ -17,7 +21,7 @@ Logger& Logger::getInstance()
 
 void Logger::doRecord(std::ostringstream& oss)
 {
-    std::cout << oss.str() << std::endl;
+    std::cout << oss.str() << '\n';
 }
 
 std::string Logger::composeHeading()
@@ -28,9 +32,9 @@ std::string Logger::composeHeading()
     std::array<char, 100> buffer{};
     std::strftime(buffer.data(), sizeof(buffer), "%Y-%m-%d %H:%M:%S", timeInfo);
 
-    std::chrono::duration epoch{ now.time_since_epoch() };
+    const std::chrono::duration epoch{ now.time_since_epoch() };
     auto value{ std::chrono::duration_cast<std::chrono::microseconds>(epoch) };
-    long long microseconds{ value.count() % 1000000 };
+    const long long microseconds{ value.count() % 1000000 };
 
     std::ostringstream ossThread;
     ossThread << std::setfill('0') << std::setw(8) << std::hex << std::this_thread::get_id();
