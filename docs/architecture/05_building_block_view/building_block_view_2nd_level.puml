@@ -1,0 +1,39 @@
+@startuml Building Block View 1st Level
+title Building Block View 1st Level
+
+actor Users
+[Client]
+
+package Connix {
+    package "Interface Layer" {
+        [GUI]
+        [CLI]
+    }
+
+    package "Application Layer" {
+        [Domain]
+        [Application]
+    }
+
+    package "Service Layer" {
+        [Communication]
+        [Persistence]
+        [Configuration]
+    }
+}
+
+Domain -left0)- Application
+
+Application -up0)- GUI
+Application -up0)- CLI
+
+Communication -up0)- Application
+Persistence -up0)- Application
+Configuration -up0)- Application
+
+Users <..> GUI
+Users <..> CLI
+
+Client <.left.> Communication
+
+@enduml
