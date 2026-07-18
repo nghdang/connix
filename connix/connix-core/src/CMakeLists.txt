@@ -1,0 +1,5 @@
+file(GLOB_RECURSE CONNIX_CORE_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/Logging/*.cpp
+)
+
+target_sources(connix-core PRIVATE ${CONNIX_CORE_SOURCES})
