@@ -44,3 +44,11 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: docs/architecture/_build/html
+
+  release:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: ./scripts/build_application_release.sh

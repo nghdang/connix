@@ -5,7 +5,8 @@ THIS_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
 
 source "${THIS_DIR}/env.sh"
 
-BUILD_DIR="${PROJECT_DIR}/build-native"
+BUILD_DIR="${PROJECT_DIR}/build-release"
+INSTALL_DIR="${PROJECT_DIR}/build-release/deploy"
 
 OPTION="$1"
 
@@ -22,7 +23,7 @@ then
     mkdir -p "$BUILD_DIR"
 fi
 
-CMAKE_VARIABLES=("-DCMAKE_BUILD_TYPE=Debug")
+CMAKE_VARIABLES=("-DCMAKE_BUILD_TYPE=Release")
 
 echo "Running: $CMAKE_EXEC ${CMAKE_VARIABLES[@]} -G Ninja -S \"$PROJECT_DIR\" -B \"$BUILD_DIR\"" | tee -a "$LOG_PATH"
 "$CMAKE_EXEC" ${CMAKE_VARIABLES[@]} -G Ninja -S "$PROJECT_DIR" -B "$BUILD_DIR" 2>&1 | tee -a "$LOG_PATH"
@@ -31,4 +32,7 @@ if [[ "$OPTION" != "-fn" && "$OPTION" != "-n" ]]
 then
     echo "Running: $CMAKE_EXEC --build \"$BUILD_DIR\" --target \"all\" -- -j$(nproc)" | tee -a "$LOG_PATH"
     "$CMAKE_EXEC" --build "$BUILD_DIR" --target "all" -- -j$(nproc) 2>&1 | tee -a "$LOG_PATH"
+
+    echo "Running: $CMAKE_EXEC --install \"$BUILD_DIR\" --prefix \"$INSTALL_DIR\"" | tee -a "$LOG_PATH"
+    "$CMAKE_EXEC" --install "$BUILD_DIR" --prefix "$INSTALL_DIR" 2>&1 | tee -a "$LOG_PATH"
 fi
