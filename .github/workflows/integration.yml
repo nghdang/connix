@@ -27,9 +27,6 @@ jobs:
       - name: Clang Format
         run: ./scripts/run_clang_format.sh --dry-run
 
-      - name: Clang Tidy
-        run: ./scripts/run_clang_tidy.sh
-
   documentation:
     runs-on: self-hosted
     steps:
@@ -52,3 +49,6 @@ jobs:
 
       - name: Build
         run: ./scripts/build_application_release.sh
+
+      - name: Clang Tidy
+        run: ./scripts/run_clang_tidy.sh
