@@ -8,7 +8,7 @@ source "${THIS_DIR}/env.sh"
 function usage()
 {
     echo "Usage: $THIS_NAME [OPTIONS]"
-    echo "Run clang-tidy."
+    echo "Run unit tests."
     echo ""
     echo "    -d, --dry-run   Run the command without execute anything."
     echo "    -h, --help      Show this help."
@@ -18,8 +18,7 @@ function usage()
     echo ""
 }
 
-TARGET_DIR="${PROJECT_DIR}/${PROJECT_NAME}"
-BUILD_DIR="${PROJECT_DIR}/build-release"
+BUILD_DIR="${PROJECT_DIR}/build-native"
 
 DEFAULT_DRY_RUN="$NO"
 
@@ -44,21 +43,18 @@ do
     esac
 done
 
-TARGET_DIR="${PROJECT_DIR}/${PROJECT_NAME}"
-ENVS=(CLANG_TIDY_VERSION BUILD_DIR TARGET_DIR)
+ENVS=(CTEST_VERSION LCOV_VERSION BUILD_DIR)
 ENVS+=(DRY_RUN EXTRA_OPTIONS)
 dump_env ${ENVS[@]}
 
 if [[ ! -d "$BUILD_DIR" ]]
 then
-    echo "Build release profile is required"
+    echo "Build native profile is required"
     exit $E_NG
 fi
 
-RUN_CLANG_TIDY_EXEC="$(find /usr/bin -type l -name "run-clang-tidy-*.py" \
-    | sort -t"-" -k4 -n -r | head -n 1)"
+dump_and_run_command "$CMAKE_EXEC" --build "$BUILD_DIR" \
+    --target "connix-core-unit-tests-run" -- -j$(nproc)
 
-pushd "$BUILD_DIR" > /dev/null
-dump_and_run_command "$RUN_CLANG_TIDY_EXEC" -header-filter="($PROJECT_NAME)" \
-    "$TARGET_DIR"
-popd > /dev/null
+dump_and_run_command "$CMAKE_EXEC" --build "$BUILD_DIR" \
+    --target "gen-code-coverage" -- -j$(nproc)
