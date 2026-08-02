@@ -1,8 +1,13 @@
 #!/bin/bash
-# set -e
+
+YES="yes"
+NO="no"
+
+E_OK=0
+E_NG=1
 
 function dump_env() {
-    local items=("THIS_DIR" "PROJECT_DIR" "PROJECT_NAME" "CMAKE_PROJECT_NAME" "LOG_PATH" $@)
+    local items=("PROJECT_DIR" "PROJECT_NAME" $@)
 
     local max_len=0
     for item in ${items[@]}
@@ -45,10 +50,35 @@ function check_tool_version()
     fi
 }
 
+function dump_command()
+{
+    args=$@
+
+    printf "Running: %s\n" "${args[*]}"
+}
+
+function run_command()
+{
+    args=$@
+
+    if [[ "$DRY_RUN" == "$NO" ]]
+    then
+        ${args[@]}
+    fi
+}
+
+function dump_and_run_command()
+{
+    args=$@
+
+    dump_command ${args[@]}
+    run_command ${args[@]}
+}
+
 THIS_NAME="$(basename "${BASH_SOURCE[1]}")"
 
-GPP_EXEC=$(which g++)
-GPP_VERSION="$(check_tool_version "g++" "head -n1 | awk '{print \$4}'")"
+CXX_COMPILER_EXEC=$(which g++)
+CXX_COMPILER_VERSION="$(check_tool_version "g++" "head -n1 | awk '{print \$4}'")"
 
 CMAKE_EXEC=$(which cmake)
 CMAKE_VERSION="$(check_tool_version "cmake" "head -n1 | awk '{print \$3}'")"
@@ -84,7 +114,4 @@ then
 fi
 PROJECT_NAME="$(basename "$PROJECT_DIR")"
 
-LOG_NAME=$(echo "$THIS_NAME" | awk -F. '{print $1}')
-LOG_PATH="${THIS_DIR}/${LOG_NAME}.log"
-
-CMAKE_PROJECT_NAME="$(grep "project(" "${PROJECT_DIR}/CMakeLists.txt" | awk -F"(" '{split($2, arr, " "); print arr[1]}')"
+REMOTE_NAME="$(git ls-remote --get-url origin | xargs basename | cut -d'.' -f1)"
