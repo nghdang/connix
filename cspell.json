@@ -9,6 +9,15 @@
         }
     ],
     "dictionaries": [
+        "cpp",
+        "git",
+        "makefile",
+        "python",
+        "restructuredtext",
+        "cmake",
+        "bash",
+        "custom-dictionary-user",
+        "custom-dictionary-workspace",
         "custom-dictionary"
     ],
     "words": [],

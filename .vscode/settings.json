@@ -1,18 +1,4 @@
 {
-  "editor.formatOnSave": true,
-  "editor.rulers": [
-    100
-  ],
-  "files.insertFinalNewline": true,
-  "files.trimTrailingWhitespace": true,
-  "python-envs.pythonProjects": [
-    {
-      "envManager": "ms-python.python:venv",
-      "packageManager": "ms-python.python:pip",
-      "path": "."
-    }
-  ],
-  "ruff.lineLength": 100,
   "cmake.configureArgs": [
     "-DCMAKE_BUILD_TYPE=Debug",
     "-DCONAN_BUILD_PROFILE=debug/gcc13_x86_64",
