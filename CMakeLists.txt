@@ -45,14 +45,37 @@ if(BUILD_TESTS)
     find_program(LCOV_EXEC NAMES lcov)
     message(STATUS "lcov: ${LCOV_EXEC}")
 
-    find_program(GENHTML_EXEC NAMES genhtml)
-    message(STATUS "genhtml: ${GENHTML_EXEC}")
+    find_program(GEN_HTML_EXEC NAMES genhtml)
+    message(STATUS "genhtml: ${GEN_HTML_EXEC}")
 
-    if(LCOV_EXEC AND GENHTML_EXEC)
+    if(LCOV_EXEC AND GEN_HTML_EXEC)
+        set(LCOV_ARG1 "-c")
+        list(APPEND LCOV_ARG1 "-d" "${CMAKE_BINARY_DIR}")
+        list(APPEND LCOV_ARG1 "-b" "${CMAKE_BINARY_DIR}")
+        list(APPEND LCOV_ARG1 "--branch-coverage")
+        list(APPEND LCOV_ARG1 "--ignore-errors" "mismatch,mismatch")
+        list(APPEND LCOV_ARG1 "--ignore-errors" "gcov,gcov")
+        list(APPEND LCOV_ARG1 "-o" "coverage.info")
+        message(STATUS "LCOV_ARG1: ${LCOV_ARG1}")
+
+        set(LCOV_ARG2 "-r" "coverage.info")
+        list(APPEND LCOV_ARG2 "*c++/*")
+        list(APPEND LCOV_ARG2 "gtest/*")
+        list(APPEND LCOV_ARG2 "tst/*")
+        list(APPEND LCOV_ARG2 "-b" "${CMAKE_BINARY_DIR}")
+        list(APPEND LCOV_ARG2 "--branch-coverage")
+        list(APPEND LCOV_ARG2 "-o" "coverage.info")
+        message(STATUS "LCOV_ARG2: ${LCOV_ARG2}")
+
+        set(GEN_HTML_ARG "coverage.info")
+        list(APPEND GEN_HTML_ARG "--branch-coverage")
+        list(APPEND GEN_HTML_ARG "-o" "coverage/")
+        message(STATUS "GEN_HTML_ARG: ${GEN_HTML_ARG}")
+
         add_custom_target(gen-code-coverage
-            COMMAND ${LCOV_EXEC} -c -d ${CMAKE_BINARY_DIR} -b ${CMAKE_BINARY_DIR} --branch-coverage --ignore-errors mismatch,mismatch --ignore-errors gcov,gcov -o coverage.info
-            COMMAND ${LCOV_EXEC} -r coverage.info "*c++/*" "gmock/*" "gtest/*" "mock/*" "tst/*" "*.conan2/*" -b ${CMAKE_BINARY_DIR} --branch-coverage -o coverage.info
-            COMMAND ${GENHTML_EXEC} coverage.info --branch-coverage -o coverage/
+            COMMAND ${LCOV_EXEC} ${LCOV_ARG1}
+            COMMAND ${LCOV_EXEC} ${LCOV_ARG2}
+            COMMAND ${GEN_HTML_EXEC} ${GEN_HTML_ARG}
             USES_TERMINAL
         )
     endif()
