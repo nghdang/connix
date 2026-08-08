@@ -1,0 +1,40 @@
+@startuml Connection Layer - Design View
+
+class ConnectionId <<datatype>>
+
+enum ConnectionState {
+    CONNECTED
+    CLOSING
+    CLOSED
+}
+
+interface IConnectionSubscriber
+interface IConnection
+interface IConnectionManager
+
+class Connection {
+    - id: ConnectionId
+    - remote: Endpoint
+    - local: Endpoint
+    - subscribers: IConnectionSubscriber[*]
+    - transport: ITransport
+    - state: ConnectionState
+    + Connection(id: ConnectionId, remote: ConnectionEndpoint, local: ConnectionEndpoint, subscribers: IConnectionSubscriber[*], transport: ITransport)
+}
+
+class ConnectionManager {
+    - connections: IConnection[*]
+    - subscribers: IConnectionSubscriber[*]
+    + ConnectionManager(subscribers: IConnectionSubscriber[*])
+}
+
+IConnection <|-- Connection
+ConnectionId <.. Connection
+ConnectionState <.. Connection
+Connection ..> IConnectionSubscriber
+
+IConnectionManager <|-- ConnectionManager
+ConnectionId <.. ConnectionManager
+ConnectionManager "1" *-- "0..*" IConnectionSubscriber
+
+@enduml
