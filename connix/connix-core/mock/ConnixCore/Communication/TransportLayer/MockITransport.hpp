@@ -24,14 +24,14 @@ public:
 
     MOCK_METHOD(
         bool, addSubscriber,
-        (const std::shared_ptr<
-            ConnixCore::Communication::ITransportSubscriber>& subscriber),
+        (std::shared_ptr<ConnixCore::Communication::ITransportSubscriber>
+             subscriber),
         (override));
 
     MOCK_METHOD(
         bool, removeSubscriber,
-        (const std::shared_ptr<
-            ConnixCore::Communication::ITransportSubscriber>& subscriber),
+        (std::shared_ptr<ConnixCore::Communication::ITransportSubscriber>
+             subscriber),
         (override));
 
     MOCK_METHOD(bool, send, (const std::vector<std::uint8_t>& data),

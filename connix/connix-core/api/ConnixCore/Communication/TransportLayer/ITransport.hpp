@@ -27,11 +27,11 @@ public:
     virtual ConnixCore::Communication::TransportStatus getStatus() const = 0;
 
     virtual bool addSubscriber(
-        const std::shared_ptr<ConnixCore::Communication::ITransportSubscriber>&
+        std::shared_ptr<ConnixCore::Communication::ITransportSubscriber>
             subscriber) = 0;
 
     virtual bool removeSubscriber(
-        const std::shared_ptr<ConnixCore::Communication::ITransportSubscriber>&
+        std::shared_ptr<ConnixCore::Communication::ITransportSubscriber>
             subscriber) = 0;
 
     virtual bool send(const std::vector<std::uint8_t>& data) = 0;

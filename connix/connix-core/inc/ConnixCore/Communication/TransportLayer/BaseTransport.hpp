@@ -22,11 +22,11 @@ public:
     ConnixCore::Communication::TransportStatus getStatus() const override;
 
     bool addSubscriber(
-        const std::shared_ptr<ConnixCore::Communication::ITransportSubscriber>&
+        std::shared_ptr<ConnixCore::Communication::ITransportSubscriber>
             subscriber) override;
 
     bool removeSubscriber(
-        const std::shared_ptr<ConnixCore::Communication::ITransportSubscriber>&
+        std::shared_ptr<ConnixCore::Communication::ITransportSubscriber>
             subscriber) override;
 
     bool send(const std::vector<std::uint8_t>& data) override;
