@@ -8,12 +8,9 @@ namespace Communication {
 class BaseTransport : public ConnixCore::Communication::ITransport
 {
 public:
-    explicit BaseTransport(ConnixCore::Communication::TransportId id,
-                           ConnixCore::Communication::TransportType type);
+    explicit BaseTransport(ConnixCore::Communication::TransportType type);
 
     virtual ~BaseTransport() override = default;
-
-    ConnixCore::Communication::TransportId getId() const override;
 
     ConnixCore::Communication::TransportType getType() const override;
 
@@ -47,8 +44,6 @@ protected:
     std::vector<std::uint8_t> m_recvBuffer;
 
 private:
-    ConnixCore::Communication::TransportId m_id;
-
     ConnixCore::Communication::TransportType m_type;
 };
 

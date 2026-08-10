@@ -11,15 +11,14 @@ class MockITransportSubscriber
     : public ConnixCore::Communication::ITransportSubscriber
 {
 public:
-    MOCK_METHOD(void, onStateChanged,
-                (ConnixCore::Communication::TransportId id), (override));
+    MOCK_METHOD(void, onStateChanged, (), (override));
 
-    MOCK_METHOD(void, onStatusChanged,
-                (ConnixCore::Communication::TransportId id), (override));
+    MOCK_METHOD(void, onStatusChanged, (), (override));
 
-    MOCK_METHOD(bool, onDataReceived,
-                (ConnixCore::Communication::TransportId id,
-                 std::vector<std::uint8_t>& receivedData,
+    MOCK_METHOD(void, onDataSent, (std::size_t count), (override));
+
+    MOCK_METHOD(void, onDataReceived,
+                (std::vector<std::uint8_t> & receivedData,
                  std::vector<std::uint8_t>& responseData),
                 (override));
 

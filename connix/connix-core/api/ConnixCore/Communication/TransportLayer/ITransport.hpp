@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "ConnixCore/Communication/TransportLayer/ITransportSubscriber.hpp"
-#include "ConnixCore/Communication/TransportLayer/TransportId.hpp"
 #include "ConnixCore/Communication/TransportLayer/TransportState.hpp"
 #include "ConnixCore/Communication/TransportLayer/TransportStatus.hpp"
 #include "ConnixCore/Communication/TransportLayer/TransportType.hpp"
@@ -17,8 +16,6 @@ class ITransport
 {
 public:
     virtual ~ITransport() = default;
-
-    virtual ConnixCore::Communication::TransportId getId() const = 0;
 
     virtual ConnixCore::Communication::TransportType getType() const = 0;
 

@@ -3,8 +3,8 @@
 namespace ConnixCore {
 namespace Communication {
 
-TcpTransport::TcpTransport(ConnixCore::Communication::TransportId id)
-    : BaseTransport{ id, ConnixCore::Communication::TransportType::TCP }
+TcpTransport::TcpTransport()
+    : BaseTransport{ ConnixCore::Communication::TransportType::TCP }
 {
 }
 

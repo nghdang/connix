@@ -1,0 +1,50 @@
+@startuml Node Layer - Interface View
+
+class ClientConfiguration {
+    + transportType: TransportType
+    + connectionTimeout: Integer
+    + keepAlive: Boolean
+    + bufferSize: Integer
+}
+
+interface IClient {
+    + {abstract} getConfiguration(): ClientConfiguration
+    + {abstract} addDataHandler(handler: IConnectionDataHandler): Boolean
+    + {abstract} removeDataHandler(handler: IConnectionDataHandler): Boolean
+    + {abstract} connect(address: String, port: Integer): ConnectionId
+    + {abstract} disconnect(connectionId: ConnectionId): Boolean
+    + {abstract} send(connectionId: ConnectionId, data: Byte[*]): Boolean
+}
+
+class ServerConfiguration {
+    + transportType: TransportType
+    + maximumConnections: Integer
+    + maximumRequestsPerSecond: Integer
+    + bufferSize: Integer
+}
+
+interface IServer {
+    + {abstract} getConfiguration(): ServerConfiguration
+    + {abstract} addDataHandler(handler: IConnectionDataHandler): Boolean
+    + {abstract} removeDataHandler(handler: IConnectionDataHandler): Boolean
+    + {abstract} start(address: String, port: Integer): Boolean
+    + {abstract} stop(): void
+}
+
+class CommunicationFactory {
+    + {static} createClient(configuration: ClientConfiguration): IClient
+    + {static} createServer(configuration: ServerConfiguration): IServer
+}
+
+
+IClient ..> ClientConfiguration
+IClient <.. CommunicationFactory
+
+IServer ..> ServerConfiguration
+IServer <.. CommunicationFactory
+
+ClientConfiguration <.right. CommunicationFactory
+
+ServerConfiguration <.left. CommunicationFactory
+
+@enduml

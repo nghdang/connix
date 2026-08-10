@@ -8,7 +8,7 @@ namespace Communication {
 class UdsTransport : public ConnixCore::Communication::BaseTransport
 {
 public:
-    explicit UdsTransport(ConnixCore::Communication::TransportId id);
+    explicit UdsTransport();
 
     virtual ~UdsTransport() override = default;
 };

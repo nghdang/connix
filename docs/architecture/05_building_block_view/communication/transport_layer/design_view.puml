@@ -1,7 +1,5 @@
 @startuml Transport Layer - Design View
 
-class TransportId <<dataclass>>
-
 enum TransportType {
     TCP
     UDP
@@ -22,9 +20,10 @@ enum TransportStatus {
 }
 
 interface ITransportSubscriber {
-    + {abstract} onStateChanged(id: TransportId): Void
-    + {abstract} onStatusChanged(id: TransportId): Void
-    + {abstract} onDataReceived(id: TransportId, receivedData: Byte[*], responseData: Byte[*]): Boolean
+    + {abstract} onStateChanged(): Void
+    + {abstract} onStatusChanged(): Void
+    + {abstract} onDataSent(count: Integer): Void
+    + {abstract} onDataReceived(receivedData: Byte[*], responseData: Byte[*]): Void
 }
 
 interface ITransport
@@ -35,30 +34,18 @@ class BaseTransport {
     # subscribers: ITransportSubscriber[*]
     # sendBuffer: Byte[*]
     # recvBuffer: Byte[*]
-    - id: TransportId
     - type: TransportType
-    + BaseTransport(id: TransportId, type: TransportType)
+    + BaseTransport(type: TransportType)
 }
 
-class TcpTransport {
-    + TcpTransport(id: TransportId)
-}
+class TcpTransport
+class UdpTransport
+class UdsTransport
 
-class UdpTransport {
-    + UdpTransport(id: TransportId)
-}
-
-class UdsTransport {
-    + UdsTransport(id: TransportId)
-}
-
-TransportId <.. BaseTransport
 TransportType <.right. BaseTransport
 TransportState <.. BaseTransport
 TransportStatus <.. BaseTransport
 BaseTransport "1" *-right- "0..*" ITransportSubscriber
-
-ITransportSubscriber ..> TransportId
 
 ITransport <|-- BaseTransport
 

@@ -8,7 +8,7 @@ namespace Communication {
 class TcpTransport : public ConnixCore::Communication::BaseTransport
 {
 public:
-    explicit TcpTransport(ConnixCore::Communication::TransportId id);
+    explicit TcpTransport();
 
     virtual ~TcpTransport() override = default;
 };

@@ -3,8 +3,8 @@
 namespace ConnixCore {
 namespace Communication {
 
-UdpTransport::UdpTransport(ConnixCore::Communication::TransportId id)
-    : BaseTransport{ id, ConnixCore::Communication::TransportType::UDP }
+UdpTransport::UdpTransport()
+    : BaseTransport{ ConnixCore::Communication::TransportType::UDP }
 {
 }
 

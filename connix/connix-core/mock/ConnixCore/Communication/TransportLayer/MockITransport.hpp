@@ -10,9 +10,6 @@ namespace Communication {
 class MockITransport : public ConnixCore::Communication::ITransport
 {
 public:
-    MOCK_METHOD(ConnixCore::Communication::TransportId, getId, (),
-                (const, override));
-
     MOCK_METHOD(ConnixCore::Communication::TransportType, getType, (),
                 (const, override));
 
