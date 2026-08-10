@@ -1,4 +1,4 @@
-@startuml Node Layer - Interface View
+@startuml Node Layer - Design View
 
 class ClientConfiguration {
     + transportType: TransportType
@@ -18,6 +18,15 @@ interface IClient {
     + {abstract} connect(address: String, port: Integer): ConnectionId
     + {abstract} disconnect(connectionId: ConnectionId): Boolean
     + {abstract} send(connectionId: ConnectionId, data: Byte[*]): Boolean
+}
+
+class Client {
+    - configuration: ClientConfiguration
+    - subscribers: IClientSubscriber[*]
+    - connectionFactory: IConnectionFactory
+    - connectionManager: IConnectionManager
+    - transportFactory: ITransportFactory
+    + Client(configuration: ClientConfiguration)
 }
 
 class ServerConfiguration {
@@ -40,22 +49,30 @@ interface IServer {
     + {abstract} send(connectionId: ConnectionId, data: Byte[*]): Boolean
 }
 
+class Server {
+    - configuration: ServerConfiguration
+    - subscribers: IServerSubscriber[*]
+    - connectionFactory: IConnectionFactory
+    - connectionManager: IConnectionManager
+    - transportFactory: ITransportFactory
+    + Server(configuration:ServerConfiguration)
+}
+
 class CommunicationFactory {
     + {static} createClient(configuration: ClientConfiguration): IClient
     + {static} createServer(configuration: ServerConfiguration): IServer
 }
 
+IClient <|-- Client
 
-IClient ..> ClientConfiguration
-IClient ..> IClientSubscriber
-IClient <.. CommunicationFactory
+Client <.. CommunicationFactory
+Client "1" --* "1" ClientConfiguration
+Client "1" --* "0..*" IClientSubscriber
 
-IServer ..> ServerConfiguration
-IServer ..> IServerSubscriber
-IServer <.. CommunicationFactory
+IServer <|-- Server
 
-ClientConfiguration <.. CommunicationFactory
-
-ServerConfiguration <.. CommunicationFactory
+Server <.. CommunicationFactory
+Server "1" --* "1" ServerConfiguration
+Server "1" --* "0..*" IServerSubscriber
 
 @enduml
