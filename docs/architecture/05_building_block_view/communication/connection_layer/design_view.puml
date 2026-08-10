@@ -19,13 +19,12 @@ class Connection {
     - subscribers: IConnectionSubscriber[*]
     - transport: ITransport
     - state: ConnectionState
-    + Connection(id: ConnectionId, remote: ConnectionEndpoint, local: ConnectionEndpoint, subscribers: IConnectionSubscriber[*], transport: ITransport)
+    + Connection(id: ConnectionId, remote: ConnectionEndpoint, local: ConnectionEndpoint, transport: ITransport)
 }
 
 class ConnectionManager {
     - connections: IConnection[*]
-    - subscribers: IConnectionSubscriber[*]
-    + ConnectionManager(subscribers: IConnectionSubscriber[*])
+    + ConnectionManager()
 }
 
 IConnection <|-- Connection
@@ -34,7 +33,5 @@ ConnectionState <.. Connection
 Connection ..> IConnectionSubscriber
 
 IConnectionManager <|-- ConnectionManager
-ConnectionId <.. ConnectionManager
-ConnectionManager "1" *-- "0..*" IConnectionSubscriber
 
 @enduml

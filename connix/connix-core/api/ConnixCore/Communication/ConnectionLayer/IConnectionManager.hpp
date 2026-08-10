@@ -1,10 +1,6 @@
 #pragma once
 
-#include <cstddef>
-#include <memory>
-
 #include "ConnixCore/Communication/ConnectionLayer/IConnection.hpp"
-#include "ConnixCore/Communication/ConnectionLayer/IConnectionSubscriber.hpp"
 
 namespace ConnixCore {
 namespace Communication {
@@ -13,14 +9,6 @@ class IConnectionManager
 {
 public:
     virtual ~IConnectionManager() = default;
-
-    virtual bool addSubscriber(
-        std::shared_ptr<ConnixCore::Communication::IConnectionSubscriber>
-            subscriber) = 0;
-
-    virtual bool removeSubscriber(
-        std::shared_ptr<ConnixCore::Communication::IConnectionSubscriber>
-            subscriber) = 0;
 
     virtual std::size_t getConnectionCount() const = 0;
 

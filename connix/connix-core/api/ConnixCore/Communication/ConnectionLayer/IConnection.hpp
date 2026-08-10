@@ -1,15 +1,18 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "ConnixCore/Communication/ConnectionLayer/ConnectionEndpoint.hpp"
 #include "ConnixCore/Communication/ConnectionLayer/ConnectionId.hpp"
 #include "ConnixCore/Communication/ConnectionLayer/ConnectionState.hpp"
+#include "ConnixCore/Communication/ConnectionLayer/IConnectionSubscriber.hpp"
+#include "ConnixCore/Communication/TransportLayer/ITransportSubscriber.hpp"
 
 namespace ConnixCore {
 namespace Communication {
 
-class IConnection
+class IConnection : private ConnixCore::Communication::ITransportSubscriber
 {
 public:
     virtual ~IConnection() = default;
@@ -22,6 +25,14 @@ public:
     virtual ConnixCore::Communication::ConnectionEndpoint getLocal() const = 0;
 
     virtual ConnixCore::Communication::ConnectionState getState() const = 0;
+
+    virtual bool addSubscriber(
+        std::shared_ptr<ConnixCore::Communication::IConnectionSubscriber>
+            subscriber) = 0;
+
+    virtual bool removeSubscriber(
+        std::shared_ptr<ConnixCore::Communication::IConnectionSubscriber>
+            subscriber) = 0;
 
     virtual bool send(const std::vector<std::uint8_t>& data) = 0;
 

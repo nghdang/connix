@@ -3,7 +3,6 @@
 #include <memory>
 
 #include "ConnixCore/Communication/ConnectionLayer/IConnection.hpp"
-#include "ConnixCore/Communication/ConnectionLayer/IConnectionSubscriber.hpp"
 #include "ConnixCore/Communication/TransportLayer/ITransport.hpp"
 
 namespace ConnixCore {
@@ -16,9 +15,6 @@ public:
         const ConnixCore::Communication::ConnectionId id,
         const ConnixCore::Communication::ConnectionEndpoint& remote,
         const ConnixCore::Communication::ConnectionEndpoint& local,
-        const std::vector<
-            std::shared_ptr<ConnixCore::Communication::IConnectionSubscriber>>&
-            subscribers,
         std::shared_ptr<ConnixCore::Communication::ITransport> transport);
 
     virtual ~Connection() override = default;
@@ -31,9 +27,27 @@ public:
 
     ConnixCore::Communication::ConnectionState getState() const override;
 
+    bool addSubscriber(
+        std::shared_ptr<ConnixCore::Communication::IConnectionSubscriber>
+            subscriber) override;
+
+    bool removeSubscriber(
+        std::shared_ptr<ConnixCore::Communication::IConnectionSubscriber>
+            subscriber) override;
+
     bool send(const std::vector<std::uint8_t>& data) override;
 
     void close() override;
+
+private:
+    void onStateChanged() override;
+
+    void onStatusChanged() override;
+
+    void onDataSent(std::size_t count) override;
+
+    void onDataReceived(std::vector<std::uint8_t>& receivedData,
+                        std::vector<std::uint8_t>& responseData) override;
 
 private:
     ConnixCore::Communication::ConnectionId m_id;

@@ -1,8 +1,7 @@
 #pragma once
 
+#include <cstdint>
 #include <vector>
-
-#include "ConnixCore/Communication/ConnectionLayer/ConnectionId.hpp"
 
 namespace ConnixCore {
 namespace Communication {
@@ -12,11 +11,11 @@ class IConnectionSubscriber
 public:
     virtual ~IConnectionSubscriber() = default;
 
-    virtual void
-    onStateChanged(ConnixCore::Communication::ConnectionId id) = 0;
+    virtual void onStateChanged() = 0;
 
-    virtual bool onDataReceived(ConnixCore::Communication::ConnectionId id,
-                                std::vector<std::uint8_t>& receivedData,
+    virtual void onDataSent(std::size_t count) = 0;
+
+    virtual bool onDataReceived(std::vector<std::uint8_t>& receivedData,
                                 std::vector<std::uint8_t>& responseData) = 0;
 };
 
