@@ -37,7 +37,7 @@ public:
     MOCK_METHOD(bool, send, (const std::vector<std::uint8_t>& data),
                 (override));
 
-    MOCK_METHOD(void, close, (), (override));
+    MOCK_METHOD(bool, close, (), (override));
 
     static std::shared_ptr<ConnixCore::Communication::MockIConnection>
     create();

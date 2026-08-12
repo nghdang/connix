@@ -36,7 +36,7 @@ public:
 
     bool send(const std::vector<std::uint8_t>& data) override;
 
-    void close() override;
+    bool close() override;
 
 private:
     class TransportSubscriber

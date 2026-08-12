@@ -35,7 +35,7 @@ public:
 
     virtual bool send(const std::vector<std::uint8_t>& data) = 0;
 
-    virtual void close() = 0;
+    virtual bool close() = 0;
 };
 
 } // namespace Communication

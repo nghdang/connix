@@ -1,1 +1,4 @@
+create_unit_test(Communication/NodeLayer/NodeFactoryTest.cpp)
+create_unit_test(Communication/ConnectionLayer/ConnectionFactoryTest.cpp)
+create_unit_test(Communication/TransportLayer/TransportFactoryTest.cpp)
 create_unit_test(Logging/LoggerTest.cpp)

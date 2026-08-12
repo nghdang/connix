@@ -20,6 +20,50 @@ Connection::Connection(
     m_transport->addSubscriber(m_transportSubscriber);
 }
 
+ConnixCore::Communication::ConnectionId Connection::getId() const
+{
+    return m_id;
+}
+
+ConnixCore::Communication::ConnectionEndpoint Connection::getRemote() const
+{
+    return m_remote;
+}
+
+ConnixCore::Communication::ConnectionEndpoint Connection::getLocal() const
+{
+    return m_local;
+}
+
+ConnixCore::Communication::ConnectionState Connection::getState() const
+{
+    return m_state;
+}
+
+bool Connection::addSubscriber(
+    std::shared_ptr<ConnixCore::Communication::IConnectionSubscriber>
+        subscriber)
+{
+    return false;
+}
+
+bool Connection::removeSubscriber(
+    std::shared_ptr<ConnixCore::Communication::IConnectionSubscriber>
+        subscriber)
+{
+    return false;
+}
+
+bool Connection::send(const std::vector<std::uint8_t>& data)
+{
+    return false;
+}
+
+bool Connection::close()
+{
+    return false;
+}
+
 void Connection::TransportSubscriber::onStateChanged()
 {
 }
