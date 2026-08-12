@@ -10,7 +10,7 @@ class ConnectionFactory : public ConnixCore::Communication::IConnectionFactory
 public:
     explicit ConnectionFactory();
 
-    virtual ~ConnectionFactory() override = default;
+    ~ConnectionFactory() override = default;
 
     std::shared_ptr<ConnixCore::Communication::IConnectionManager>
     createConnectionManager() override;

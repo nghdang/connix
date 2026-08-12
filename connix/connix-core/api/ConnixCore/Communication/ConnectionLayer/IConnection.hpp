@@ -7,12 +7,11 @@
 #include "ConnixCore/Communication/ConnectionLayer/ConnectionId.hpp"
 #include "ConnixCore/Communication/ConnectionLayer/ConnectionState.hpp"
 #include "ConnixCore/Communication/ConnectionLayer/IConnectionSubscriber.hpp"
-#include "ConnixCore/Communication/TransportLayer/ITransportSubscriber.hpp"
 
 namespace ConnixCore {
 namespace Communication {
 
-class IConnection : private ConnixCore::Communication::ITransportSubscriber
+class IConnection
 {
 public:
     virtual ~IConnection() = default;

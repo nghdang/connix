@@ -10,7 +10,7 @@ class ConnectionManager : public ConnixCore::Communication::IConnectionManager
 public:
     explicit ConnectionManager();
 
-    virtual ~ConnectionManager() override = default;
+    ~ConnectionManager() override = default;
 
     std::size_t getConnectionCount() const override;
 

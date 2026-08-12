@@ -10,7 +10,7 @@ class BaseTransport : public ConnixCore::Communication::ITransport
 public:
     explicit BaseTransport(ConnixCore::Communication::TransportType type);
 
-    virtual ~BaseTransport() override = default;
+    ~BaseTransport() override = default;
 
     ConnixCore::Communication::TransportType getType() const override;
 

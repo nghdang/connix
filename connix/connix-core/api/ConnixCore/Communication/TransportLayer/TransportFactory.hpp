@@ -14,7 +14,7 @@ class TransportFactory : public ConnixCore::Communication::ITransportFactory
 public:
     explicit TransportFactory() = default;
 
-    virtual ~TransportFactory() override = default;
+    ~TransportFactory() override = default;
 
     std::shared_ptr<ConnixCore::Communication::ITransport>
     createTransport(ConnixCore::Communication::TransportType type) override;

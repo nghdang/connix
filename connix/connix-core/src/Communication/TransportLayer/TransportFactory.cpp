@@ -26,6 +26,8 @@ TransportFactory::createTransport(
             return std::make_shared<ConnixCore::Communication::UdsTransport>();
         }
     }
+
+    return nullptr;
 }
 
 } // namespace Communication

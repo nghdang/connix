@@ -10,7 +10,7 @@ class UdpTransport : public ConnixCore::Communication::BaseTransport
 public:
     explicit UdpTransport();
 
-    virtual ~UdpTransport() override = default;
+    ~UdpTransport() override = default;
 };
 
 } // namespace Communication

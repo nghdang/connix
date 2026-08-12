@@ -10,7 +10,7 @@ class UdsTransport : public ConnixCore::Communication::BaseTransport
 public:
     explicit UdsTransport();
 
-    virtual ~UdsTransport() override = default;
+    ~UdsTransport() override = default;
 };
 
 } // namespace Communication

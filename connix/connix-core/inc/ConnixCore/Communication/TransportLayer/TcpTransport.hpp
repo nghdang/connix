@@ -10,7 +10,7 @@ class TcpTransport : public ConnixCore::Communication::BaseTransport
 public:
     explicit TcpTransport();
 
-    virtual ~TcpTransport() override = default;
+    ~TcpTransport() override = default;
 };
 
 } // namespace Communication
