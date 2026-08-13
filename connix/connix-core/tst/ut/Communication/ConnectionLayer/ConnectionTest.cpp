@@ -2,7 +2,6 @@
 #include "gtest/gtest.h"
 
 #include "ConnixCore/Communication/ConnectionLayer/Connection.hpp"
-#include "ConnixCore/Communication/ConnectionLayer/MockIConnectionSubscriber.hpp"
 #include "ConnixCore/Communication/TransportLayer/MockITransport.hpp"
 
 using namespace testing;
