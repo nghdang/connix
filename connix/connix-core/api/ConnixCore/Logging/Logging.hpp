@@ -21,17 +21,19 @@
 #endif
 
 #ifndef _LOG
-#define _LOG(level, ...) ConnixCore::Logging::Logger::getInstance().record(#level, __VA_ARGS__)
+#define _LOG(level, ...)                                                      \
+    ConnixCore::Logging::Logger::getInstance().record(#level, __VA_ARGS__)
 #endif
 
 #ifndef LOG_ASSERT
-#define LOG_ASSERT(condition, ...)                                                                                     \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        if (!(condition))                                                                                              \
-        {                                                                                                              \
-            ConnixCore::Logging::Logger::getInstance().record("ASSERT FAILED", __VA_ARGS__);                           \
-            assert(condition);                                                                                         \
-        }                                                                                                              \
+#define LOG_ASSERT(condition, ...)                                            \
+    do                                                                        \
+    {                                                                         \
+        if (!(condition))                                                     \
+        {                                                                     \
+            ConnixCore::Logging::Logger::getInstance().record(                \
+                "ASSERT FAILED", __VA_ARGS__);                                \
+            assert(condition);                                                \
+        }                                                                     \
     } while (0)
 #endif

@@ -14,5 +14,13 @@ TEST(ConnectionFactoryTest, Creation)
     EXPECT_NE(factory, nullptr);
 }
 
+TEST(ConnectionFactoryTest, CreateConnectionManager)
+{
+    auto factory =
+        std::make_shared<ConnixCore::Communication::ConnectionFactory>();
+    auto manager = factory->createConnectionManager();
+    EXPECT_NE(manager, nullptr);
+}
+
 } // namespace UnitTest
 } // namespace ConnixCore
