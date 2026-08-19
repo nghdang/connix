@@ -1,0 +1,55 @@
+@startuml Transport Layer - Interface View
+
+enum TransportType {
+    TCP
+    UDP
+    UDS
+}
+
+enum TransportState {
+    CONNECTING
+    CONNECTED
+    DISCONNECTING
+    DISCONNECTED
+}
+
+enum TransportStatus {
+    IDLE
+    SENDING
+    RECEIVING
+}
+
+interface ITransportSubscriber {
+    + {abstract} onStateChanged(): Void
+    + {abstract} onStatusChanged(): Void
+    + {abstract} onDataSent(count: Integer): Void
+    + {abstract} onDataReceived(receivedData: Byte[*], responseData: Byte[*]): Void
+}
+
+interface ITransport {
+    + {abstract} getType(): TransportType
+    + {abstract} getState(): TransportState
+    + {abstract} getStatus(): TransportStatus
+    + {abstract} addSubscriber(subscriber: ITransportSubscriber): Boolean
+    + {abstract} removeSubscriber(subscriber: ITransportSubscriber): Boolean
+    + {abstract} send(data: Byte[*]): Boolean
+    + {abstract} close(): Void
+}
+
+interface ITransportFactory {
+    + {abstract} createTransport(type: TransportType): ITransport
+}
+
+class TransportFactory
+
+TransportType <.left. ITransport
+TransportState <.. ITransport
+TransportStatus <.. ITransport
+ITransportSubscriber <.right. ITransport
+
+TransportType <.. ITransportFactory
+ITransport <.. ITransportFactory
+
+ITransportFactory <|-- TransportFactory
+
+@enduml

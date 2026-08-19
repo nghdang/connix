@@ -1,1 +1,17 @@
+create_unit_test(Communication/ConnectionLayer/ConnectionTest.cpp)
+create_unit_test(Communication/ConnectionLayer/ConnectionFactoryTest.cpp)
+create_unit_test(Communication/ConnectionLayer/ConnectionManagerTest.cpp)
+
+create_unit_test(Communication/NodeLayer/ClientTest.cpp)
+create_unit_test(Communication/NodeLayer/ClientConfigurationTest.cpp)
+create_unit_test(Communication/NodeLayer/NodeFactoryTest.cpp)
+create_unit_test(Communication/NodeLayer/ServerTest.cpp)
+create_unit_test(Communication/NodeLayer/ServerConfigurationTest.cpp)
+
+create_unit_test(Communication/TransportLayer/BaseTransportTest.cpp)
+create_unit_test(Communication/TransportLayer/TcpTransportTest.cpp)
+create_unit_test(Communication/TransportLayer/UdpTransportTest.cpp)
+create_unit_test(Communication/TransportLayer/UdsTransportTest.cpp)
+create_unit_test(Communication/TransportLayer/TransportFactoryTest.cpp)
+
 create_unit_test(Logging/LoggerTest.cpp)

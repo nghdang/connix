@@ -1,0 +1,111 @@
+@startuml Node Layer - Design View
+
+class ClientConfiguration {
+    - transportType: TransportType
+    - connectionTimeout: Integer
+    - keepConnectionAlive: Boolean
+    - bufferSize: Integer
+    + getTransportType(): TransportType
+    + setTransportType(transportType: TransportType): Void
+    + getConnectionTimeout(): Integer
+    + setConnectionTimeout(connectionTimeout: Integer): Void
+    + getKeepConnectionAlive(): Boolean
+    + setKeepConnectionAlive(keepConnectionAlive: Boolean): Void
+    + getBufferSize(): Integer
+    + setBufferSize(bufferSize: Integer): Void
+}
+
+interface IClientSubscriber {
+    + {abstract} onConnection(connection: IConnection): Void
+}
+
+interface IClient {
+    + {abstract} getConfiguration(): IClientConfiguration
+    + {abstract} addSubscriber(subscriber: IClientSubscriber): Boolean
+    + {abstract} removeSubscriber(subscriber: IClientSubscriber): Boolean
+    + {abstract} connect(address: String, port: Integer): Boolean
+    + {abstract} disconnect(): Boolean
+    + {abstract} send(connectionId: ConnectionId, data: Byte[*]): Boolean
+    + {abstract} closeConnection(connectionId: ConnectionId): Boolean
+}
+
+class Client {
+    - configuration: IClientConfiguration
+    - subscribers: IClientSubscriber[*]
+    - connectionFactory: IConnectionFactory
+    - connectionManager: IConnectionManager
+    - transportFactory: ITransportFactory
+    + Client(configuration: IClientConfiguration)
+}
+
+class ServerConfiguration {
+    - transportType: TransportType
+    - maximumConnections: Integer
+    - maximumRequestsPerSecond: Integer
+    - bufferSize: Integer
+    + getTransportType(): TransportType
+    + setTransportType(transportType: TransportType): Void
+    + getMaximumConnections(): Integer
+    + setMaximumConnections(maximumConnections: Integer): Void
+    + getMaximumRequestsPerSecond(): Integer
+    + setMaximumRequestsPerSecond(maximumRequestsPerSecond: Integer): Void
+    + getBufferSize(): Integer
+    + setBufferSize(bufferSize: Integer): Void
+}
+
+interface IServerSubscriber {
+    + {abstract} onConnection(connection: IConnection): Void
+}
+
+interface IServer {
+    + {abstract} getConfiguration(): IServerConfiguration
+    + {abstract} addSubscriber(subscriber: IServerSubscriber): Boolean
+    + {abstract} removeSubscriber(subscriber: IServerSubscriber): Boolean
+    + {abstract} start(address: String, port: Integer): Boolean
+    + {abstract} stop(): Boolean
+    + {abstract} send(connectionId: ConnectionId, data: Byte[*]): Boolean
+    + {abstract} closeConnection(connectionId: ConnectionId): Boolean
+}
+
+class Server {
+    - configuration: IServerConfiguration
+    - subscribers: IServerSubscriber[*]
+    - connectionFactory: IConnectionFactory
+    - connectionManager: IConnectionManager
+    - transportFactory: ITransportFactory
+    + Server(configuration: IServerConfiguration)
+}
+
+interface INodeFactory {
+    + {abstract} createClientConfiguration(): IClientConfiguration
+    + {abstract} createClient(configuration: IClientConfiguration): IClient
+    + {abstract} createServerConfiguration(): IServerConfiguration
+    + {abstract} createServer(configuration: IServerConfiguration): IServer
+}
+
+class NodeFactory {
+    + createClientConfiguration(): IClientConfiguration
+    + createClient(configuration: IClientConfiguration): IClient
+    + createServerConfiguration(): IServerConfiguration
+    + createServer(configuration: IServerConfiguration): IServer
+}
+
+IClientConfiguration <|-- ClientConfiguration
+
+IClient <|-- Client
+
+Client <.. NodeFactory
+Client "1" --* "1" ClientConfiguration
+Client "1" --* "0..*" IClientSubscriber
+
+IServerConfiguration <|-- ServerConfiguration
+
+IServer <|-- Server
+
+Server <.. NodeFactory
+Server "1" --* "1" ServerConfiguration
+Server "1" --* "0..*" IServerSubscriber
+
+INodeFactory <|-- NodeFactory
+
+@enduml
