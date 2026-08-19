@@ -16,7 +16,7 @@ struct ConnectionEndpoint {
 interface IConnectionSubscriber {
     + {abstract} onStateChanged(): Void
     + {abstract} onDataSent(count: Integer): Void
-    + {abstract} onDataReceived(receivedData: Byte[*], responseData: Byte[*]): Void
+    + {abstract} onDataReceived(receivedData: Byte[*], responseData: Byte[*]): Boolean
 }
 
 interface IConnection {
@@ -26,8 +26,8 @@ interface IConnection {
     + {abstract} getState(): ConnectionState
     + {abstract} addSubscriber(subscriber: IConnectionSubscriber): Boolean
     + {abstract} removeSubscriber(subscriber: IConnectionSubscriber): Boolean
-    + {abstract} send(data: Byte[*]): Void
-    + {abstract} close(): Void
+    + {abstract} send(data: Byte[*]): Boolean
+    + {abstract} close(): Boolean
 }
 
 interface IConnectionManager {
@@ -38,7 +38,7 @@ interface IConnectionManager {
 
 interface IConnectionFactory {
     + {abstract} createConnectionManager(): IConnectionManager
-    + {abstract} createConnection(remote: ConnectionEndpoint, local: ConnectionEndpoint, transport: ITransport): IConnectionManager
+    + {abstract} createConnection(remote: ConnectionEndpoint, local: ConnectionEndpoint, transport: ITransport): IConnection
 }
 
 class ConnectionFactory {

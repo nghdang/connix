@@ -9,8 +9,8 @@ enum TransportType {
 enum TransportState {
     CONNECTING
     CONNECTED
-    CLOSING
-    CLOSED
+    DISCONNECTING
+    DISCONNECTED
 }
 
 enum TransportStatus {

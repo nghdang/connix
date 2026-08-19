@@ -1,10 +1,18 @@
 @startuml Node Layer - Design View
 
 class ClientConfiguration {
-    + transportType: TransportType
-    + connectionTimeout: Integer
-    + keepAlive: Boolean
-    + bufferSize: Integer
+    - transportType: TransportType
+    - connectionTimeout: Integer
+    - keepConnectionAlive: Boolean
+    - bufferSize: Integer
+    + getTransportType(): TransportType
+    + setTransportType(transportType: TransportType): Void
+    + getConnectionTimeout(): Integer
+    + setConnectionTimeout(connectionTimeout: Integer): Void
+    + getKeepConnectionAlive(): Boolean
+    + setKeepConnectionAlive(keepConnectionAlive: Boolean): Void
+    + getBufferSize(): Integer
+    + setBufferSize(bufferSize: Integer): Void
 }
 
 interface IClientSubscriber {
@@ -12,28 +20,37 @@ interface IClientSubscriber {
 }
 
 interface IClient {
-    + {abstract} getConfiguration(): ClientConfiguration
+    + {abstract} getConfiguration(): IClientConfiguration
     + {abstract} addSubscriber(subscriber: IClientSubscriber): Boolean
     + {abstract} removeSubscriber(subscriber: IClientSubscriber): Boolean
-    + {abstract} connect(address: String, port: Integer): ConnectionId
-    + {abstract} disconnect(connectionId: ConnectionId): Boolean
+    + {abstract} connect(address: String, port: Integer): Boolean
+    + {abstract} disconnect(): Boolean
     + {abstract} send(connectionId: ConnectionId, data: Byte[*]): Boolean
+    + {abstract} closeConnection(connectionId: ConnectionId): Boolean
 }
 
 class Client {
-    - configuration: ClientConfiguration
+    - configuration: IClientConfiguration
     - subscribers: IClientSubscriber[*]
     - connectionFactory: IConnectionFactory
     - connectionManager: IConnectionManager
     - transportFactory: ITransportFactory
-    + Client(configuration: ClientConfiguration)
+    + Client(configuration: IClientConfiguration)
 }
 
 class ServerConfiguration {
-    + transportType: TransportType
-    + maximumConnections: Integer
-    + maximumRequestsPerSecond: Integer
-    + bufferSize: Integer
+    - transportType: TransportType
+    - maximumConnections: Integer
+    - maximumRequestsPerSecond: Integer
+    - bufferSize: Integer
+    + getTransportType(): TransportType
+    + setTransportType(transportType: TransportType): Void
+    + getMaximumConnections(): Integer
+    + setMaximumConnections(maximumConnections: Integer): Void
+    + getMaximumRequestsPerSecond(): Integer
+    + setMaximumRequestsPerSecond(maximumRequestsPerSecond: Integer): Void
+    + getBufferSize(): Integer
+    + setBufferSize(bufferSize: Integer): Void
 }
 
 interface IServerSubscriber {
@@ -41,38 +58,54 @@ interface IServerSubscriber {
 }
 
 interface IServer {
-    + {abstract} getConfiguration(): ServerConfiguration
+    + {abstract} getConfiguration(): IServerConfiguration
     + {abstract} addSubscriber(subscriber: IServerSubscriber): Boolean
     + {abstract} removeSubscriber(subscriber: IServerSubscriber): Boolean
     + {abstract} start(address: String, port: Integer): Boolean
-    + {abstract} stop(): void
+    + {abstract} stop(): Boolean
     + {abstract} send(connectionId: ConnectionId, data: Byte[*]): Boolean
+    + {abstract} closeConnection(connectionId: ConnectionId): Boolean
 }
 
 class Server {
-    - configuration: ServerConfiguration
+    - configuration: IServerConfiguration
     - subscribers: IServerSubscriber[*]
     - connectionFactory: IConnectionFactory
     - connectionManager: IConnectionManager
     - transportFactory: ITransportFactory
-    + Server(configuration:ServerConfiguration)
+    + Server(configuration: IServerConfiguration)
 }
 
-class CommunicationFactory {
-    + {static} createClient(configuration: ClientConfiguration): IClient
-    + {static} createServer(configuration: ServerConfiguration): IServer
+interface INodeFactory {
+    + {abstract} createClientConfiguration(): IClientConfiguration
+    + {abstract} createClient(configuration: IClientConfiguration): IClient
+    + {abstract} createServerConfiguration(): IServerConfiguration
+    + {abstract} createServer(configuration: IServerConfiguration): IServer
 }
+
+class NodeFactory {
+    + createClientConfiguration(): IClientConfiguration
+    + createClient(configuration: IClientConfiguration): IClient
+    + createServerConfiguration(): IServerConfiguration
+    + createServer(configuration: IServerConfiguration): IServer
+}
+
+IClientConfiguration <|-- ClientConfiguration
 
 IClient <|-- Client
 
-Client <.. CommunicationFactory
+Client <.. NodeFactory
 Client "1" --* "1" ClientConfiguration
 Client "1" --* "0..*" IClientSubscriber
 
+IServerConfiguration <|-- ServerConfiguration
+
 IServer <|-- Server
 
-Server <.. CommunicationFactory
+Server <.. NodeFactory
 Server "1" --* "1" ServerConfiguration
 Server "1" --* "0..*" IServerSubscriber
+
+INodeFactory <|-- NodeFactory
 
 @enduml
