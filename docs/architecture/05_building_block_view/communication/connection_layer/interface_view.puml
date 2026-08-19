@@ -1,0 +1,64 @@
+@startuml Connection Layer - Interface View
+
+class ConnectionId <<datatype>>
+
+enum ConnectionState {
+    CONNECTED
+    CLOSING
+    CLOSED
+}
+
+struct ConnectionEndpoint {
+    + address: String
+    + port: Integer
+}
+
+interface IConnectionSubscriber {
+    + {abstract} onStateChanged(): Void
+    + {abstract} onDataSent(count: Integer): Void
+    + {abstract} onDataReceived(receivedData: Byte[*], responseData: Byte[*]): Boolean
+}
+
+interface IConnection {
+    + {abstract} getId(): ConnectionId
+    + {abstract} getRemote(): ConnectionEndpoint
+    + {abstract} getLocal(): ConnectionEndpoint
+    + {abstract} getState(): ConnectionState
+    + {abstract} addSubscriber(subscriber: IConnectionSubscriber): Boolean
+    + {abstract} removeSubscriber(subscriber: IConnectionSubscriber): Boolean
+    + {abstract} send(data: Byte[*]): Boolean
+    + {abstract} close(): Boolean
+}
+
+interface IConnectionManager {
+    + {abstract} getConnectionCount(): Integer
+    + {abstract} addConnection(connection: IConnection): Boolean
+    + {abstract} removeConnection(connectionId: ConnectionId): Boolean
+}
+
+interface IConnectionFactory {
+    + {abstract} createConnectionManager(): IConnectionManager
+    + {abstract} createConnection(remote: ConnectionEndpoint, local: ConnectionEndpoint, transport: ITransport): IConnection
+}
+
+class ConnectionFactory {
+    - idGenerator: ConnectionId
+}
+
+ConnectionId <.. IConnectionManager
+
+ConnectionId <.. IConnection
+ConnectionEndpoint <.. IConnection
+ConnectionState <.left. IConnection
+
+IConnectionManager .right.> IConnection
+
+IConnectionManager <.. IConnectionFactory
+IConnection <.. IConnectionFactory
+
+IConnectionFactory ..> IConnectionSubscriber
+
+ConnectionId <.. ConnectionFactory
+IConnectionFactory <|-- ConnectionFactory
+
+@enduml

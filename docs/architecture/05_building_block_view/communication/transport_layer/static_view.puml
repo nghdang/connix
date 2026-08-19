@@ -1,0 +1,10 @@
+@startuml Transport Layer - Static View
+
+component NodeLayer
+component ConnectionLayer
+component TransportLayer
+
+NodeLayer ..> TransportLayer
+ConnectionLayer ..> TransportLayer
+
+@enduml
