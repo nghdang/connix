@@ -54,3 +54,12 @@ Building Block View
    * - Service Layer
      - Communication
      - Exchange data with the client applications.
+
+Communication
+=============
+
+.. include:: communication/node_layer/node_layer.inc
+
+.. include:: communication/connection_layer/connection_layer.inc
+
+.. include:: communication/transport_layer/transport_layer.inc
