@@ -1,0 +1,174 @@
+@startuml Rule Domain Entities
+!define AGGREGATE_COLOR #FFE6E6
+!define VALUE_OBJECT_COLOR #E6F3FF
+!define ENTITY_COLOR #F0E6FF
+!define ENUM_COLOR #FFFACD
+
+skinparam class {
+    BackgroundColor<<aggregate>> AGGREGATE_COLOR
+    BackgroundColor<<valueObject>> VALUE_OBJECT_COLOR
+    BackgroundColor<<entity>> ENTITY_COLOR
+    BackgroundColor<<enumeration>> ENUM_COLOR
+}
+
+enum TriggerType <<enumeration>> {
+    CONNECT
+    DISCONNECT
+    RECEIVE
+    FILE_CHANGE
+    TIMER
+}
+
+enum CommandType <<enumeration>> {
+    CONNECT
+    DISCONNECT
+    SEND_DATA
+    SEND_FILE
+}
+
+enum DirectionType <<enumeration>> {
+    SEND
+    RECEIVE
+    BOTH
+}
+
+class Endpoint <<valueObject>> {
+    - address: String
+    - port: Integer [0..1]
+    --
+    + Endpoint(address: String, port: Integer = -1)
+    + getAddress(): String
+    + getPort(): Integer
+    + equals(other: Endpoint): Boolean
+}
+
+class TriggerParameters <<valueObject>> {
+    - endpoint: Endpoint [0..1]
+    - offset: Integer [0..1]
+    - pattern: String [0..1]
+    - path: String [0..1]
+    - interval: Integer [0..1]
+    - singleShot: Boolean [0..1]
+    --
+    + TriggerParameters(endpoint: Endpoint = null, offset: Integer = -1,\npattern: String = "", path: String = "",\ninterval: Integer = -1, singleShot: Boolean = false)
+    + getEndpoint(): Endpoint
+    + getOffset(): Integer
+    + getPattern(): String
+    + getPath(): String
+    + getInterval(): Integer
+    + isSingleShot(): Boolean
+}
+
+class Trigger <<entity>> {
+    - type: TriggerType
+    - parameters: TriggerParameters
+    - actions: String [1..*]
+    --
+    + Trigger(type: TriggerType)
+    + getType(): TriggerType
+    + getParameters(): TriggerParameters
+    + setParameters(parameters: TriggerParameters): Boolean
+    + getActions(): String[]
+    + addAction(actionId: String): Boolean
+    + removeAction(actionId: String): Boolean
+    + matches(event: Event): Boolean
+}
+
+class SendItem <<valueObject>> {
+    - endpoint: Endpoint [0..1]
+    - delay: Integer
+    - value: String
+    --
+    + SendItem(value: String, endpoint: Endpoint = null, delay: Integer = 0)
+    + getEndpoint(): Endpoint
+    + getDelay(): Integer
+    + getValue(): String
+}
+
+class ActionParameters <<valueObject>> {
+    - delay: Integer
+    - sequence: SendItem [1..*]
+    --
+    + ActionParameters(sequence: SendItem[], delay: Integer = 0)
+    + getDelay(): Integer
+    + getSequence(): SendItem[]
+}
+
+class Action <<entity>> {
+    - command: CommandType
+    - endpoint: Endpoint
+    - delayExecution: Integer
+    - onSucceed: String [0..1]
+    - onFail: String [0..1]
+    - parameters: ActionParameters [0..1]
+    --
+    + Action(command: CommandType)
+    + getCommand(): CommandType
+    + getEndpoint(): Endpoint
+    + setEndpoint(endpoint: Endpoint): Boolean
+    + getDelayExecution(): Integer
+    + setDelayExecution(delayExecution: Integer): Boolean
+    + getOnSucceed(): String
+    + setOnSucceed(onSucceed: String): Boolean
+    + getOnFail(): String
+    + setOnFail(onFail: String): Boolean
+    + getParameters(): ActionParameters
+    + setParameters(parameters: ActionParameters): Boolean
+    + execute(): Boolean
+}
+
+class Persistence <<entity>> {
+    - direction: DirectionType
+    - path: String
+    - endpoint: Endpoint [0..1]
+    --
+    + getDirection(): DirectionType
+    + setDirection(direction: DirectionType): Boolean
+    + getPath(): String
+    + setPath(path: String): Boolean
+    + getEndpoint(): Endpoint
+    + setEndpoint(endpoint: Endpoint): Boolean
+}
+
+class Rule <<aggregate>> {
+    - name: String
+    - triggers: Trigger [1..*]
+    - actions: Map<String, Action> [1..*]
+    - persistence: Persistence [0..*]
+    --
+    + getName(): String
+    + setName(name: String): Boolean
+    + getTriggers(): Trigger[]
+    + addTrigger(trigger: Trigger): Boolean
+    + removeTrigger(trigger: Trigger): Boolean
+    + getActions(): Map<String, Action>
+    + addAction(id: String, action: Action): Boolean
+    + removeAction(id: String): Boolean
+    + getPersistence(): Persistence[]
+    + addPersistence(persistence: Persistence): Boolean
+    + removePersistence(persistence: Persistence): Boolean
+    + execute(event: Event): Boolean
+}
+
+Rule "1" *-- "1..*" Trigger : contains
+Rule "1" *-- "1..*" Action : defines
+Rule "1" *-- "0..*" Persistence : configures
+
+Trigger "1" *-- "1" TriggerParameters : has
+Trigger "1" --> "*" Action : invokes
+Trigger --> TriggerType : uses
+
+Action "1" *-- "1" Endpoint : targets
+Action "1" *-- "0..1" ActionParameters : uses
+Action --> CommandType : executes
+
+ActionParameters "1" *-- "1..*" SendItem : contains
+
+SendItem "1" *-- "0..1" Endpoint : targets
+
+Persistence "1" *-- "0..1" Endpoint : references
+Persistence --> DirectionType : defines
+
+TriggerParameters *-- "0..1" Endpoint : references
+
+@enduml
