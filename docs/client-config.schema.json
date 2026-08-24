@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Connix Client Configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "transport": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "enum": [
+            "TCP",
+            "UDP",
+            "UDS"
+          ]
+        },
+        "address": {
+          "type": "string",
+          "minLength": 1
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "STREAM",
+            "DATAGRAM"
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "address"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "enum": [
+                  "TCP",
+                  "UDP"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "port"
+            ],
+            "not": {
+              "required": [
+                "mode"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "UDS"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "mode"
+            ],
+            "not": {
+              "required": [
+                "port"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "connection": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "connect_timeout": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reconnect": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "initial_delay": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 1000
+            },
+            "max_delay": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 10000
+            },
+            "attempts": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          "required": [
+            "enabled"
+          ]
+        }
+      }
+    },
+    "buffer": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "send_size": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "receive_size": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    }
+  },
+  "required": [
+    "transport"
+  ]
+}

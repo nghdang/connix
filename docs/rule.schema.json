@@ -1,0 +1,315 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Connix Rule",
+  "description": "describe a rule consisting of triggers and actions.",
+  "type": "object",
+  "required": [
+    "name",
+    "triggers",
+    "actions"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "description": "rule identifier/name.",
+      "type": "string",
+      "minLength": 1
+    },
+    "triggers": {
+      "description": "events that cause the rule to execute.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/trigger_entry"
+      }
+    },
+    "actions": {
+      "description": "named actions referenced by triggers.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "$ref": "#/$defs/action_block"
+      }
+    },
+    "persistence": {
+      "description": "optional persistent data definitions.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/persistence_entry"
+      }
+    }
+  },
+  "$defs": {
+    "trigger_entry": {
+      "description": "a trigger definition and the actions it invokes.",
+      "type": "object",
+      "required": [
+        "type",
+        "parameters",
+        "actions"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "description": "describe what event it represents.",
+          "enum": [
+            "CONNECT",
+            "DISCONNECT",
+            "RECEIVE",
+            "FILE_CHANGE",
+            "TIMER"
+          ]
+        },
+        "parameters": {
+          "description": "trigger-specific parameters.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "endpoint": {
+              "$ref": "#/$defs/endpoint_block"
+            },
+            "offset": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "pattern": {
+              "$ref": "#/$defs/bytePattern"
+            },
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "interval": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "singleShot": {
+              "type": "boolean"
+            }
+          }
+        },
+        "actions": {
+          "description": "action IDs executed when the trigger fires.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "enum": [
+                  "CONNECT",
+                  "DISCONNECT"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "parameters": {
+                "required": [
+                  "endpoint"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "FILE_CHANGE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "parameters": {
+                "required": [
+                  "path"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "TIMER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "parameters": {
+                "required": [
+                  "interval",
+                  "singleShot"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "action_block": {
+      "description": "command executed by a rule.",
+      "type": "object",
+      "required": [
+        "command",
+        "endpoint"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "description": "command type.",
+          "type": "string",
+          "enum": [
+            "CONNECT",
+            "DISCONNECT",
+            "SEND_DATA",
+            "SEND_FILE"
+          ]
+        },
+        "endpoint": {
+          "description": "network endpoint targeted by the operation.",
+          "$ref": "#/$defs/endpoint_block"
+        },
+        "delayExecution": {
+          "description": "delay before executing the action.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "onSucceed": {
+          "description": "action ID to execute after success.",
+          "type": "string",
+          "minLength": 1
+        },
+        "onFail": {
+          "description": "action ID to execute after failure.",
+          "type": "string",
+          "minLength": 1
+        },
+        "parameters": {
+          "description": "action-specific parameters.",
+          "type": "object",
+          "required": [
+            "sequence"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "delay": {
+              "description": "Default delay in milliseconds before sending data.",
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            },
+            "sequence": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/send_item"
+              }
+            }
+          }
+        }
+      }
+    },
+    "persistence_entry": {
+      "description": "persistent data configuration.",
+      "type": "object",
+      "required": [
+        "direction",
+        "path"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "direction": {
+          "description": "data-flow direction.",
+          "type": "string",
+          "enum": [
+            "SEND",
+            "RECEIVE",
+            "BOTH"
+          ]
+        },
+        "path": {
+          "description": "file/storage path.",
+          "type": "string",
+          "minLength": 1
+        },
+        "endpoint": {
+          "$ref": "#/$defs/endpoint_block"
+        }
+      }
+    },
+    "endpoint_block": {
+      "description": "network endpoint definition.",
+      "type": "object",
+      "required": [
+        "address"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "address": {
+          "description": "endpoint address.",
+          "type": "string",
+          "minLength": 1
+        },
+        "port": {
+          "description": "endpoint port.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        }
+      }
+    },
+    "send_item": {
+      "type": "object",
+      "required": [
+        "value"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "endpoint": {
+          "description": "network endpoint targeted by the operation.",
+          "$ref": "#/$defs/endpoint_block"
+        },
+        "delay": {
+          "description": "Delay in milliseconds before sending this data.",
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "value": {
+          "description": "Hexadecimal byte data to send.",
+          "oneOf": [
+            {
+              "$ref": "#/$defs/byteString"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    "bytePattern": {
+      "description": "hexadecimal byte pattern where ?? represents a wildcard byte.",
+      "type": "string",
+      "pattern": "^([0-9A-Fa-f]{2}|\\?\\?)(\\s+([0-9A-Fa-f]{2}|\\?\\?))*$"
+    },
+    "byteString": {
+      "type": "string",
+      "pattern": "^([0-9A-Fa-f]{2})(\\s+[0-9A-Fa-f]{2})*$"
+    }
+  }
+}
