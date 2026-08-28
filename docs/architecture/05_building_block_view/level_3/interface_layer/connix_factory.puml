@@ -1,0 +1,16 @@
+@startuml Interface Layer - Connix Factory
+
+interface IConnixFactory {
+    + {abstract} createNodeConfiguration(nodeType: ConnixNodeType, transportType: ConnixTransportType): IConnixNodeConfiguration
+    + {abstract} createNode(configuration: IConnixNodeConfiguration): IConnixNode
+    + {abstract} createRuleTrigger(): IConnixRuleTrigger
+    + {abstract} createRuleAction(): IConnixRuleAction
+    + {abstract} createRule(): IConnixRule
+    + {abstract} createEngine(): IConnixEngine
+}
+
+class ConnixFactory
+
+IConnixFactory <|-- ConnixFactory
+
+@enduml
