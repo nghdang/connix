@@ -1,4 +1,4 @@
-#include "ConnixCore/Logging/Logger.hpp"
+#include "ConnixCore/Common/Logger.hpp"
 
 #include <array>
 #include <chrono>
@@ -11,7 +11,7 @@
 #include <unistd.h>
 
 namespace ConnixCore {
-namespace Logging {
+namespace Common {
 
 Logger& Logger::getInstance()
 {
@@ -51,5 +51,5 @@ std::string Logger::composeHeading()
     return oss.str();
 }
 
-} // namespace Logging
+} // namespace Common
 } // namespace ConnixCore

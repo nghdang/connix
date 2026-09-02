@@ -1,0 +1,15 @@
+@startuml Building Block View - Level 1
+
+actor UserApp
+
+package "Connix" {
+    [Interface Layer] as InterfaceLayer
+    [Core Layer] as CoreLayer
+    [Infrastructure Layer] as InfrastructureLayer
+}
+
+UserApp --> InterfaceLayer
+InterfaceLayer --> CoreLayer
+CoreLayer --> InfrastructureLayer
+
+@enduml

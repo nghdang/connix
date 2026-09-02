@@ -1,0 +1,38 @@
+@startuml Interface Layer - Connix Contract
+
+enum ConnixNodeType {
+    CLIENT
+    SERVER
+    HYBRID
+}
+
+enum ConnixTransportType {
+    TCP
+    UDP
+    UDS
+}
+
+interface IConnixNodeConfiguration {
+    + {abstract} getNodeType(): ConnixNodeType
+    + {abstract} getTransportType(): ConnixTransportType
+    + {abstract} getSendBufferSize(): Integer
+    + {abstract} setSendBufferSize(value: Integer): Void
+    + {abstract} getReceiveBufferSize(): Integer
+    + {abstract} setReceiveBufferSize(value: Integer): Void
+}
+
+interface IConnixNode {
+    + {abstract} getConfiguration(): IConnixNodeConfiguration
+}
+
+interface IConnixRuleTrigger
+
+interface IConnixRuleAction
+
+interface IConnixRule
+
+interface IConnixEngine
+
+ConnixNodeType <.. IConnixNodeConfiguration
+
+@enduml

@@ -2,6 +2,7 @@
 #
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
+import os
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -39,5 +40,6 @@ html_theme_options = {
 html_css_files = ["custom.css"]
 html_js_files = [("theme-toggle.js", {"defer": "defer"})]
 
-plantuml = "java -jar /usr/share/plantuml/plantuml.jar"
+home_path = os.getenv("HOME")
+plantuml = f"java -jar {home_path}/.local/bin/plantuml.jar"
 plantuml_output_format = "svg"

@@ -1,0 +1,94 @@
+@startuml Building Block View - Level 3 - Core Layer
+
+actor UserApp
+
+package "Connix SDK" {
+
+    package "Interface Layer (ConnixContract)" {
+        interface IConnixEngine {
+            + {abstract} loadTopology(configPath: string): void
+            + {abstract} start(): void
+            + {abstract} stop(): void
+        }
+
+        interface INetworkService {
+            + {abstract} initSockets(): void
+            + {abstract} pollEvents(): void
+        }
+
+        interface ITimeService {
+            + {abstract} startTimer(id: int, intervalMs: int, callback: function): void
+            + {abstract} stopTimer(id: int): void
+        }
+
+        interface IPersistenceService {
+            + {abstract} logPacket(packet: Byte[*]): void
+            + {abstract} saveRules(rulesPath: string): void
+        }
+    }
+
+    package "Interface Layer (Factories)" {
+        class ConnixFactory {
+            + {static} createEngine(): std::unique_ptr<IConnixEngine>
+        }
+    }
+
+    package "Core Layer" {
+        class TopologyRegistry {
+            - nodes: map<string, Node>
+            + validate(): bool
+        }
+
+        class TrafficDirector {
+            - networkService: INetworkService&
+            - timeService: ITimeService&
+            - persistenceService: IPersistenceService&
+            - topology: TopologyRegistry
+            + processTraffic(): void
+        }
+    }
+
+    package "Infrastructure Layer (Concrete Services)" {
+        class POSIXNetworkService {
+            - epollFd: int
+            + initSockets(): void
+            + pollEvents(): void
+        }
+
+        class POSIXTimeService {
+            + startTimer(id: int, intervalMs: int, callback: function): void
+            + stopTimer(id: int): void
+        }
+
+        class FilePersistenceService {
+            + logPacket(packet: Byte[*]): void
+            + saveRules(rulesPath: string): void
+        }
+    }
+}
+
+' User App Interactions
+UserApp --> ConnixFactory : Uses to instantiate
+UserApp --> IConnixEngine : Controls traffic/topology
+
+' Interface Implementations
+TrafficDirector ..|> IConnixEngine : Implements
+POSIXNetworkService ..|> INetworkService : Implements
+POSIXTimeService ..|> ITimeService : Implements
+FilePersistenceService ..|> IPersistenceService : Implements
+
+' Core Layer Dependencies (pointing inward / decoupled from infra)
+TrafficDirector --> INetworkService : Depends on interface
+TrafficDirector --> ITimeService : Depends on interface
+TrafficDirector --> IPersistenceService : Depends on interface
+TrafficDirector --> TopologyRegistry : Uses
+
+' Factory Instantiation & Wiring Dependencies (Concrete creation)
+ConnixFactory ..> TrafficDirector : Instantiates
+ConnixFactory ..> TopologyRegistry : Instantiates
+ConnixFactory ..> POSIXNetworkService : Instantiates
+ConnixFactory ..> POSIXTimeService : Instantiates
+ConnixFactory ..> FilePersistenceService : Instantiates
+ConnixFactory ..> IConnixEngine : Returns reference
+
+@enduml

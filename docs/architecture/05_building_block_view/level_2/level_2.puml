@@ -1,0 +1,38 @@
+@startuml Building Block View - Level 2
+
+actor UserApp
+
+package "Connix" {
+    package "Interface Layer" {
+        [Connix Contract] as ConnixContract
+        [Connix Factory] as ConnixFactory
+    }
+
+    package "Core Layer" {
+        [Topology Registry] as TopologyRegistry
+        [Traffic Director] as TrafficDirector
+    }
+
+    package "Infrastructure Layer" {
+        [Network Service] as NetworkService
+        [Time Service] as TimeService
+        [Persistence Service] as PersistenceService
+    }
+}
+
+UserApp --> ConnixContract
+UserApp --> ConnixFactory
+
+ConnixFactory --> TopologyRegistry
+ConnixFactory --> TrafficDirector
+
+ConnixContract <.. TrafficDirector
+ConnixContract <.. TopologyRegistry
+
+TrafficDirector -right-> TopologyRegistry
+
+TrafficDirector --> NetworkService
+TrafficDirector --> TimeService
+TrafficDirector --> PersistenceService
+
+@enduml
