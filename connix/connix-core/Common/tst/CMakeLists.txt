@@ -1,1 +1,2 @@
+create_unit_test(ConnixConfigurationTest.cpp)
 create_unit_test(LoggerTest.cpp)

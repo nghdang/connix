@@ -54,3 +54,4 @@ add_dependencies(connix-core-unit-tests-run connix-core-unit-tests-build)
 endif()
 
 add_subdirectory(Common)
+add_subdirectory(Node)
