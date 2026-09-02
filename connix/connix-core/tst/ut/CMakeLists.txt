@@ -13,5 +13,3 @@ create_unit_test(Communication/TransportLayer/TcpTransportTest.cpp)
 create_unit_test(Communication/TransportLayer/UdpTransportTest.cpp)
 create_unit_test(Communication/TransportLayer/UdsTransportTest.cpp)
 create_unit_test(Communication/TransportLayer/TransportFactoryTest.cpp)
-
-create_unit_test(Logging/LoggerTest.cpp)

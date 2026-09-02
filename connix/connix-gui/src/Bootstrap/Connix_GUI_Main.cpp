@@ -1,4 +1,4 @@
-#include "ConnixCore/Logging/Logging.hpp"
+#include "ConnixCore/Common/Logging.hpp"
 
 int main()
 {

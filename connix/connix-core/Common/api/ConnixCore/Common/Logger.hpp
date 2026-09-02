@@ -5,7 +5,7 @@
 #include <sstream>
 
 namespace ConnixCore {
-namespace Logging {
+namespace Common {
 
 class Logger
 {
@@ -41,5 +41,5 @@ private:
     std::mutex m_accessMutex;
 };
 
-} // namespace Logging
+} // namespace Common
 } // namespace ConnixCore

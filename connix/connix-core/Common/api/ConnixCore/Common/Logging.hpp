@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-#include "ConnixCore/Logging/Logger.hpp"
+#include "ConnixCore/Common/Logger.hpp"
 
 #ifndef LOG_E
 #define LOG_E(...) _LOG(ERROR, __VA_ARGS__)
@@ -22,7 +22,7 @@
 
 #ifndef _LOG
 #define _LOG(level, ...)                                                      \
-    ConnixCore::Logging::Logger::getInstance().record(#level, __VA_ARGS__)
+    ConnixCore::Common::Logger::getInstance().record(#level, __VA_ARGS__)
 #endif
 
 #ifndef LOG_ASSERT
@@ -31,8 +31,8 @@
     {                                                                         \
         if (!(condition))                                                     \
         {                                                                     \
-            ConnixCore::Logging::Logger::getInstance().record(                \
-                "ASSERT FAILED", __VA_ARGS__);                                \
+            ConnixCore::Common::Logger::getInstance().record("ASSERT FAILED", \
+                                                             __VA_ARGS__);    \
             assert(condition);                                                \
         }                                                                     \
     } while (0)
