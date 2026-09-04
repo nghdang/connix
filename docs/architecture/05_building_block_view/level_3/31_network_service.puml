@@ -1,0 +1,141 @@
+@startuml Level 3 - Network Service
+
+rectangle "Outbound Ports" {
+
+    enum ConnixNetworkEventType {
+        CONNECTED
+        DISCONNECTED
+        SENT
+        RECEIVED
+    }
+
+    class ConnixEndpoint {
+        - address: std::string
+        - port: std::optional<std::uint16_t>
+        --
+        + ConnixEndpoint(\n\taddress: std::string,\n\tport: std::optional<std::uint16_t> port = std::nullopt)
+        + getAddress(): std::string
+        + getPort(): std::optional<std::uint16_t>
+    }
+
+    class ConnixNetworkEvent {
+        - type: ConnixNetworkEventType
+        - remote: ConnixEndpoint
+        - local: ConnixEndpoint
+        - data: std::vector<std::uint8_t>
+        --
+        + ConnixNetworkEvent(\n\ttype: const ConnixNetworkEventType,\n\tremote: const ConnixEndpoint,\n\tlocal: const ConnixEndpoint,\n\tdata: const std::vector<std::uint8_t>&)
+        + getType(): ConnixNetworkEventType
+        + getRemote(): ConnixEndpoint
+        + getLocal(): ConnixEndpoint
+        + getData(): std::vector<std::uint8_t>
+    }
+
+    interface IConnixNodeListener {
+        + {abstract} onEvent(event: const NetworkEvent): void
+    }
+
+    interface IConnixClient {
+        + {abstract} addListener(listener: std::shared_ptr<IConnixNodeListener>): void
+        + {abstract} removeListener(listener: std::shared_ptr<IConnixNodeListener>): void
+        + {abstract} connect(endpoint: const ConnixEndpoint): void
+        + {abstract} disconnect(endpoint: const ConnixEndpoint): void
+        + {abstract} send(endpoint: const ConnixEndpoint, data: const std::vector<std::uint8_t>&): void
+    }
+
+    interface IConnixServer {
+        + {abstract} addListener(listener: std::shared_ptr<IConnixNodeListener>): void
+        + {abstract} removeListener(listener: std::shared_ptr<IConnixNodeListener>): void
+        + {abstract} start(endpoint: const ConnixEndpoint): void
+        + {abstract} stop(): void
+    }
+
+    ConnixNetworkEventType <.right. ConnixNetworkEvent
+    ConnixEndpoint <.. ConnixNetworkEvent
+    ConnixNetworkEvent <.. IConnixNodeListener
+
+    ConnixEndpoint <.. IConnixClient
+    IConnixNodeListener <.. IConnixClient
+
+    ConnixEndpoint <.. IConnixServer
+    IConnixNodeListener <.. IConnixServer
+
+}
+
+rectangle "Implementation" {
+
+    class ConnixClient {
+        - configuration: std::unique_ptr<const ConnixClientConfiguration>
+        - listeners: std::vector<std::shared_ptr<IConnixNodeListener>>
+        - connections: std::vector<std::shared_ptr<IConnixConnection>>
+        --
+        + ConnixClient(configuration: std::unique_ptr<const ConnixClientConfiguration>)
+    }
+
+    class ConnixServer {
+        - configuration: std::unique_ptr<const ConnixServerConfiguration>
+        - listeners: std::vector<std::shared_ptr<IConnixNodeListener>>
+        - connections: std::vector<std::shared_ptr<IConnixConnection>>
+        --
+        + ConnixServer(configuration: std::unique_ptr<const ConnixServerConfiguration>)
+    }
+
+    rectangle "Connection" {
+
+        enum ConnixSocketKind {
+            STREAM
+            DGRAM
+        }
+
+        enum ConnixConnectionState {
+            READY
+            CLOSING
+            CLOSED
+        }
+
+        interface IConnixConnection {
+            + {abstract} getRemote(): ConnixEndpoint
+            + {abstract} getLocal(): ConnixEndpoint
+            + {abstract} getKind(): ConnixSocketKind
+            + {abstract} getState(): ConnixConnectionState
+            + {abstract} send(data: const std::vector<std::uint8_t>&): void
+        }
+
+        class ConnixConnection {
+            - remote: ConnixEndpoint
+            - local: ConnixEndpoint
+            - kind: ConnixSocketKind
+            - state: ConnixConnectionState
+            - sendBuffer: std::vector<std::uint8_t>
+            - receiveBuffer: std::vector<std::uint8_t>
+            - socket: int
+            - onReceive: std::function<void(const std::vector<std::uint8_t>&)>
+            --
+            + ConnixConnection(\n\tremote: const ConnixEndpoint,\n\tlocal: const ConnixEndpoint,\n\tkind: const ConnixSocketKind,\n\tsockfd: int,\n\tonReceive: std::function<void(std::vector<std::uint8_t>)>)
+        }
+
+        note right of ConnixConnection
+            One abstraction serves both SOCK_STREAM and SOCK_DGRAM:
+            * STREAM: socket is a dedicated connected/accepted fd;
+              remote is fixed for the connection's lifetime.
+            * DGRAM: socket is a shared bound fd; remote identifies
+              the peer this logical connection represents. send()
+              and onReceive route via sendto()/recvfrom() using
+              that remote, and CLOSING is typically skipped since
+              there is no wire-level teardown.
+        end note
+
+        ConnixSocketKind <.. IConnixConnection
+        ConnixConnectionState <.. IConnixConnection
+        ConnixEndpoint <.. IConnixConnection
+
+        IConnixConnection <|-- ConnixConnection
+
+    }
+}
+
+IConnixClient <|-- ConnixClient
+
+IConnixServer <|-- ConnixServer
+
+@enduml
