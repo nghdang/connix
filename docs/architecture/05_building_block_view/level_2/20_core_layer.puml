@@ -1,0 +1,29 @@
+@startuml Level 2 - Core Layer
+
+[InterfaceLayer]
+
+package "Core Layer" {
+    [DomainModel]
+    [ConnixEngine]
+    [TopologyRegistry]
+    [ConditionEvaluator]
+    [TaskScheduler]
+
+    ConnixEngine ..> TopologyRegistry : uses
+    ConnixEngine ..> ConditionEvaluator : uses
+    ConnixEngine ..> TaskScheduler : uses
+    ConnixEngine ..> DomainModel : uses
+
+    TopologyRegistry ..> DomainModel : uses
+    ConditionEvaluator ..> DomainModel : uses
+    TaskScheduler ..> DomainModel : uses
+}
+
+[InfrastructureLayer]
+
+InterfaceLayer ..> ConnixEngine : instantiates
+InterfaceLayer ..> DomainModel : instantiates
+
+ConnixEngine ..> InfrastructureLayer : uses
+
+@enduml

@@ -1,0 +1,15 @@
+@startuml Level 2 - Interface Layer
+
+actor Integrators
+
+package "InterfaceLayer" {
+    [ConnixFactory]
+}
+
+[CoreLayer]
+
+Integrators ..> ConnixFactory : uses
+
+ConnixFactory ..> CoreLayer : instantiates
+
+@enduml
