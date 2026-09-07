@@ -1,0 +1,19 @@
+@startuml Level 2 - Infrastructure Layer
+
+[CoreLayer]
+
+package "Infrastructure Layer" {
+    [NetworkService]
+    [FileSystemService]
+    [TimerService]
+}
+
+[UserApplication]
+
+CoreLayer ..> NetworkService : uses
+CoreLayer ..> FileSystemService : uses
+CoreLayer ..> TimerService : uses
+
+NetworkService ..> UserApplication : data exchanges
+
+@enduml

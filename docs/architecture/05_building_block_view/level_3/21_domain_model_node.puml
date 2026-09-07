@@ -1,0 +1,56 @@
+@startuml Level 3 - Domain Model - Node
+
+class IConnixClientConfiguration {
+    + {abstract} getName(): std::string
+    + {abstract} setName(value: const std::string&): void
+    + {abstract} getTransportType(): ConnixTransportType
+    + {abstract} setTransportType(value: const ConnixTransportType): void
+    + {abstract} getConnectionTimeout(): std::uint32_t
+    + {abstract} setConnectionTimeout(value: const std::uint32_t): void
+    + {abstract} isAutoReconnect(): bool
+    + {abstract} setAutoReconnect(): void
+    + {abstract} getReconnectInterval(): std::uint32_t
+    + {abstract} setReconnectInterval(value: const std::uint32_t): void
+    + {abstract} getBufferSize(): std::uint32_t
+    + {abstract} setBufferSize(value: const std::uint32_t): void
+}
+
+class ConnixClientConfiguration {
+    - name: std::string
+    - transportType: ConnixTransportType
+    - connectionTimeout: std::uint32_t
+    - autoReconnect: bool
+    - reconnectInterval: std::uint32_t
+    - bufferSize: std::uint32_t
+    --
+    + ConnixClientConfiguration(\n\tname: const std::string&,\n\ttransportType: const ConnixTransportType,\n\tconnectionTimeout: const std::uint32_t,\n\tautoReconnect: bool,\n\treconnectInterval: const std::uint32_t,\n\tbufferSize: const std::uint32_t)
+}
+
+class IConnixServerConfiguration {
+    + {abstract} getName(): std::string
+    + {abstract} setName(value: const std::string&): IConnixServerBuilder
+    + {abstract} getTransportType(): ConnixTransportType
+    + {abstract} setTransportType(value: const ConnixTransportType): IConnixServerBuilder
+    + {abstract} getMaxConnections(): std::uint32_t
+    + {abstract} setMaxConnections(value: const std::uint32_t): IConnixServerBuilder
+    + {abstract} getMaxQueConnections(): std::uint32_t
+    + {abstract} setMaxQueConnections(value: const std::uint32_t): IConnixServerBuilder
+    + {abstract} getBufferSize(): std::uint32_t
+    + {abstract} setBufferSize(value: const std::uint32_t): IConnixServerBuilder
+}
+
+class ConnixServerConfiguration {
+    - name: std::string
+    - transportType: ConnixTransportType
+    - maxConnections: std::uint32_t
+    - maxQueConnections: std::uint32_t
+    - bufferSize: std::uint32_t
+    --
+    + ConnixServerConfiguration(\n\tname: const std::string&,\n\ttransportType: const ConnixTransportType,\n\tmaxConnections: const std::uint32_t,\n\tmaxQueConnections: const std::uint32_t,\n\tbufferSize: const std::uint32_t)
+}
+
+IConnixClientConfiguration <|-- ConnixClientConfiguration
+
+IConnixServerConfiguration <|-- ConnixServerConfiguration
+
+@enduml

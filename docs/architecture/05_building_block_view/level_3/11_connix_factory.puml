@@ -1,0 +1,8 @@
+@startuml Level 3 - Connix Factory
+
+class ConnixFactory {
+    + {static} getClientBuilder(): IConnixClientBuilder
+    + {static} createClient(): IConnixClientBuilder
+}
+
+@enduml

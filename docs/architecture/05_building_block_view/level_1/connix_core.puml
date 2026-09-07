@@ -1,0 +1,22 @@
+@startuml Level 1 - Connix Core
+
+actor Integrators
+
+package "ConnixCore" {
+    [InterfaceLayer]
+    [CoreLayer]
+    [InfrastructureLayer]
+
+    InterfaceLayer ..> CoreLayer : instantiates
+    InterfaceLayer <|.. CoreLayer : implements
+
+    CoreLayer ..> InfrastructureLayer : uses
+}
+
+[UserApplication]
+
+Integrators ..> InterfaceLayer : uses & references
+
+InfrastructureLayer ..> UserApplication : data exchanges
+
+@enduml
