@@ -1,5 +1,4 @@
 file(GLOB_RECURSE CONNIX_CORE_PUBLIC_HEADERS
-    ${CMAKE_CURRENT_SOURCE_DIR}/ConnixCore/Communication/**/*.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ConnixCore/Logging/*.hpp
 )
 
