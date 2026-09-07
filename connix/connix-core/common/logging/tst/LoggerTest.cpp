@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "ConnixCore/Logging/Logging.hpp"
+#include "ConnixCore/Common/Logging/Logging.hpp"
 
 using namespace testing;
 
