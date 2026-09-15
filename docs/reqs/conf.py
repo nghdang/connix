@@ -13,9 +13,19 @@ author = 'Hadan'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['sphinx.ext.todo']
+extensions = ['sphinx.ext.todo', 'sphinx_needs']
 
 todo_include_todos = True
+
+needs_types = [
+    dict(directive='sw-req', title='Software Requirement', prefix='SW_REQ_',
+         color='#BFD8D2', style='node'),
+]
+needs_fields = {
+    'desc': dict(schema={'type': 'string'}),
+    'rationale': dict(schema={'type': 'string'}),
+}
+needs_id_regex = '^[A-Za-z0-9_]*$'
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']

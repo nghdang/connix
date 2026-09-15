@@ -1,9 +1,10 @@
-Connix Requirements Specification
-==================================
+Connix Requirements
+===================
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Connix Requirements:
+   :numbered:
 
    01_project_drivers/index
    02_project_constraints/index
