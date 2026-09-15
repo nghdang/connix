@@ -42,11 +42,6 @@ jobs:
           cd docs/reqs
           make clean && make html
 
-      - name: Upload Requirement artifacts
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: docs/reqs/_build/html
-
       - name: Build Architecture HTML
         run: |
           cd docs/arch
