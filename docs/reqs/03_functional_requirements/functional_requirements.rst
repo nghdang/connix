@@ -11,6 +11,10 @@ User Interfaces
     :rationale: Supports both scripting-oriented and visual interaction
         workflows, with the GUI providing feature parity with the CLI.
 
+Fit Criterion: Connix ships a CLI binary invocable from a terminal, and
+a GUI binary invocable without command-line arguments, both exposing
+the same set of capabilities.
+
 Protocol Support
 -----------------
 
@@ -21,6 +25,10 @@ Protocol Support
     :rationale: Eliminates the need for multiple tools across these
         protocols.
 
+Fit Criterion: Connix can complete a send/receive exchange over a TCP
+socket, a UDP socket, and a Unix Domain Socket, using the same
+invocation pattern for each.
+
 Operating Roles
 -----------------
 
@@ -30,16 +38,32 @@ Operating Roles
         DUAL.
     :rationale: Enables flexible deployment without additional tooling.
 
+Fit Criterion: A single Connix binary can be configured to run as
+CLIENT, as SERVER, or as DUAL, selectable through configuration or
+command-line arguments without a separate build.
+
 Connection Management
 -----------------------
 
 .. sw-req:: Connection Management
     :id: SW_REQ_SIMPLE_CONNECTION_FLOW
-    :desc: The Connix SHALL follow a simple connection flow per
-        invocation: connect, send one message, receive a response, then
-        close.
-    :rationale: Keeps the connection model simple; multi-connection
-        switching and stateful sessions are out of scope.
+    :desc: In CLIENT role, the Connix SHALL follow a connect, send one
+        message, receive a response, then close cycle. In SERVER role,
+        the Connix SHALL follow an accept, receive a message, send a
+        response, then close cycle. In ONETIME execution mode, the
+        cycle SHALL run exactly once. In PERIODIC execution mode, or
+        when triggered by an event or rule, the Connix SHALL repeat the
+        entire cycle on each trigger; it SHALL NOT keep a connection
+        open across triggers.
+    :rationale: Keeps the connection model simple and consistent across
+        roles and execution modes; multi-connection switching and
+        stateful sessions spanning multiple cycles are out of scope.
+
+Fit Criterion: In CLIENT role, each configured trigger (a single run in
+ONETIME mode, or each interval/event/rule match in PERIODIC mode)
+produces exactly one connect-send-receive-close cycle, with no
+connection left open afterward. In SERVER role, each trigger produces
+exactly one accept-receive-send-close cycle.
 
 Event Handling
 ---------------
@@ -52,6 +76,10 @@ Event Handling
     :rationale: Enables reactive automation without requiring manual
         intervention.
 
+Fit Criterion: Configuring an action against a message-receipt,
+connection-change, or timer event causes Connix to run that action
+when the event occurs, with no manual step in between.
+
 Rule Engine
 ------------
 
@@ -60,6 +88,10 @@ Rule Engine
     :desc: The Connix SHALL allow users to define rules governing
         message sending and receiving behavior.
     :rationale: Reduces manual intervention and supports automation.
+
+Fit Criterion: A user-defined rule that matches a specific message
+condition causes Connix to perform the configured send or receive
+action, without additional manual input.
 
 Execution Modes
 -----------------
@@ -72,6 +104,11 @@ Execution Modes
     :rationale: Allows both single-run and recurring operations from a
         single tool.
 
+Fit Criterion: Connix run in ONETIME mode performs its configured
+action exactly once and exits. Connix run in PERIODIC mode repeats its
+configured action on the configured interval without an external
+scheduler.
+
 Configuration
 --------------
 
@@ -82,12 +119,22 @@ Configuration
     :rationale: Provides flexibility for defining workflows and
         reproducible setups using common formats.
 
+Fit Criterion: Connix accepts a configuration file written in JSON and
+an equivalent configuration file written in YAML, producing the same
+behavior from both.
+
 Traffic Visibility
 --------------------
 
 .. sw-req:: Traffic Visibility
     :id: SW_REQ_TRAFFIC_OUTPUT
-    :desc: The Connix SHALL print sent and received traffic to the
-        console or to a file.
-    :rationale: Enables users to observe traffic during development and
-        debugging.
+    :desc: The Connix SHALL print sent and received traffic, and its own
+        log output, to the console (stdout) by default. The Connix
+        SHALL allow the user to redirect this output to a file.
+    :rationale: Enables users to observe traffic and diagnostic
+        messages during development and debugging, on the console by
+        default, with file output available for a persistent record.
+
+Fit Criterion: Running Connix without any output configuration prints
+both traffic and log messages to the console. A configuration option
+or command-line flag redirects that same output to a file instead.
