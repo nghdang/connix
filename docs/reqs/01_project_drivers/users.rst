@@ -2,9 +2,10 @@ Users
 =====
 
 Stakeholder interests are covered in the Stakeholders section; this section
-focuses on user characteristics that shape the product's design. Priorities
-are relative to each other and reflect the order in which conflicting
-design decisions should be resolved in favor of a specific user group.
+focuses on user characteristics that shape the product's design. Priority
+is a relative rank, 1 being highest, and sets the order in which
+conflicting design decisions are resolved in favor of a specific user
+group.
 
 .. list-table::
    :header-rows: 1
@@ -23,7 +24,7 @@ design decisions should be resolved in favor of a specific user group.
        with tools such as ``netcat`` and ``socat``.
      - Daily. Uses ``connix`` as a primary tool in development and
        debugging workflows.
-     - High.
+     - 1 (highest). Design conflicts favor this group first.
 
    * - **QA / test engineer**
      - Understands the protocol under test at the application level.
@@ -31,7 +32,16 @@ design decisions should be resolved in favor of a specific user group.
      - Comfortable with scripting and configuration-driven tools.
      - Regular. Uses ``connix`` to automate test scenarios via rules and
        periodic execution.
-     - High.
+     - 2.
+
+   * - **Library integrator**
+     - Understands the protocol they need (TCP, UDP, or Unix Domain
+       Sockets) at the application level.
+     - Experienced C++ developer. Familiar with CMake and Conan v2.
+     - Regular. Uses ``connix-core`` as a dependency in their own project
+       build.
+     - 3. The library API must be stable and well-documented for this
+       user.
 
    * - **Non-technical / visual user**
      - Has basic networking knowledge. Does not need to write shell
@@ -40,14 +50,5 @@ design decisions should be resolved in favor of a specific user group.
        command-line skills.
      - Occasional to regular. Uses ``connix-gui`` for interactive
        exploration of networked services.
-     - High. The GUI must provide feature parity with the CLI, not a
-       reduced subset.
-
-   * - **Library integrator**
-     - Understands the protocol they need (TCP, UDP, or Unix Domain
-       Sockets) at the application level.
-     - Experienced C++ developer. Familiar with CMake and Conan v2.
-     - Regular. Uses ``connix-core`` as a dependency in their own project
-       build.
-     - High. The library API must be stable and well-documented for this
-       user.
+     - 4 (lowest). The GUI must still provide feature parity with the
+       CLI, not a reduced subset.
