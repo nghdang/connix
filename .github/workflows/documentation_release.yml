@@ -14,13 +14,13 @@ jobs:
 
       - name: Build Architecture HTML
         run: |
-          cd docs/architecture
+          cd docs/arch
           make clean && make html
 
       - name: Upload artifacts
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs/architecture/_build/html
+          path: docs/arch/_build/html
 
   deploy:
     needs: build
