@@ -37,15 +37,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build Architecture HTML
+      - name: Build Requirements HTML
         run: |
-          cd docs/architecture
+          cd docs/reqs
           make clean && make html
 
-      - name: Upload artifacts
+      - name: Upload Requirement artifacts
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs/architecture/_build/html
+          path: docs/reqs/_build/html
+
+      - name: Build Architecture HTML
+        run: |
+          cd docs/arch
+          make clean && make html
+
+      - name: Upload Architecture artifacts
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/arch/_build/html
 
   release:
     runs-on: self-hosted
