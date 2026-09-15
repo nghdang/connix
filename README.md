@@ -1,13 +1,12 @@
 # Connix
 
-**Connix** is a programmable, event-driven network interaction engine that unifies multi-protocol communication, automation, and observability in a single tool.
+**Connix** is a programmable, event-driven network interaction engine that unifies multi-protocol communication and automation in a single tool.
 
 ---
 
 ## Features
 
 - Unified interface for:
-  - HTTP/REST
   - TCP / UDP
   - Unix Domain Sockets
 - Lightweight, fast, and composable
