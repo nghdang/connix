@@ -1,6 +1,5 @@
 @startuml Business Context
 
-left to right direction
 
 actor Users
 actor Developers
