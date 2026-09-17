@@ -1,0 +1,33 @@
+@startuml DUAL Concurrent Connection Cycles
+actor Trigger
+
+box "Use Cases"
+participant "Execution scheduler" as scheduler
+participant "CLIENT connection-cycle use case" as client
+participant "SERVER connection-cycle use case" as server
+end box
+
+box "Frameworks & Drivers"
+participant "CLIENT protocol driver" as client_socket
+participant "SERVER protocol driver" as server_socket
+end box
+
+Trigger -> scheduler : DUAL trigger
+par independent CLIENT leg
+  scheduler -> client : start CLIENT cycle
+  client -> client_socket : connect/send/receive
+  client_socket --> client : result or timeout
+  client -> client_socket : close own socket
+else independent SERVER leg
+  scheduler -> server : start SERVER cycle
+  server -> server_socket : accept/receive/send
+  server_socket --> server : result or timeout
+  server -> server_socket : close own socket
+end
+client --> scheduler : CLIENT outcome
+server --> scheduler : SERVER outcome
+note over client,server
+  Legs run concurrently and failure or closure
+  of one leg does not control the other.
+end note
+@enduml

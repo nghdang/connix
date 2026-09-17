@@ -1,0 +1,29 @@
+@startuml Connix Entities - Level 2
+title Entities - Level 2
+
+package "Entities" {
+  [Connection model] as connection
+  [Message and endpoint values] as message
+  [Event and rule model] as rules
+  [Execution policy] as policy
+}
+
+connection --> message
+rules --> message
+policy --> rules
+policy --> connection
+
+note right of connection
+  Protocol-independent role,
+  lifecycle, and socket state.
+end note
+note right of rules
+  Supported events, actions,
+  and cycle scope.
+end note
+note right of policy
+  ONETIME/PERIODIC behavior,
+  trigger eligibility, no overlap.
+end note
+
+@enduml

@@ -1,0 +1,41 @@
+@startuml Connix Frameworks and Drivers - Level 2
+title Frameworks and Drivers - Level 2
+
+package "Frameworks & Drivers" {
+  [Composition root] as composition
+  [TCP driver] as tcp
+  [UDP driver] as udp
+  [Unix Domain Socket driver] as uds
+  [CLI runtime] as cli_runtime
+  [Qt/QML runtime] as qt_runtime
+  [JSON/YAML and file I/O] as file_io
+  [Timer/concurrency runtime] as timer_runtime
+}
+
+composition --> cli_runtime
+composition --> qt_runtime
+composition --> tcp
+composition --> udp
+composition --> uds
+composition --> file_io
+composition --> timer_runtime
+
+note right of composition
+  Selects concrete implementations
+  and keeps process in foreground.
+end note
+note right of tcp
+  Stream transport
+end note
+note right of udp
+  Datagram transport
+end note
+note right of uds
+  Local IPC transport
+end note
+note right of timer_runtime
+  Periodic events and concurrent
+  DUAL legs
+end note
+
+@enduml

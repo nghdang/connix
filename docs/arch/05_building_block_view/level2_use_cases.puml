@@ -1,0 +1,46 @@
+@startuml Connix Use Cases - Level 2
+title Use Cases - Level 2
+
+package "Use Cases" {
+  [Configuration use case] as configuration
+  [Execution scheduler] as scheduler
+  [Connection-cycle use case] as cycle
+  [Event and rule use case] as rules
+  [Observation use case] as observation
+}
+
+interface "Configuration port" as configuration_port
+interface "Protocol port" as protocol_port
+interface "Output port" as output_port
+
+configuration --> configuration_port
+cycle --> protocol_port
+observation --> output_port
+
+configuration --> scheduler
+scheduler --> cycle
+cycle --> rules
+rules --> observation
+
+note right of configuration
+  Applies parser selection,
+  precedence, and invariants.
+end note
+note right of scheduler
+  ONETIME/PERIODIC triggers,
+  no overlap, DUAL isolation.
+end note
+note right of cycle
+  CLIENT, SERVER, and DUAL
+  connection lifecycles/timeouts.
+end note
+note right of rules
+  Event matching and scoped
+  rule actions.
+end note
+note right of observation
+  Sent, received, and diagnostic
+  output events.
+end note
+
+@enduml

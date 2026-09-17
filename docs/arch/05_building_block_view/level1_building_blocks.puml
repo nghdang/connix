@@ -1,0 +1,24 @@
+@startuml Connix Building Blocks - Level 1
+title Connix Clean Architecture - Level 1
+
+package "Frameworks & Drivers" {
+  [Concrete runtime implementations] as frameworks
+}
+
+package "Interface Adapters" {
+  [Controllers, gateways, and presenters] as adapters
+}
+
+package "Use Cases" {
+  [Application workflows] as use_cases
+}
+
+package "Entities" {
+  [Domain models and policies] as entities
+}
+
+frameworks -up0)- adapters
+adapters -up0)- use_cases
+use_cases -up0)- entities
+
+@enduml

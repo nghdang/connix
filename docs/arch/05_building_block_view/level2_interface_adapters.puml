@@ -1,0 +1,41 @@
+@startuml Connix Interface Adapters - Level 2
+title Interface Adapters - Level 2
+
+package "Interface Adapters" {
+  [CLI controller] as cli
+  [GUI controller] as gui
+  [Configuration adapter] as config
+  [Protocol gateway] as protocol
+  [Output presenter] as output
+}
+
+interface "Configuration request" as config_port
+interface "Execution request" as execution_port
+interface "Protocol port" as protocol_port
+interface "Observation port" as observation_port
+
+cli --> config_port
+cli --> execution_port
+gui --> config_port
+gui --> execution_port
+config --> config_port
+protocol --> protocol_port
+output --> observation_port
+
+note right of cli
+  Terminal options and exit outcomes
+end note
+note right of gui
+  Qt/QML commands and view state
+end note
+note right of config
+  JSON/YAML selection and mapping
+end note
+note right of protocol
+  Common client/server translation
+end note
+note right of output
+  Traffic and diagnostic formatting
+end note
+
+@enduml
