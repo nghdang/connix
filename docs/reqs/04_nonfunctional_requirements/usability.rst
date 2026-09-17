@@ -6,14 +6,28 @@ Consistency Between Interfaces
 
 .. sw-req:: Consistency Between Interfaces
     :id: SW_REQ_CLI_GUI_CONSISTENCY
-    :desc: The Connix GUI SHALL produce the same underlying actions and
-        results as the equivalent CLI invocation, for every capability
-        the GUI exposes.
-    :rationale: Users move between the CLI and GUI and must be able to
-        rely on identical behavior regardless of which interface they
-        use.
+    :desc: Connix SHALL provide the interface-consistency behaviors defined by
+        the linked child requirements.
+    :rationale: Keeps action parity and result parity independently testable.
 
-Fit Criterion: For any action available in both interfaces, the same
-input configuration (protocol, role, rule, or execution mode) produces
-the same connection behavior and output content in both the CLI and the
-GUI.
+.. sw-req:: GUI Action Parity
+    :id: SW_REQ_CLI_GUI_CONSISTENCY_ACTIONS
+    :links: SW_REQ_CLI_GUI_CONSISTENCY
+    :desc: Connix SHALL make its GUI perform the same underlying action as an
+        equivalent CLI invocation for each capability exposed by both
+        interfaces, when both use the same input configuration.
+    :rationale: Ensures interface selection does not change the requested action.
+
+Fit Criterion: Tracing equivalent CLI and GUI invocations shows the same
+underlying action for each shared capability.
+
+.. sw-req:: GUI Result Parity
+    :id: SW_REQ_CLI_GUI_CONSISTENCY_RESULTS
+    :links: SW_REQ_CLI_GUI_CONSISTENCY
+    :desc: Connix SHALL make its GUI produce the same result as an equivalent
+        CLI invocation for each capability exposed by both interfaces, for the
+        duration of the corresponding operation.
+    :rationale: Ensures interface selection does not change observable results.
+
+Fit Criterion: Equivalent CLI and GUI invocations produce the same connection
+behavior and output content.
