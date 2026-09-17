@@ -1,0 +1,31 @@
+@startuml Configuration Loading and Validation
+actor User
+
+box "Interface Adapters"
+participant "CLI / GUI adapter" as adapter
+end box
+
+box "Use Cases"
+participant "Configuration use case" as config
+participant "Execution scheduler" as scheduler
+end box
+
+box "Frameworks & Drivers"
+participant "JSON/YAML parser" as parser
+end box
+
+User -> adapter : provide file or explicit format
+adapter -> config : configuration request
+config -> config : select parser by extension/format
+config -> parser : parse selected format
+alt parse succeeds
+  parser --> config : input model
+  config -> config : apply CLI precedence and validate
+  config -> scheduler : validated execution request
+  scheduler --> User : start configured run
+else parse fails
+  parser --> config : file and reason
+  config --> User : report parse error
+  config --> User : exit non-zero; no action
+end
+@enduml

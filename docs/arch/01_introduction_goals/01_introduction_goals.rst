@@ -1,59 +1,92 @@
-Introduction & Goals
-####################
+Introduction and Goals
+######################
 
-Connix is a tool that can help users simulate a network node. It allows users to send and receive
-data over TCP, UDP and Unix Domain Socket. Beside that, It also supports REST API communication.
+Connix is a unified, event-driven networking utility for developers and QA
+engineers who need repeatable interaction with networked systems. It supports
+TCP, UDP, and Unix Domain Sockets through one configuration and automation
+model, reducing the need to switch between protocol-specific tools.
 
-Connix also provide core library for developers who want to integrate it to their products. It is
-totally free under MIT license.
-
+The product consists of a command-line application (``connix``), an
+embeddable C++ static library (``connix-core``), and an optional Qt/QML GUI
+(``connix-gui``). The target platforms are Windows 10 64-bit and Linux
+distributions providing glibc 2.31 or later.
 
 Requirements Overview
 =====================
 
-Connix shall be release in three binaries:
+Connix provides:
 
-* `connix`: The standalone application run on command line interface.
-* `connix-core`: The C++ static library for integration.
-* `connix-gui`: The Qt/QML application which supports graphic user interface.
+* CLIENT, SERVER, and DUAL operating roles.
+* ONETIME and PERIODIC execution modes.
+* Event-driven, rule-based actions scoped to a connection cycle.
+* JSON and YAML configuration with deterministic parser selection.
+* Traffic and diagnostic output to stdout or a configured file.
+* A common protocol abstraction that permits future protocols without changing
+  the core orchestration engine.
+* Equivalent CLI and GUI behavior when the optional GUI is enabled.
 
-Connix is very flexible. Users can run it command by command, or declare all running steps in a rule
-file. Additionally, Connix also supports daemon mode for traffic monitoring and UI for users who are
-not familiar with terminal.
+Connix runs in the foreground. It does not provide a built-in daemon mode,
+detach option, or PID-file management. Background supervision is delegated to
+operating-system tooling.
 
 Quality Goals
 =============
 
-.. list-table::
+.. list-table:: Quality Goals
    :header-rows: 1
+   :widths: 12 28 60
 
    * - Priority
-     - Quality Goal
-     - Scenario
+     - Goal
+     - Measurable scenario
    * - 1
-     - Operability
-     - Non-tech users can easily use the tool.
+     - Deterministic operation
+     - Invalid configuration fails before any configured action; ONETIME runs
+       once and PERIODIC runs at configured eligible intervals.
    * - 2
-     - Compatibility
-     - The core library must be easily integrated to all modern C++ product.
+     - Protocol extensibility
+     - A new protocol can implement the common client/server interface without
+       modifying the core orchestration engine.
    * - 3
-     - Maintainability
-     - The tool should be extendable for more protocol.
+     - Resource efficiency
+     - PERIODIC idle CPU averages below 1%; 24-hour RSS growth is no more than
+       5 MB under the specified reference scenario.
+   * - 4
+     - Interface consistency
+     - Equivalent CLI and GUI invocations perform the same action and produce
+       the same result.
+   * - 5
+     - Integration usability
+     - A library integrator can consume ``connix-core`` through CMake and Conan
+       v2 using its documented public API.
 
-Stakeholder
-===========
+Stakeholders and Users
+======================
 
-.. list-table::
+.. list-table:: Stakeholders and Users
    :header-rows: 1
+   :widths: 24 36 40
 
-   * - Role
-     - Description
-     - Expectation
-   * - Developers
-     - Users who want to integrate `connix-core` to their products.
-     - The tool provides useful APIs, and does not depend on any specific C++ version.
-   * - Non-tech users
-     - Users who want to verify network traffic of their products.
-     - The tool provides user friendly interface and does not require deep knowledge of any specific
-       technology.
+   * - Stakeholder or user
+     - Interest
+     - Success condition
+   * - Project author / maintainer
+     - Keeps the project maintainable as a single-maintainer open-source
+       project.
+     - Architecture and protocol boundaries permit focused changes.
+   * - Network / systems developer
+     - Uses CLI workflows for daily protocol debugging.
+     - One consistent tool covers TCP, UDP, and UDS interaction.
+   * - QA / test engineer
+     - Automates repeatable protocol scenarios.
+     - Rules and periodic execution produce predictable cycles.
+   * - Library integrator
+     - Embeds ``connix-core`` in a C++ application.
+     - Public API and CMake/Conan v2 integration are stable.
+   * - Non-technical / visual user
+     - Uses the optional GUI without scripting.
+     - GUI capabilities and results match equivalent CLI behavior.
 
+Scope and priorities are derived from ``docs/reqs``. Security hardening and GUI
+look-and-feel requirements are explicitly deferred in the current requirements
+baseline.

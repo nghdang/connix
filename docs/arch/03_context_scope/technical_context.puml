@@ -1,6 +1,5 @@
 @startuml Technical Context
 
-left to right direction
 
 rectangle "Connix CLI" {
     actor Developers

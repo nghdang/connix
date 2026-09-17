@@ -1,0 +1,21 @@
+@startuml Connix System Context
+title Connix System Context
+
+actor "Network / systems\ndeveloper" as developer
+actor "QA / test\nengineer" as qa
+actor "Visual user" as visual
+actor "Library integrator" as integrator
+component "Connix" as connix
+component "Network / IPC peer" as peer
+component "Configuration source\n(JSON/YAML or explicit format)" as config
+component "Output destination\n(stdout or file)" as output
+
+ developer --> connix : CLI commands
+ qa --> connix : scripted runs
+ visual --> connix : GUI actions (optional)
+ integrator --> connix : connix-core API
+ config --> connix : execution configuration
+ connix --> peer : TCP / UDP / UDS traffic
+ connix --> output : traffic and diagnostics
+
+@enduml
