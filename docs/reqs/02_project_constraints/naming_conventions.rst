@@ -81,8 +81,10 @@ Terms and Definitions
      - A cross-platform application framework written in C++. Used
        exclusively for the GUI component ``connix-gui``.
    * - **Rule**
-     - A user-defined condition and action pair that governs how Connix
-       sends or reacts to received messages.
+     - A user-defined pairing of one triggering event (message receipt,
+       connection-state change, or timer — see Event-driven execution)
+       with one send or receive action, scoped to a single connection
+       cycle.
    * - **TCP** (Transmission Control Protocol)
      - A connection-oriented transport-layer protocol providing
        reliable, ordered, and error-checked delivery of a byte stream
