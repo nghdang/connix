@@ -48,4 +48,6 @@ if(BUILD_TESTS)
     add_dependencies(connix-core-unit-tests-run connix-core-unit-tests-build)
 endif()
 
-add_subdirectory(common)
+add_subdirectory("domain")
+add_subdirectory("application")
+add_subdirectory("infrastructure")
