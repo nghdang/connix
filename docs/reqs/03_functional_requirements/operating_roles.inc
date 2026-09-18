@@ -2,34 +2,19 @@ Operating Roles
 -----------------
 
 .. sw-req:: Operating Roles
-    :id: SW_REQ_WORKING_ROLES
-    :desc: Connix SHALL provide the CLIENT, SERVER, and DUAL role behaviors
-        defined by the linked child requirements.
-    :rationale: Enables flexible deployment without additional tooling.
+    :id: [$SW_REQ OPERATING_ROLES]
+    :desc: Connix SHALL support CLIENT, SERVER, and HYBRID operating roles.
 
-.. sw-req:: CLIENT Role
-    :id: SW_REQ_ROLE_CLIENT
-    :links: SW_REQ_WORKING_ROLES
-    :desc: Connix SHALL operate as a CLIENT when the CLIENT role is selected
-        by configuration or command-line option, for the configured run.
-    :rationale: Enables outbound connection initiation.
+.. sw-req:: Operating Roles Client
+    :id: [$SW_REQ OPERATING_ROLES_CLIENT]
+    :desc: Connix SHALL initiate outbound connections when operating in CLIENT
+           role.
 
-Fit Criterion: Selecting CLIENT starts CLIENT behavior without a separate build.
+.. sw-req:: Operating Roles Server
+    :id: [$SW_REQ OPERATING_ROLES_SERVER]
+    :desc: Connix SHALL accept inbound connections when operating in SERVER role.
 
-.. sw-req:: SERVER Role
-    :id: SW_REQ_ROLE_SERVER
-    :links: SW_REQ_WORKING_ROLES
-    :desc: Connix SHALL operate as a SERVER when the SERVER role is selected
-        by configuration or command-line option, for the configured run.
-    :rationale: Enables inbound connection acceptance.
-
-Fit Criterion: Selecting SERVER starts SERVER behavior without a separate build.
-
-.. sw-req:: DUAL Role
-    :id: SW_REQ_ROLE_DUAL
-    :links: SW_REQ_WORKING_ROLES
-    :desc: Connix SHALL operate as DUAL when the DUAL role is selected by
-        configuration or command-line option, for the configured run.
-    :rationale: Enables simultaneous client and server operation.
-
-Fit Criterion: Selecting DUAL starts both DUAL legs without a separate build.
+.. sw-req:: Operating Roles Hybrid
+    :id: [$SW_REQ OPERATING_ROLES_HYBRID]
+    :desc: Connix SHALL initiate outbound connections and accept inbound
+           connections when operating in HYBRID role.
