@@ -1,0 +1,416 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://connix.bosch.com/schema/connix-config.schema.json",
+    "title": "Connix Configuration",
+    "description": "Configuration schema for Connix nodes, events, timers, filesystems, and actions.",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "name",
+        "nodes",
+        "timers",
+        "filesystems",
+        "actions"
+    ],
+    "properties": {
+        "name": {
+            "type": "string",
+            "minLength": 1
+        },
+        "nodes": {
+            "$ref": "#/$defs/namedNodes"
+        },
+        "timers": {
+            "$ref": "#/$defs/namedTimers"
+        },
+        "filesystems": {
+            "$ref": "#/$defs/namedFilesystems"
+        },
+        "actions": {
+            "$ref": "#/$defs/namedActions"
+        }
+    },
+    "$defs": {
+        "nameReference": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Za-z_][A-Za-z0-9_.-]*$"
+        },
+        "hexBytes": {
+            "type": "string",
+            "pattern": "^(?:[0-9A-Fa-f]{2})(?:[ ]+[0-9A-Fa-f]{2})*$"
+        },
+        "positiveInteger": {
+            "type": "integer",
+            "minimum": 1
+        },
+        "nonNegativeInteger": {
+            "type": "integer",
+            "minimum": 0
+        },
+        "port": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 65535
+        },
+        "transport": {
+            "type": "string",
+            "enum": [
+                "TCP",
+                "UDP",
+                "UDS_STREAM",
+                "UDS_DATAGRAM"
+            ]
+        },
+        "endpoint": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["address"],
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "port": {
+                    "$ref": "#/$defs/port"
+                }
+            }
+        },
+        "fixedSizeFrame": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "size"],
+            "properties": {
+                "type": {
+                    "const": "FIXED_SIZE"
+                },
+                "size": {
+                    "$ref": "#/$defs/positiveInteger"
+                }
+            }
+        },
+        "lengthPrefixFrame": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "type",
+                "lengthOffset",
+                "lengthSize",
+                "byteOrder"
+            ],
+            "properties": {
+                "type": {
+                    "const": "LENGTH_PREFIX"
+                },
+                "lengthOffset": {
+                    "$ref": "#/$defs/nonNegativeInteger"
+                },
+                "lengthSize": {
+                    "$ref": "#/$defs/positiveInteger"
+                },
+                "byteOrder": {
+                    "type": "string",
+                    "enum": [
+                        "BIG_ENDIAN",
+                        "LITTLE_ENDIAN"
+                    ]
+                }
+            }
+        },
+        "frame": {
+            "oneOf": [
+                {
+                    "$ref": "#/$defs/fixedSizeFrame"
+                },
+                {
+                    "$ref": "#/$defs/lengthPrefixFrame"
+                }
+            ]
+        },
+        "eventRule": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "patterns",
+                "offset",
+                "actions"
+            ],
+            "properties": {
+                "patterns": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/$defs/hexBytes"
+                    }
+                },
+                "offset": {
+                    "$ref": "#/$defs/nonNegativeInteger"
+                },
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/nameReference"
+                    }
+                }
+            }
+        },
+        "node": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "type",
+                "transport"
+            ],
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "USER",
+                        "SERVER",
+                        "CLIENT"
+                    ]
+                },
+                "transport": {
+                    "$ref": "#/$defs/transport"
+                },
+                "endpoint": {
+                    "$ref": "#/$defs/endpoint"
+                },
+                "frame": {
+                    "$ref": "#/$defs/frame"
+                },
+                "maxConnections": {
+                    "$ref": "#/$defs/positiveInteger"
+                },
+                "bufferSize": {
+                    "$ref": "#/$defs/positiveInteger"
+                },
+                "connectionTimeout": {
+                    "$ref": "#/$defs/nonNegativeInteger"
+                },
+                "idleTimeout": {
+                    "$ref": "#/$defs/nonNegativeInteger"
+                },
+                "onReceived": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/eventRule"
+                    }
+                }
+            },
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "transport": {
+                                "enum": ["TCP", "UDP"]
+                            }
+                        }
+                    },
+                    "then": {
+                        "required": ["endpoint"],
+                        "properties": {
+                            "endpoint": {
+                                "required": ["address", "port"]
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "transport": {
+                                "enum": ["UDS_STREAM", "UDS_DATAGRAM"]
+                            }
+                        }
+                    },
+                    "then": {
+                        "required": ["endpoint"],
+                        "properties": {
+                            "endpoint": {
+                                "not": {
+                                    "required": ["port"]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "transport": {
+                                "enum": ["TCP", "UDS_STREAM"]
+                            }
+                        }
+                    },
+                    "then": {
+                        "required": ["frame"]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "transport": {
+                                "enum": ["UDP", "UDS_DATAGRAM"]
+                            }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "frame": false
+                        }
+                    }
+                }
+            ]
+        },
+        "timer": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "interval",
+                "singleShot",
+                "onTimeout"
+            ],
+            "properties": {
+                "interval": {
+                    "$ref": "#/$defs/positiveInteger"
+                },
+                "singleShot": {
+                    "type": "boolean"
+                },
+                "onTimeout": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/nameReference"
+                    }
+                }
+            }
+        },
+        "filesystem": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "path",
+                "debounce",
+                "onModified"
+            ],
+            "properties": {
+                "path": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "debounce": {
+                    "$ref": "#/$defs/nonNegativeInteger"
+                },
+                "onModified": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/nameReference"
+                    }
+                }
+            }
+        },
+        "respondAction": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "type",
+                "bytes"
+            ],
+            "properties": {
+                "type": {
+                    "const": "RESPOND"
+                },
+                "bytes": {
+                    "$ref": "#/$defs/hexBytes"
+                }
+            }
+        },
+        "sendAction": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "type",
+                "sourceNode",
+                "targetNode"
+            ],
+            "properties": {
+                "type": {
+                    "const": "SEND"
+                },
+                "sourceNode": {
+                    "$ref": "#/$defs/nameReference"
+                },
+                "targetNode": {
+                    "$ref": "#/$defs/nameReference"
+                },
+                "executionDelay": {
+                    "$ref": "#/$defs/nonNegativeInteger"
+                },
+                "executionTimeout": {
+                    "$ref": "#/$defs/nonNegativeInteger"
+                },
+                "maxPending": {
+                    "$ref": "#/$defs/positiveInteger"
+                },
+                "bytes": {
+                    "$ref": "#/$defs/hexBytes"
+                },
+                "file": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "oneOf": [
+                {
+                    "required": ["bytes"],
+                    "not": {
+                        "required": ["file"]
+                    }
+                },
+                {
+                    "required": ["file"],
+                    "not": {
+                        "required": ["bytes"]
+                    }
+                }
+            ]
+        },
+        "action": {
+            "oneOf": [
+                {
+                    "$ref": "#/$defs/respondAction"
+                },
+                {
+                    "$ref": "#/$defs/sendAction"
+                }
+            ]
+        },
+        "namedNodes": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": {
+                "$ref": "#/$defs/node"
+            }
+        },
+        "namedTimers": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/$defs/timer"
+            }
+        },
+        "namedFilesystems": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/$defs/filesystem"
+            }
+        },
+        "namedActions": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": {
+                "$ref": "#/$defs/action"
+            }
+        }
+    }
+}
