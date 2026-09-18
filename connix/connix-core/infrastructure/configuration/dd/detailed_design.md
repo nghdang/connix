@@ -59,7 +59,11 @@ This avoids global singletons, making the module extremely modular and easily te
 
 ## 4. Static View (Component Structure)
 
-The static relationship of modules and interfaces within the Configuration component is detailed in `static_view.puml`. Instead of mapping folders directly, it represents the component's logical module architecture:
+The static relationship of modules and interfaces within the Configuration component is detailed in `static_view.puml`. The detailed class contracts are separated cleanly into two UML diagrams:
+- **Interface View (`interface_view.puml`)**: Details the core object behavior, interfaces, implementations, and dependency injections.
+- **Data Structures (`data_structures.puml`)**: Details the strictly immutable domain configuration models, nested structs, collections, and enums.
+
+Instead of mapping folders directly, the architecture represents the component's logical module structure:
 
 1. **ConfigurationProvider**: Exposes the client-facing `IConfigurationProvider` interface implemented by `ConfigurationProvider`.
 2. **FileReader**: Decouples the configuration module from filesystem operations with the `IFileReader` interface and concrete `FileReader` implementation.
@@ -82,3 +86,14 @@ The typical load process flows as follows:
    - `IJsonParser` converts the JSON keys to strongly-typed nested structures (`ConnixConfig`).
 6. **`ConfigurationProvider`** stores the successful `ConnixConfig` inside `activeConfig`.
 7. **Client** retrieves configuration via `IConfigurationProvider::getConfig()`.
+
+---
+
+## 6. Data Immutability
+
+To guarantee thread safety and prevent unintended runtime configuration mutations, the parsed configuration data structures (`ConnixConfig` and all nested structs/objects) are designed to be **Strictly Immutable**:
+
+- **Encapsulated Member Variables**: All internal fields within the configuration objects (e.g., `address`, `port`, `onReceived`) are declared `private`.
+- **Read-Only Public Interface**: Fields are accessible exclusively through `public const` getter methods (e.g., `getAddress() const`, `getNodes() const`).
+- **Parameterized Construction**: Objects can only be constructed and populated at the time of parsing through explicit parameterized constructors. No setter methods are provided.
+- **Const References**: The `IConfigurationProvider` returns the root configuration strictly via `const ConnixConfig&`, ensuring callers cannot mutate the runtime system state.

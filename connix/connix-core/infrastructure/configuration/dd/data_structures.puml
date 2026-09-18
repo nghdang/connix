@@ -1,0 +1,153 @@
+@startuml Configuration Component - Data Structures
+
+namespace ConnixCore::Infrastructure::Configuration {
+
+    enum FrameType {
+        FIXED_SIZE
+        LENGTH_PREFIX
+    }
+
+    enum ByteOrder {
+        BIG_ENDIAN
+        LITTLE_ENDIAN
+    }
+
+    enum NodeTransport {
+        TCP
+        UDP
+        UDS_STREAM
+        UDS_DATAGRAM
+    }
+
+    enum NodeType {
+        USER
+        SERVER
+        CLIENT
+    }
+
+    enum ActionType {
+        RESPOND
+        SEND
+    }
+
+    class Endpoint {
+        - address: string
+        - port: optional<uint16_t>
+        + getAddress(): string const
+        + getPort(): optional<uint16_t> const
+    }
+
+    class FrameConfig {
+        - type: FrameType
+        - size: optional<uint32_t>
+        - lengthOffset: optional<uint32_t>
+        - lengthSize: optional<uint32_t>
+        - byteOrder: optional<ByteOrder>
+        + getType(): FrameType const
+        + getSize(): optional<uint32_t> const
+        + getLengthOffset(): optional<uint32_t> const
+        + getLengthSize(): optional<uint32_t> const
+        + getByteOrder(): optional<ByteOrder> const
+    }
+
+    class EventRule {
+        - patterns: vector<string>
+        - offset: uint32_t
+        - actions: vector<string>
+        + getPatterns(): const vector<string>& const
+        + getOffset(): uint32_t const
+        + getActions(): const vector<string>& const
+    }
+
+    class NodeConfig {
+        - type: NodeType
+        - transport: NodeTransport
+        - endpoint: optional<Endpoint>
+        - frame: optional<FrameConfig>
+        - maxConnections: optional<uint32_t>
+        - bufferSize: optional<uint32_t>
+        - connectionTimeout: optional<uint32_t>
+        - idleTimeout: optional<uint32_t>
+        - onReceived: vector<EventRule>
+        + getType(): NodeType const
+        + getTransport(): NodeTransport const
+        + getEndpoint(): const optional<Endpoint>& const
+        + getFrame(): const optional<FrameConfig>& const
+        + getMaxConnections(): optional<uint32_t> const
+        + getBufferSize(): optional<uint32_t> const
+        + getConnectionTimeout(): optional<uint32_t> const
+        + getIdleTimeout(): optional<uint32_t> const
+        + getOnReceived(): const vector<EventRule>& const
+    }
+
+    class TimerConfig {
+        - interval: uint32_t
+        - singleShot: bool
+        - onTimeout: vector<string>
+        + getInterval(): uint32_t const
+        + isSingleShot(): bool const
+        + getOnTimeout(): const vector<string>& const
+    }
+
+    class FilesystemConfig {
+        - path: string
+        - debounce: uint32_t
+        - onModified: vector<string>
+        + getPath(): string const
+        + getDebounce(): uint32_t const
+        + getOnModified(): const vector<string>& const
+    }
+
+    class ActionConfig {
+        - type: ActionType
+        - bytes: optional<string>
+        - sourceNode: optional<string>
+        - targetNode: optional<string>
+        - executionDelay: optional<uint32_t>
+        - executionTimeout: optional<uint32_t>
+        - maxPending: optional<uint32_t>
+        - file: optional<string>
+        + getType(): ActionType const
+        + getBytes(): const optional<string>& const
+        + getSourceNode(): const optional<string>& const
+        + getTargetNode(): const optional<string>& const
+        + getExecutionDelay(): optional<uint32_t> const
+        + getExecutionTimeout(): optional<uint32_t> const
+        + getMaxPending(): optional<uint32_t> const
+        + getFile(): const optional<string>& const
+    }
+
+    class ConnixConfig {
+        - name: string
+        - nodes: unordered_map<string, NodeConfig>
+        - timers: unordered_map<string, TimerConfig>
+        - filesystems: unordered_map<string, FilesystemConfig>
+        - actions: unordered_map<string, ActionConfig>
+        + getName(): string const
+        + getNodes(): const unordered_map<string, NodeConfig>& const
+        + getTimers(): const unordered_map<string, TimerConfig>& const
+        + getFilesystems(): const unordered_map<string, FilesystemConfig>& const
+        + getActions(): const unordered_map<string, ActionConfig>& const
+    }
+
+    ' Relationships
+    ConnixConfig *-- NodeConfig : aggregates
+    ConnixConfig *-- TimerConfig : aggregates
+    ConnixConfig *-- FilesystemConfig : aggregates
+    ConnixConfig *-- ActionConfig : aggregates
+
+    NodeConfig *-- Endpoint : contains
+    NodeConfig *-- FrameConfig : contains
+    NodeConfig *-- EventRule : contains
+
+    FrameConfig --> FrameType : configures
+    FrameConfig --> ByteOrder : defines
+
+    NodeConfig --> NodeType : categorizes
+    NodeConfig --> NodeTransport : uses
+
+    ActionConfig --> ActionType : defines
+
+}
+
+@enduml

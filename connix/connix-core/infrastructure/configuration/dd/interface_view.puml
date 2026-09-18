@@ -1,0 +1,54 @@
+@startuml Configuration Component - Interface View
+
+namespace ConnixCore::Infrastructure::Configuration {
+
+    class ConnixConfig <<struct>>
+
+    interface IConfigurationProvider {
+        + {abstract} load(configPath: string, schemaPath: string): void
+        + {abstract} getConfig(): const ConnixConfig&
+    }
+
+    interface IFileReader {
+        + {abstract} readAll(filePath: string): string
+    }
+
+    interface IJsonValidator {
+        + {abstract} validate(jsonStr: string, schemaStr: string): void
+    }
+
+    interface IJsonParser {
+        + {abstract} parse(jsonStr: string): ConnixConfig
+    }
+
+    class ConfigurationProvider {
+        - fileReader: const IFileReader&
+        - jsonValidator: const IJsonValidator&
+        - jsonParser: const IJsonParser&
+        - activeConfig: ConnixConfig
+    }
+
+    class FileReader {
+    }
+
+    class JsonValidator {
+    }
+
+    class JsonParser {
+    }
+
+    ' Interface Inheritances
+    IConfigurationProvider <|.. ConfigurationProvider
+    IFileReader <|.. FileReader
+    IJsonValidator <|.. JsonValidator
+    IJsonParser <|.. JsonParser
+
+    ' Associations / Relationships
+    ConfigurationProvider o-- IFileReader : uses
+    ConfigurationProvider o-- IJsonValidator : uses
+    ConfigurationProvider o-- IJsonParser : uses
+    ConfigurationProvider *-- ConnixConfig : stores
+
+}
+
+@enduml
