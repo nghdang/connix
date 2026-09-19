@@ -5,7 +5,7 @@
 #include <sstream>
 
 namespace ConnixCore {
-namespace Common {
+namespace Infrastructure {
 namespace Logging {
 
 class Logger
@@ -43,5 +43,5 @@ private:
 };
 
 } // namespace Logging
-} // namespace Common
+} // namespace Infrastructure
 } // namespace ConnixCore
