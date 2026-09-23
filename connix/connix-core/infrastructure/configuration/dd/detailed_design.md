@@ -48,3 +48,10 @@ collections, and enums are modeled in
 ---
 
 ## 5. Runtime View
+
+The runtime interactions between Configuration modules during configuration
+loading, validation, and retrieval are modeled in
+
+```plantuml
+!include runtime_view.puml
+```

@@ -1,0 +1,55 @@
+@startuml Configuration Component - Runtime View
+
+participant Client
+
+box "Configuration"
+    participant ConfigurationProvider
+    participant FileReader
+    participant JsonValidator
+    participant JsonParser
+end box
+
+== Use Case: Load Configuration ==
+
+Client -> ConfigurationProvider : load(configPath, schemaPath)
+activate ConfigurationProvider
+
+ConfigurationProvider -> FileReader : readAll(configPath)
+activate FileReader
+FileReader --> ConfigurationProvider : jsonStr
+deactivate FileReader
+
+ConfigurationProvider -> FileReader : readAll(schemaPath)
+activate FileReader
+FileReader --> ConfigurationProvider : schemaStr
+deactivate FileReader
+
+ConfigurationProvider -> JsonValidator : validate(jsonStr, schemaStr)
+activate JsonValidator
+
+alt validation succeeds
+    JsonValidator --> ConfigurationProvider
+    deactivate JsonValidator
+
+    ConfigurationProvider -> JsonParser : parse(jsonStr)
+    activate JsonParser
+    JsonParser --> ConfigurationProvider : connixConfig
+    deactivate JsonParser
+
+    ConfigurationProvider --> Client
+else validation fails
+    JsonValidator --> ConfigurationProvider : error
+    deactivate JsonValidator
+    ConfigurationProvider --> Client : error
+end
+
+deactivate ConfigurationProvider
+
+== Use Case: Get Configuration ==
+
+Client -> ConfigurationProvider : getConfig()
+activate ConfigurationProvider
+ConfigurationProvider --> Client : activeConfig
+deactivate ConfigurationProvider
+
+@enduml
