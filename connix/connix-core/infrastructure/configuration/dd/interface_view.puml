@@ -2,12 +2,26 @@
 
 namespace ConnixCore::Infrastructure::Configuration {
 
-    class ConnixConfig <<struct>>
+package "Public" {
 
     interface IConfigurationProvider {
         + {abstract} load(configPath: string, schemaPath: string): void
-        + {abstract} getConfig(): const ConnixConfig&
+        + {abstract} getNodes(): const unordered_map<string, NodeConfig>& const
+        + {abstract} getTimers(): const unordered_map<string, TimerConfig>& const
+        + {abstract} getFilesystems(): const unordered_map<string, FilesystemConfig>& const
+        + {abstract} getActions(): const unordered_map<string, ActionConfig>& const
     }
+
+    class ConfigurationProvider {
+        - fileReader: const IFileReader&
+        - jsonValidator: const IJsonValidator&
+        - jsonParser: const IJsonParser&
+        - activeConfig: ConnixConfig
+    }
+
+}
+
+package "Internal" {
 
     interface IFileReader {
         + {abstract} readAll(filePath: string): string
@@ -21,21 +35,15 @@ namespace ConnixCore::Infrastructure::Configuration {
         + {abstract} parse(jsonStr: string): ConnixConfig
     }
 
-    class ConfigurationProvider {
-        - fileReader: const IFileReader&
-        - jsonValidator: const IJsonValidator&
-        - jsonParser: const IJsonParser&
-        - activeConfig: ConnixConfig
-    }
+    class ConnixConfig <<struct>>
 
-    class FileReader {
-    }
+    class FileReader
 
-    class JsonValidator {
-    }
+    class JsonValidator
 
-    class JsonParser {
-    }
+    class JsonParser
+
+}
 
     ' Interface Inheritances
     IConfigurationProvider <|.. ConfigurationProvider

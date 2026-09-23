@@ -47,9 +47,24 @@ deactivate ConfigurationProvider
 
 == Use Case: Get Configuration ==
 
-Client -> ConfigurationProvider : getConfig()
+Client -> ConfigurationProvider : getNodes()
 activate ConfigurationProvider
-ConfigurationProvider --> Client : activeConfig
+ConfigurationProvider --> Client
+deactivate ConfigurationProvider
+
+Client -> ConfigurationProvider : getTimers()
+activate ConfigurationProvider
+ConfigurationProvider --> Client
+deactivate ConfigurationProvider
+
+Client -> ConfigurationProvider : getFilesystems()
+activate ConfigurationProvider
+ConfigurationProvider --> Client
+deactivate ConfigurationProvider
+
+Client -> ConfigurationProvider : getActions()
+activate ConfigurationProvider
+ConfigurationProvider --> Client
 deactivate ConfigurationProvider
 
 @enduml

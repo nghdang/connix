@@ -2,6 +2,8 @@
 
 namespace ConnixCore::Infrastructure::Configuration {
 
+package "Public" {
+
     enum FrameType {
         FIXED_SIZE
         LENGTH_PREFIX
@@ -116,6 +118,9 @@ namespace ConnixCore::Infrastructure::Configuration {
         + getMaxPending(): optional<uint32_t> const
         + getFile(): const optional<string>& const
     }
+}
+
+package "Internal" {
 
     class ConnixConfig {
         - name: string
@@ -129,6 +134,8 @@ namespace ConnixCore::Infrastructure::Configuration {
         + getFilesystems(): const unordered_map<string, FilesystemConfig>& const
         + getActions(): const unordered_map<string, ActionConfig>& const
     }
+
+}
 
     ' Relationships
     ConnixConfig *-- NodeConfig : aggregates
