@@ -2,6 +2,7 @@
 .venv
 _build
 CMakeUserPresets.json
+.ai
 
 # Prerequisites
 *.d

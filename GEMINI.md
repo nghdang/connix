@@ -6,7 +6,7 @@ This file provides foundational mandates, technical instructions, architectural 
 
 ## 1. Project Overview
 
-**Connix** is a programmable, event-driven network interaction engine designed to unify multi-protocol communication (including HTTP/REST, TCP/UDP, and Unix Domain Sockets) in a single high-performance tool. 
+**Connix** is a programmable, event-driven network interaction engine designed to unify multi-protocol communication (including HTTP/REST, TCP/UDP, and Unix Domain Sockets) in a single high-performance tool.
 
 ### Key Technologies
 *   **Programming Language:** C++17 (standardized in the build configuration, though ready for C++20 features)
@@ -136,6 +136,115 @@ The repository provides automated bash utility scripts in the `scripts/` directo
 
 ## 4. Operational Instructions for LLMs
 
-*   **Strict Precedence:** The configurations defined in this `GEMINI.md` file must always take absolute priority.
-*   **Do Not Suppress Warnings:** Never bypass compiler warnings or linter exceptions. Ensure all new logic passes `./scripts/run_clang_format.sh` and `./scripts/run_clang_tidy.sh`.
-*   **Verify Changes:** Every code modification MUST be thoroughly verified. Always execute `./scripts/build_application_native.sh` followed by `./scripts/run_unit_tests.sh` to ensure the integrity of the compilation and that all tests remain green.
+### Instruction Precedence
+
+The instructions in this file apply to all work in this repository.
+
+When instructions conflict:
+
+1. Follow the more specific instruction applicable to the current task.
+2. Preserve existing project architecture and established conventions.
+3. If the conflict materially affects the implementation, stop and ask for
+   clarification before making changes.
+
+### Engineering Principles
+
+* Follow SOLID principles and Clean Code practices.
+* Use established design patterns when they provide a clear benefit.
+  Do not introduce patterns solely for the sake of using them.
+* Prefer simple, maintainable solutions over unnecessary abstraction.
+* Make the smallest change necessary to satisfy the task.
+* Do not modify unrelated files, behavior, or architecture.
+* Preserve the requested implementation approach unless it is incompatible
+  with the existing design or requirements.
+* Do not invent requirements, behavior, APIs, interfaces, or data structures
+  that are not supported by the task or existing design.
+* Inspect the relevant existing implementation and documentation before
+  modifying it.
+
+### Clarification
+
+Before making changes, clarify any ambiguity that could materially affect:
+
+* behavior or requirements;
+* architecture or design;
+* public APIs or interfaces;
+* data structures;
+* file or module ownership;
+* scope of the requested change.
+
+Do not block on trivial ambiguity. For minor assumptions, state the assumption
+and proceed when the intended behavior is clear.
+
+### Documentation
+
+* Keep documentation synchronized with the implementation.
+* When modifying an API, class, function, or component whose documentation or
+  docstring no longer matches the implementation, update it accordingly.
+* Do not rewrite unrelated documentation.
+* Treat existing architecture and detailed-design documentation as design
+  constraints unless the task explicitly requires changing the design.
+
+### Task Tracking
+
+For implementation, refactoring, debugging, configuration, or documentation
+tasks that constitute a meaningful change:
+
+* Create or update a corresponding Markdown summary under `.ai/tasks/`.
+* Create the `.ai/tasks/` directory if it does not exist.
+* The task summary should record:
+
+  * objective;
+  * scope;
+  * important decisions or assumptions;
+  * changes made;
+  * validation performed.
+
+Do not create task files for trivial questions or purely conversational
+requests.
+
+### Code Formatting and Static Analysis
+
+* Never suppress compiler warnings or linter diagnostics merely to make a
+  change pass.
+* All modified C++ code must comply with the repository's `.clang-format`
+  configuration.
+* All modified C++ code must satisfy the repository's `.clang-tidy`
+  configuration.
+* Use the repository-provided formatting and linting scripts when validating
+  code changes.
+
+### Validation
+
+For every code modification, perform the repository's required verification:
+
+```bash
+./scripts/build_application_native.sh
+./scripts/run_unit_tests.sh
+```
+
+Also run the relevant formatting and static-analysis checks:
+
+```bash
+./scripts/run_clang_format.sh
+./scripts/run_clang_tidy.sh
+```
+
+If a required validation step cannot be executed, do not claim that the
+change is fully verified. Report the skipped step and the reason.
+
+For documentation-only changes, run validation appropriate to the changed
+artifacts rather than unnecessarily performing the full code validation
+workflow.
+
+### Response to the User
+
+After completing a task, summarize:
+
+* what changed;
+* which files were changed;
+* important assumptions or decisions;
+* validation performed and its result.
+
+Always answer the requested question or perform the requested task. Do not
+silently replace the requested approach with a different solution.
