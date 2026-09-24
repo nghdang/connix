@@ -45,6 +45,30 @@ collections, and enums are modeled in
 !include data_structures.puml
 ```
 
+### 4.1 Action Configuration Model Decisions
+
+`ActionConfig` represents executable actions (`SEND` and `RESPOND`). The design reflects the following rules:
+
+1. **Type Discriminator (`getType()`):**
+   Non-optional `ActionType` indicating whether the action is proactive (`SEND`) or reactive (`RESPOND`).
+
+2. **Encapsulated Payload (`getPayload()`):**
+   Payloads are encapsulated in a dedicated `ActionPayload` object containing a `PayloadType` (`BYTES` or `FILE`) and the concrete `source` string. This eliminates `std::optional` and mutually exclusive validation at the domain layer, mapping cleanly to a nested JSON object `{"payload": {"type": "...", "source": "..."}}`.
+
+3. **Node Routing Semantics (`getSourceNode()`, `getTargetNode()`):**
+   - Both `sourceNode` and `targetNode` are stored as concrete `std::string` values (defaulting to empty string `""`):
+     - If `sourceNode` is not empty, it specifies the transmitting node; otherwise, the current active node is used.
+     - If `targetNode` is not empty, it specifies the destination node; otherwise, the peer of the active connection is used.
+   - For `SEND` actions in configuration, explicit source and target nodes are required.
+   - For `RESPOND` actions, source and target are optional in configuration and default to `""`, cleanly reusing the same data structure without `std::optional`.
+
+4. **Execution Controls (`getExecutionDelay()`, `getExecutionTimeout()`, `getMaxPending()`):**
+   - Both `SEND` and `RESPOND` actions operate under execution flow controls:
+     - `executionDelay`: Delay in milliseconds before transmitting (default: `0`).
+     - `executionTimeout`: Timeout in milliseconds bounding the send or response operation (default: `5000`).
+     - `maxPending`: Maximum allowable queued or in-flight actions (default: `100`).
+   - Stored as concrete `std::uint32_t` values with default parameters.
+
 ---
 
 ## 5. Runtime View

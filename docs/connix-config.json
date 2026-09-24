@@ -178,7 +178,10 @@
     "actions": {
         "respond": {
             "type": "RESPOND",
-            "bytes": "12 34 56 78"
+            "payload": {
+                "type": "BYTES",
+                "source": "12 34 56 78"
+            }
         },
         "send-test-data": {
             "type": "SEND",
@@ -187,33 +190,48 @@
             "executionDelay": 10,
             "executionTimeout": 5000,
             "maxPending": 100,
-            "bytes": "12 34 56 78"
+            "payload": {
+                "type": "BYTES",
+                "source": "12 34 56 78"
+            }
         },
         "send-tcp": {
             "type": "SEND",
             "sourceNode": "test-tcp-client",
             "targetNode": "test-tcp-server",
             "executionDelay": 0,
-            "bytes": "12 34 56 78"
+            "payload": {
+                "type": "BYTES",
+                "source": "12 34 56 78"
+            }
         },
         "send-udp": {
             "type": "SEND",
             "sourceNode": "test-udp-client",
             "targetNode": "test-udp-server",
             "executionDelay": 0,
-            "file": "/tmp/test-udp-data.bin"
+            "payload": {
+                "type": "FILE",
+                "source": "/tmp/test-udp-data.bin"
+            }
         },
         "send-uds": {
             "type": "SEND",
             "sourceNode": "test-uds-client",
             "targetNode": "test-uds-server",
-            "file": "/tmp/test-uds-data.bin"
+            "payload": {
+                "type": "FILE",
+                "source": "/tmp/test-uds-data.bin"
+            }
         },
         "send-uds-datagram": {
             "type": "SEND",
             "sourceNode": "test-uds-datagram-client",
             "targetNode": "test-uds-datagram-server",
-            "bytes": "12 34 56 78"
+            "payload": {
+                "type": "BYTES",
+                "source": "12 34 56 78"
+            }
         }
     }
 }

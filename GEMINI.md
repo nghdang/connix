@@ -128,6 +128,9 @@ linting.
 *   **Namespace Resolution:** Always use full namespace resolution (e.g.,
     explicitly qualify types and symbols with their full namespace path; avoid
     `using namespace` directives and unqualified symbol lookups).
+*   **Avoid using `std::optional`:** Avoid using `std::optional` as much as
+    possible; prefer concrete default values, empty containers/strings, or
+    dedicated encapsulated types to eliminate caller ambiguity.
 
 ### Architecture & Design Documentation
 *   Treat existing architecture and detailed-design documentation

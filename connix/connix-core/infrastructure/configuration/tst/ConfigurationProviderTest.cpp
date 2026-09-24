@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ConnixCore/Infrastructure/Configuration/ActionConfig.hpp"
+#include "ConnixCore/Infrastructure/Configuration/ActionPayload.hpp"
 #include "ConnixCore/Infrastructure/Configuration/ActionType.hpp"
 #include "ConnixCore/Infrastructure/Configuration/ConfigurationProvider.hpp"
 #include "ConnixCore/Infrastructure/Configuration/ConnixConfig.hpp"
@@ -18,6 +19,7 @@
 #include "ConnixCore/Infrastructure/Configuration/NodeConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/NodeTransport.hpp"
 #include "ConnixCore/Infrastructure/Configuration/NodeType.hpp"
+#include "ConnixCore/Infrastructure/Configuration/PayloadType.hpp"
 #include "ConnixCore/Infrastructure/Configuration/TimerConfig.hpp"
 
 using namespace testing;
@@ -105,9 +107,9 @@ ConnixConfig createSampleConfig()
 
     std::unordered_map<std::string, ActionConfig> actions;
     actions.emplace("test_action",
-                    ActionConfig(ActionType::SEND, "payload", "nodeA", "nodeB",
-                                 std::nullopt, std::nullopt, std::nullopt,
-                                 std::nullopt));
+                    ActionConfig(ActionType::SEND,
+                                 ActionPayload(PayloadType::BYTES, "payload"),
+                                 "nodeA", "nodeB"));
 
     return ConnixConfig("SampleConfig", nodes, timers, filesystems, actions);
 }

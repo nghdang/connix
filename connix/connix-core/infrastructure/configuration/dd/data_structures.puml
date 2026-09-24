@@ -100,23 +100,33 @@ package "Public" {
         + getOnModified(): const vector<string>& const
     }
 
+    enum PayloadType {
+        BYTES
+        FILE
+    }
+
+    class ActionPayload {
+        - type: PayloadType
+        - source: string
+        + getType(): PayloadType const
+        + getSource(): string const
+    }
+
     class ActionConfig {
         - type: ActionType
-        - bytes: optional<string>
-        - sourceNode: optional<string>
-        - targetNode: optional<string>
-        - executionDelay: optional<uint32_t>
-        - executionTimeout: optional<uint32_t>
-        - maxPending: optional<uint32_t>
-        - file: optional<string>
+        - payload: ActionPayload
+        - sourceNode: string
+        - targetNode: string
+        - executionDelay: uint32_t
+        - executionTimeout: uint32_t
+        - maxPending: uint32_t
         + getType(): ActionType const
-        + getBytes(): const optional<string>& const
-        + getSourceNode(): const optional<string>& const
-        + getTargetNode(): const optional<string>& const
-        + getExecutionDelay(): optional<uint32_t> const
-        + getExecutionTimeout(): optional<uint32_t> const
-        + getMaxPending(): optional<uint32_t> const
-        + getFile(): const optional<string>& const
+        + getPayload(): const ActionPayload& const
+        + getSourceNode(): string const
+        + getTargetNode(): string const
+        + getExecutionDelay(): uint32_t const
+        + getExecutionTimeout(): uint32_t const
+        + getMaxPending(): uint32_t const
     }
 
     FrameType <-- FrameConfig : configures
@@ -128,6 +138,8 @@ package "Public" {
     NodeType <-- NodeConfig : categorizes
     NodeTransport <-- NodeConfig : uses
 
+    PayloadType <-- ActionPayload : defines
+    ActionPayload --* ActionConfig : contains
     ActionType <-- ActionConfig : defines
 
     NodeConfig -[hidden]right- TimerConfig

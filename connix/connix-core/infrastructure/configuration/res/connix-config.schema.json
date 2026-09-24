@@ -310,33 +310,62 @@
                 }
             }
         },
-        "respondAction": {
+        "actionPayload": {
             "type": "object",
             "additionalProperties": false,
             "required": [
                 "type",
-                "bytes"
+                "source"
             ],
             "properties": {
                 "type": {
-                    "const": "RESPOND"
+                    "type": "string",
+                    "enum": [
+                        "BYTES",
+                        "FILE"
+                    ]
                 },
-                "bytes": {
-                    "$ref": "#/$defs/hexBytes"
+                "source": {
+                    "type": "string",
+                    "minLength": 1
                 }
-            }
+            },
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "type": {
+                                "const": "BYTES"
+                            }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "source": {
+                                "$ref": "#/$defs/hexBytes"
+                            }
+                        }
+                    }
+                }
+            ]
         },
-        "sendAction": {
+        "action": {
             "type": "object",
             "additionalProperties": false,
             "required": [
                 "type",
-                "sourceNode",
-                "targetNode"
+                "payload"
             ],
             "properties": {
                 "type": {
-                    "const": "SEND"
+                    "type": "string",
+                    "enum": [
+                        "RESPOND",
+                        "SEND"
+                    ]
+                },
+                "payload": {
+                    "$ref": "#/$defs/actionPayload"
                 },
                 "sourceNode": {
                     "$ref": "#/$defs/nameReference"
@@ -345,44 +374,33 @@
                     "$ref": "#/$defs/nameReference"
                 },
                 "executionDelay": {
-                    "$ref": "#/$defs/nonNegativeInteger"
+                    "$ref": "#/$defs/nonNegativeInteger",
+                    "default": 0
                 },
                 "executionTimeout": {
-                    "$ref": "#/$defs/nonNegativeInteger"
+                    "$ref": "#/$defs/nonNegativeInteger",
+                    "default": 5000
                 },
                 "maxPending": {
-                    "$ref": "#/$defs/positiveInteger"
-                },
-                "bytes": {
-                    "$ref": "#/$defs/hexBytes"
-                },
-                "file": {
-                    "type": "string",
-                    "minLength": 1
+                    "$ref": "#/$defs/positiveInteger",
+                    "default": 100
                 }
             },
-            "oneOf": [
+            "allOf": [
                 {
-                    "required": ["bytes"],
-                    "not": {
-                        "required": ["file"]
+                    "if": {
+                        "properties": {
+                            "type": {
+                                "const": "SEND"
+                            }
+                        }
+                    },
+                    "then": {
+                        "required": [
+                            "sourceNode",
+                            "targetNode"
+                        ]
                     }
-                },
-                {
-                    "required": ["file"],
-                    "not": {
-                        "required": ["bytes"]
-                    }
-                }
-            ]
-        },
-        "action": {
-            "oneOf": [
-                {
-                    "$ref": "#/$defs/respondAction"
-                },
-                {
-                    "$ref": "#/$defs/sendAction"
                 }
             ]
         },

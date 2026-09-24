@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "ConnixCore/Infrastructure/Configuration/ActionConfig.hpp"
+#include "ConnixCore/Infrastructure/Configuration/ActionPayload.hpp"
 #include "ConnixCore/Infrastructure/Configuration/ActionType.hpp"
 #include "ConnixCore/Infrastructure/Configuration/ByteOrder.hpp"
 #include "ConnixCore/Infrastructure/Configuration/ConnixConfig.hpp"
@@ -16,6 +17,7 @@
 #include "ConnixCore/Infrastructure/Configuration/NodeConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/NodeTransport.hpp"
 #include "ConnixCore/Infrastructure/Configuration/NodeType.hpp"
+#include "ConnixCore/Infrastructure/Configuration/PayloadType.hpp"
 #include "ConnixCore/Infrastructure/Configuration/TimerConfig.hpp"
 
 using namespace ConnixCore::Infrastructure::Configuration;
@@ -109,26 +111,48 @@ TEST(DataStructuresTest, FilesystemConfig)
     EXPECT_EQ(fs.getOnModified(), modified);
 }
 
-TEST(DataStructuresTest, ActionConfig)
+TEST(DataStructuresTest, ActionPayload)
 {
-    ActionConfig action(ActionType::SEND, "hello", "nodeA", "nodeB", 100, 500,
-                        10, "/tmp/out");
+    ActionPayload payload(PayloadType::BYTES, "12 34 56 78");
+    EXPECT_EQ(payload.getType(), PayloadType::BYTES);
+    EXPECT_EQ(payload.getSource(), "12 34 56 78");
+
+    ActionPayload filePayload(PayloadType::FILE, "/tmp/data.bin");
+    EXPECT_EQ(filePayload.getType(), PayloadType::FILE);
+    EXPECT_EQ(filePayload.getSource(), "/tmp/data.bin");
+}
+
+TEST(DataStructuresTest, ActionConfigCustomValues)
+{
+    ActionPayload payload(PayloadType::BYTES, "hello");
+    ActionConfig action(ActionType::SEND, payload, "nodeA", "nodeB", 100, 500,
+                        10);
 
     EXPECT_EQ(action.getType(), ActionType::SEND);
-    ASSERT_TRUE(action.getBytes().has_value());
-    EXPECT_EQ(action.getBytes().value(), "hello");
-    ASSERT_TRUE(action.getSourceNode().has_value());
-    EXPECT_EQ(action.getSourceNode().value(), "nodeA");
-    ASSERT_TRUE(action.getTargetNode().has_value());
-    EXPECT_EQ(action.getTargetNode().value(), "nodeB");
-    ASSERT_TRUE(action.getExecutionDelay().has_value());
-    EXPECT_EQ(action.getExecutionDelay().value(), 100);
-    ASSERT_TRUE(action.getExecutionTimeout().has_value());
-    EXPECT_EQ(action.getExecutionTimeout().value(), 500);
-    ASSERT_TRUE(action.getMaxPending().has_value());
-    EXPECT_EQ(action.getMaxPending().value(), 10);
-    ASSERT_TRUE(action.getFile().has_value());
-    EXPECT_EQ(action.getFile().value(), "/tmp/out");
+    EXPECT_EQ(action.getPayload().getType(), PayloadType::BYTES);
+    EXPECT_EQ(action.getPayload().getSource(), "hello");
+    EXPECT_EQ(action.getSourceNode(), "nodeA");
+    EXPECT_EQ(action.getTargetNode(), "nodeB");
+    EXPECT_EQ(action.getExecutionDelay(), 100);
+    EXPECT_EQ(action.getExecutionTimeout(), 500);
+    EXPECT_EQ(action.getMaxPending(), 10);
+}
+
+TEST(DataStructuresTest, ActionConfigDefaultValuesAndFilePayload)
+{
+    ActionPayload payload(PayloadType::FILE, "/tmp/out");
+    ActionConfig action(ActionType::RESPOND, payload);
+
+    EXPECT_EQ(action.getType(), ActionType::RESPOND);
+    EXPECT_EQ(action.getPayload().getType(), PayloadType::FILE);
+    EXPECT_EQ(action.getPayload().getSource(), "/tmp/out");
+    EXPECT_EQ(action.getSourceNode(), "");
+    EXPECT_EQ(action.getTargetNode(), "");
+    EXPECT_EQ(action.getExecutionDelay(),
+              ActionConfig::DEFAULT_EXECUTION_DELAY);
+    EXPECT_EQ(action.getExecutionTimeout(),
+              ActionConfig::DEFAULT_EXECUTION_TIMEOUT);
+    EXPECT_EQ(action.getMaxPending(), ActionConfig::DEFAULT_MAX_PENDING);
 }
 
 TEST(DataStructuresTest, ConnixConfig)
@@ -145,9 +169,8 @@ TEST(DataStructuresTest, ConnixConfig)
     timers.emplace("t1", TimerConfig(500, false, {}));
     filesystems.emplace("fs1", FilesystemConfig("/etc/config", 100, {}));
     actions.emplace("act1",
-                    ActionConfig(ActionType::RESPOND, std::nullopt,
-                                 std::nullopt, std::nullopt, std::nullopt,
-                                 std::nullopt, std::nullopt, std::nullopt));
+                    ActionConfig(ActionType::RESPOND,
+                                 ActionPayload(PayloadType::BYTES, "hello")));
 
     ConnixConfig config("MainConfig", nodes, timers, filesystems, actions);
 

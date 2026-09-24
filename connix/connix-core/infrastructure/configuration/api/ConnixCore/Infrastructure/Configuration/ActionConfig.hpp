@@ -1,9 +1,9 @@
 #pragma once
 
 #include <cstdint>
-#include <optional>
 #include <string>
 
+#include "ConnixCore/Infrastructure/Configuration/ActionPayload.hpp"
 #include "ConnixCore/Infrastructure/Configuration/ActionType.hpp"
 
 namespace ConnixCore {
@@ -13,32 +13,32 @@ namespace Configuration {
 class ActionConfig
 {
 public:
-    ActionConfig(ActionType type, std::optional<std::string> bytes,
-                 std::optional<std::string> sourceNode,
-                 std::optional<std::string> targetNode,
-                 std::optional<std::uint32_t> executionDelay,
-                 std::optional<std::uint32_t> executionTimeout,
-                 std::optional<std::uint32_t> maxPending,
-                 std::optional<std::string> file);
+    static constexpr std::uint32_t DEFAULT_EXECUTION_DELAY = 0U;
+    static constexpr std::uint32_t DEFAULT_EXECUTION_TIMEOUT = 5000U;
+    static constexpr std::uint32_t DEFAULT_MAX_PENDING = 100U;
+
+    ActionConfig(ActionType type, ActionPayload payload,
+                 std::string sourceNode = "", std::string targetNode = "",
+                 std::uint32_t executionDelay = DEFAULT_EXECUTION_DELAY,
+                 std::uint32_t executionTimeout = DEFAULT_EXECUTION_TIMEOUT,
+                 std::uint32_t maxPending = DEFAULT_MAX_PENDING);
 
     ActionType getType() const;
-    const std::optional<std::string>& getBytes() const;
-    const std::optional<std::string>& getSourceNode() const;
-    const std::optional<std::string>& getTargetNode() const;
-    const std::optional<std::uint32_t>& getExecutionDelay() const;
-    const std::optional<std::uint32_t>& getExecutionTimeout() const;
-    const std::optional<std::uint32_t>& getMaxPending() const;
-    const std::optional<std::string>& getFile() const;
+    const ActionPayload& getPayload() const;
+    const std::string& getSourceNode() const;
+    const std::string& getTargetNode() const;
+    std::uint32_t getExecutionDelay() const;
+    std::uint32_t getExecutionTimeout() const;
+    std::uint32_t getMaxPending() const;
 
 private:
     ActionType m_type;
-    std::optional<std::string> m_bytes;
-    std::optional<std::string> m_sourceNode;
-    std::optional<std::string> m_targetNode;
-    std::optional<std::uint32_t> m_executionDelay;
-    std::optional<std::uint32_t> m_executionTimeout;
-    std::optional<std::uint32_t> m_maxPending;
-    std::optional<std::string> m_file;
+    ActionPayload m_payload;
+    std::string m_sourceNode;
+    std::string m_targetNode;
+    std::uint32_t m_executionDelay;
+    std::uint32_t m_executionTimeout;
+    std::uint32_t m_maxPending;
 };
 
 } // namespace Configuration
