@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <optional>
 
 #include "ConnixCore/Infrastructure/Configuration/ByteOrder.hpp"
 #include "ConnixCore/Infrastructure/Configuration/FrameType.hpp"
@@ -13,23 +12,22 @@ namespace Configuration {
 class FrameConfig
 {
 public:
-    FrameConfig(FrameType type, std::optional<std::uint32_t> size,
-                std::optional<std::uint32_t> lengthOffset,
-                std::optional<std::uint32_t> lengthSize,
-                std::optional<ByteOrder> byteOrder);
+    FrameConfig();
+    FrameConfig(FrameType type, std::uint32_t size, std::uint32_t lengthOffset,
+                std::uint32_t lengthSize, ByteOrder byteOrder);
 
     FrameType getType() const;
-    const std::optional<std::uint32_t>& getSize() const;
-    const std::optional<std::uint32_t>& getLengthOffset() const;
-    const std::optional<std::uint32_t>& getLengthSize() const;
-    const std::optional<ByteOrder>& getByteOrder() const;
+    std::uint32_t getSize() const;
+    std::uint32_t getLengthOffset() const;
+    std::uint32_t getLengthSize() const;
+    ByteOrder getByteOrder() const;
 
 private:
     FrameType m_type;
-    std::optional<std::uint32_t> m_size;
-    std::optional<std::uint32_t> m_lengthOffset;
-    std::optional<std::uint32_t> m_lengthSize;
-    std::optional<ByteOrder> m_byteOrder;
+    std::uint32_t m_size;
+    std::uint32_t m_lengthOffset;
+    std::uint32_t m_lengthSize;
+    ByteOrder m_byteOrder;
 };
 
 } // namespace Configuration

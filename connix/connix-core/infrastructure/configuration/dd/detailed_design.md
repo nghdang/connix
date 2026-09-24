@@ -69,6 +69,31 @@ collections, and enums are modeled in
      - `maxPending`: Maximum allowable queued or in-flight actions (default: `100`).
    - Stored as concrete `std::uint32_t` values with default parameters.
 
+### 4.2 Structural Separation of Node Models
+
+Node configurations are cleanly separated into three distinct domain classes: `ServerNodeConfig`, `ClientNodeConfig`, and `PeerNodeConfig`. This eliminates loose groupings of optional fields, enforces invariants at compile time, and completely avoids `std::optional` in accordance with repository standards:
+
+1. **`ServerNodeConfig`**:
+   - Represents a listening socket server.
+   - Requires concrete `NodeTransport`, `Endpoint`, and `FrameConfig`.
+   - Defines concrete execution parameters: `maxConnections`, `bufferSize`, and an `onReceived` rule collection.
+   - Excludes timeouts which do not apply to server listeners.
+
+2. **`ClientNodeConfig`**:
+   - Represents an outbound initiating network client.
+   - Requires concrete `NodeTransport` and `FrameConfig`.
+   - Defines concrete execution and timeout parameters: `bufferSize`, `connectionTimeout`, `idleTimeout`, and an `onReceived` rule collection.
+   - Excludes listening endpoints and `maxConnections`.
+
+3. **`PeerNodeConfig`**:
+   - Represents an external target peer endpoint.
+   - Requires concrete `NodeTransport`, `Endpoint`, and `FrameConfig`.
+   - Excludes server connection limits, buffer sizes, timeouts, and rules.
+
+4. **Elimination of `NodeType` and Optional Frames**:
+   - The `NodeType` enum is deleted because the separated mappings within `ConnixConfig` inherently categorize each node.
+   - `FrameConfig` now includes `FrameType::NONE` to represent datagram or non-framed connections, removing the need to wrap `FrameConfig` in `std::optional`.
+
 ---
 
 ## 5. Runtime View

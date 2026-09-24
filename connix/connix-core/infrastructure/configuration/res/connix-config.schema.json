@@ -18,7 +18,7 @@
             "minLength": 1
         },
         "nodes": {
-            "$ref": "#/$defs/namedNodes"
+            "$ref": "#/$defs/nodes"
         },
         "timers": {
             "$ref": "#/$defs/namedTimers"
@@ -117,8 +117,21 @@
                 }
             }
         },
+        "noneFrame": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type"],
+            "properties": {
+                "type": {
+                    "const": "NONE"
+                }
+            }
+        },
         "frame": {
             "oneOf": [
+                {
+                    "$ref": "#/$defs/noneFrame"
+                },
                 {
                     "$ref": "#/$defs/fixedSizeFrame"
                 },
@@ -154,22 +167,15 @@
                 }
             }
         },
-        "node": {
+        "serverNode": {
             "type": "object",
             "additionalProperties": false,
             "required": [
-                "type",
-                "transport"
+                "transport",
+                "endpoint",
+                "frame"
             ],
             "properties": {
-                "type": {
-                    "type": "string",
-                    "enum": [
-                        "USER",
-                        "SERVER",
-                        "CLIENT"
-                    ]
-                },
                 "transport": {
                     "$ref": "#/$defs/transport"
                 },
@@ -184,12 +190,6 @@
                 },
                 "bufferSize": {
                     "$ref": "#/$defs/positiveInteger"
-                },
-                "connectionTimeout": {
-                    "$ref": "#/$defs/nonNegativeInteger"
-                },
-                "idleTimeout": {
-                    "$ref": "#/$defs/nonNegativeInteger"
                 },
                 "onReceived": {
                     "type": "array",
@@ -208,7 +208,6 @@
                         }
                     },
                     "then": {
-                        "required": ["endpoint"],
                         "properties": {
                             "endpoint": {
                                 "required": ["address", "port"]
@@ -225,7 +224,6 @@
                         }
                     },
                     "then": {
-                        "required": ["endpoint"],
                         "properties": {
                             "endpoint": {
                                 "not": {
@@ -234,30 +232,91 @@
                             }
                         }
                     }
+                }
+            ]
+        },
+        "clientNode": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "transport",
+                "frame"
+            ],
+            "properties": {
+                "transport": {
+                    "$ref": "#/$defs/transport"
                 },
+                "frame": {
+                    "$ref": "#/$defs/frame"
+                },
+                "bufferSize": {
+                    "$ref": "#/$defs/positiveInteger"
+                },
+                "connectionTimeout": {
+                    "$ref": "#/$defs/nonNegativeInteger"
+                },
+                "idleTimeout": {
+                    "$ref": "#/$defs/nonNegativeInteger"
+                },
+                "onReceived": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/eventRule"
+                    }
+                }
+            }
+        },
+        "peerNode": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "transport",
+                "endpoint",
+                "frame"
+            ],
+            "properties": {
+                "transport": {
+                    "$ref": "#/$defs/transport"
+                },
+                "endpoint": {
+                    "$ref": "#/$defs/endpoint"
+                },
+                "frame": {
+                    "$ref": "#/$defs/frame"
+                }
+            },
+            "allOf": [
                 {
                     "if": {
                         "properties": {
                             "transport": {
-                                "enum": ["TCP", "UDS_STREAM"]
+                                "enum": ["TCP", "UDP"]
                             }
                         }
                     },
                     "then": {
-                        "required": ["frame"]
+                        "properties": {
+                            "endpoint": {
+                                "required": ["address", "port"]
+                            }
+                        }
                     }
                 },
                 {
                     "if": {
                         "properties": {
                             "transport": {
-                                "enum": ["UDP", "UDS_DATAGRAM"]
+                                "enum": ["UDS_STREAM", "UDS_DATAGRAM"]
                             }
                         }
                     },
                     "then": {
                         "properties": {
-                            "frame": false
+                            "endpoint": {
+                                "not": {
+                                    "required": ["port"]
+                                }
+                            }
                         }
                     }
                 }
@@ -404,11 +463,37 @@
                 }
             ]
         },
-        "namedNodes": {
+        "namedServerNodes": {
             "type": "object",
-            "minProperties": 1,
             "additionalProperties": {
-                "$ref": "#/$defs/node"
+                "$ref": "#/$defs/serverNode"
+            }
+        },
+        "namedClientNodes": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/$defs/clientNode"
+            }
+        },
+        "namedPeerNodes": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/$defs/peerNode"
+            }
+        },
+        "nodes": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "serverNodes": {
+                    "$ref": "#/$defs/namedServerNodes"
+                },
+                "clientNodes": {
+                    "$ref": "#/$defs/namedClientNodes"
+                },
+                "peerNodes": {
+                    "$ref": "#/$defs/namedPeerNodes"
+                }
             }
         },
         "namedTimers": {

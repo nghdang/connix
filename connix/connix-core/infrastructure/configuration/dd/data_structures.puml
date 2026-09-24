@@ -5,6 +5,7 @@ namespace ConnixCore::Infrastructure::Configuration {
 package "Public" {
 
     enum FrameType {
+        NONE
         FIXED_SIZE
         LENGTH_PREFIX
     }
@@ -21,12 +22,6 @@ package "Public" {
         UDS_DATAGRAM
     }
 
-    enum NodeType {
-        USER
-        SERVER
-        CLIENT
-    }
-
     enum ActionType {
         RESPOND
         SEND
@@ -41,15 +36,15 @@ package "Public" {
 
     class FrameConfig {
         - type: FrameType
-        - size: optional<uint32_t>
-        - lengthOffset: optional<uint32_t>
-        - lengthSize: optional<uint32_t>
-        - byteOrder: optional<ByteOrder>
+        - size: uint32_t
+        - lengthOffset: uint32_t
+        - lengthSize: uint32_t
+        - byteOrder: ByteOrder
         + getType(): FrameType const
-        + getSize(): optional<uint32_t> const
-        + getLengthOffset(): optional<uint32_t> const
-        + getLengthSize(): optional<uint32_t> const
-        + getByteOrder(): optional<ByteOrder> const
+        + getSize(): uint32_t const
+        + getLengthOffset(): uint32_t const
+        + getLengthSize(): uint32_t const
+        + getByteOrder(): ByteOrder const
     }
 
     class EventRule {
@@ -61,25 +56,43 @@ package "Public" {
         + getActions(): const vector<string>& const
     }
 
-    class NodeConfig {
-        - type: NodeType
+    class ServerNodeConfig {
         - transport: NodeTransport
-        - endpoint: optional<Endpoint>
-        - frame: optional<FrameConfig>
-        - maxConnections: optional<uint32_t>
-        - bufferSize: optional<uint32_t>
-        - connectionTimeout: optional<uint32_t>
-        - idleTimeout: optional<uint32_t>
+        - endpoint: Endpoint
+        - frame: FrameConfig
+        - maxConnections: uint32_t
+        - bufferSize: uint32_t
         - onReceived: vector<EventRule>
-        + getType(): NodeType const
         + getTransport(): NodeTransport const
-        + getEndpoint(): const optional<Endpoint>& const
-        + getFrame(): const optional<FrameConfig>& const
-        + getMaxConnections(): optional<uint32_t> const
-        + getBufferSize(): optional<uint32_t> const
-        + getConnectionTimeout(): optional<uint32_t> const
-        + getIdleTimeout(): optional<uint32_t> const
+        + getEndpoint(): const Endpoint& const
+        + getFrame(): const FrameConfig& const
+        + getMaxConnections(): uint32_t const
+        + getBufferSize(): uint32_t const
         + getOnReceived(): const vector<EventRule>& const
+    }
+
+    class ClientNodeConfig {
+        - transport: NodeTransport
+        - frame: FrameConfig
+        - bufferSize: uint32_t
+        - connectionTimeout: uint32_t
+        - idleTimeout: uint32_t
+        - onReceived: vector<EventRule>
+        + getTransport(): NodeTransport const
+        + getFrame(): const FrameConfig& const
+        + getBufferSize(): uint32_t const
+        + getConnectionTimeout(): uint32_t const
+        + getIdleTimeout(): uint32_t const
+        + getOnReceived(): const vector<EventRule>& const
+    }
+
+    class PeerNodeConfig {
+        - transport: NodeTransport
+        - endpoint: Endpoint
+        - frame: FrameConfig
+        + getTransport(): NodeTransport const
+        + getEndpoint(): const Endpoint& const
+        + getFrame(): const FrameConfig& const
     }
 
     class TimerConfig {
@@ -132,31 +145,39 @@ package "Public" {
     FrameType <-- FrameConfig : configures
     ByteOrder <-- FrameConfig : defines
 
-    Endpoint -right-* NodeConfig : contains
-    FrameConfig --* NodeConfig : contains
-    EventRule --* NodeConfig : contains
-    NodeType <-- NodeConfig : categorizes
-    NodeTransport <-- NodeConfig : uses
+    Endpoint --* ServerNodeConfig : contains
+    FrameConfig --* ServerNodeConfig : contains
+    EventRule --* ServerNodeConfig : contains
+    NodeTransport <-- ServerNodeConfig : uses
+
+    FrameConfig --* ClientNodeConfig : contains
+    EventRule --* ClientNodeConfig : contains
+    NodeTransport <-- ClientNodeConfig : uses
+
+    Endpoint --* PeerNodeConfig : contains
+    FrameConfig --* PeerNodeConfig : contains
+    NodeTransport <-- PeerNodeConfig : uses
 
     PayloadType <-- ActionPayload : defines
     ActionPayload --* ActionConfig : contains
     ActionType <-- ActionConfig : defines
 
-    NodeConfig -[hidden]right- TimerConfig
-    TimerConfig -[hidden]right- FilesystemConfig
-    FilesystemConfig -[hidden]right- ActionConfig
 }
 
 package "Internal" {
 
     class ConnixConfig {
         - name: string
-        - nodes: unordered_map<string, NodeConfig>
+        - serverNodes: unordered_map<string, ServerNodeConfig>
+        - clientNodes: unordered_map<string, ClientNodeConfig>
+        - peerNodes: unordered_map<string, PeerNodeConfig>
         - timers: unordered_map<string, TimerConfig>
         - filesystems: unordered_map<string, FilesystemConfig>
         - actions: unordered_map<string, ActionConfig>
         + getName(): string const
-        + getNodes(): const unordered_map<string, NodeConfig>& const
+        + getServerNodes(): const unordered_map<string, ServerNodeConfig>& const
+        + getClientNodes(): const unordered_map<string, ClientNodeConfig>& const
+        + getPeerNodes(): const unordered_map<string, PeerNodeConfig>& const
         + getTimers(): const unordered_map<string, TimerConfig>& const
         + getFilesystems(): const unordered_map<string, FilesystemConfig>& const
         + getActions(): const unordered_map<string, ActionConfig>& const
@@ -164,7 +185,9 @@ package "Internal" {
 
 }
 
-NodeConfig --* ConnixConfig : aggregates
+ServerNodeConfig --* ConnixConfig : aggregates
+ClientNodeConfig --* ConnixConfig : aggregates
+PeerNodeConfig --* ConnixConfig : aggregates
 TimerConfig --* ConnixConfig : aggregates
 FilesystemConfig --* ConnixConfig : aggregates
 ActionConfig --* ConnixConfig : aggregates

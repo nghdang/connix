@@ -7,6 +7,7 @@ namespace Infrastructure {
 namespace Configuration {
 
 enum class FrameType : std::uint8_t {
+    NONE,
     FIXED_SIZE,
     LENGTH_PREFIX
 };

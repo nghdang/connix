@@ -4,12 +4,14 @@
 #include <unordered_map>
 
 #include "ConnixCore/Infrastructure/Configuration/ActionConfig.hpp"
+#include "ConnixCore/Infrastructure/Configuration/ClientNodeConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/ConnixConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/FilesystemConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/IFileReader.hpp"
 #include "ConnixCore/Infrastructure/Configuration/IJsonParser.hpp"
 #include "ConnixCore/Infrastructure/Configuration/IJsonValidator.hpp"
-#include "ConnixCore/Infrastructure/Configuration/NodeConfig.hpp"
+#include "ConnixCore/Infrastructure/Configuration/PeerNodeConfig.hpp"
+#include "ConnixCore/Infrastructure/Configuration/ServerNodeConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/TimerConfig.hpp"
 
 namespace ConnixCore {
@@ -23,7 +25,9 @@ ConfigurationProvider::ConfigurationProvider(
     , m_jsonValidator(jsonValidator)
     , m_jsonParser(jsonParser)
     , m_name()
-    , m_nodes()
+    , m_serverNodes()
+    , m_clientNodes()
+    , m_peerNodes()
     , m_timers()
     , m_filesystems()
     , m_actions()
@@ -38,7 +42,9 @@ void ConfigurationProvider::load(const std::string& configPath,
     m_jsonValidator.get().validate(jsonStr, schemaStr);
     const ConnixConfig parsedConfig = m_jsonParser.get().parse(jsonStr);
     m_name = parsedConfig.getName();
-    m_nodes = parsedConfig.getNodes();
+    m_serverNodes = parsedConfig.getServerNodes();
+    m_clientNodes = parsedConfig.getClientNodes();
+    m_peerNodes = parsedConfig.getPeerNodes();
     m_timers = parsedConfig.getTimers();
     m_filesystems = parsedConfig.getFilesystems();
     m_actions = parsedConfig.getActions();
@@ -49,10 +55,22 @@ const std::string& ConfigurationProvider::getName() const
     return m_name;
 }
 
-const std::unordered_map<std::string, NodeConfig>&
-ConfigurationProvider::getNodes() const
+const std::unordered_map<std::string, ServerNodeConfig>&
+ConfigurationProvider::getServerNodes() const
 {
-    return m_nodes;
+    return m_serverNodes;
+}
+
+const std::unordered_map<std::string, ClientNodeConfig>&
+ConfigurationProvider::getClientNodes() const
+{
+    return m_clientNodes;
+}
+
+const std::unordered_map<std::string, PeerNodeConfig>&
+ConfigurationProvider::getPeerNodes() const
+{
+    return m_peerNodes;
 }
 
 const std::unordered_map<std::string, TimerConfig>&

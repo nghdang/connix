@@ -5,13 +5,15 @@
 #include <unordered_map>
 
 #include "ConnixCore/Infrastructure/Configuration/ActionConfig.hpp"
+#include "ConnixCore/Infrastructure/Configuration/ClientNodeConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/ConnixConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/FilesystemConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/IConfigurationProvider.hpp"
 #include "ConnixCore/Infrastructure/Configuration/IFileReader.hpp"
 #include "ConnixCore/Infrastructure/Configuration/IJsonParser.hpp"
 #include "ConnixCore/Infrastructure/Configuration/IJsonValidator.hpp"
-#include "ConnixCore/Infrastructure/Configuration/NodeConfig.hpp"
+#include "ConnixCore/Infrastructure/Configuration/PeerNodeConfig.hpp"
+#include "ConnixCore/Infrastructure/Configuration/ServerNodeConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/TimerConfig.hpp"
 
 using namespace testing;
@@ -46,7 +48,7 @@ public:
     ConnixConfig parse(const std::string& jsonStr) const override
     {
         (void)jsonStr;
-        return ConnixConfig("parsed_config", {}, {}, {}, {});
+        return ConnixConfig("parsed_config", {}, {}, {}, {}, {}, {});
     }
 };
 
@@ -65,10 +67,22 @@ public:
         return m_name;
     }
 
-    const std::unordered_map<std::string, NodeConfig>&
-    getNodes() const override
+    const std::unordered_map<std::string, ServerNodeConfig>&
+    getServerNodes() const override
     {
-        return m_nodes;
+        return m_serverNodes;
+    }
+
+    const std::unordered_map<std::string, ClientNodeConfig>&
+    getClientNodes() const override
+    {
+        return m_clientNodes;
+    }
+
+    const std::unordered_map<std::string, PeerNodeConfig>&
+    getPeerNodes() const override
+    {
+        return m_peerNodes;
     }
 
     const std::unordered_map<std::string, TimerConfig>&
@@ -91,7 +105,9 @@ public:
 
 private:
     std::string m_name;
-    std::unordered_map<std::string, NodeConfig> m_nodes;
+    std::unordered_map<std::string, ServerNodeConfig> m_serverNodes;
+    std::unordered_map<std::string, ClientNodeConfig> m_clientNodes;
+    std::unordered_map<std::string, PeerNodeConfig> m_peerNodes;
     std::unordered_map<std::string, TimerConfig> m_timers;
     std::unordered_map<std::string, FilesystemConfig> m_filesystems;
     std::unordered_map<std::string, ActionConfig> m_actions;
@@ -123,7 +139,9 @@ TEST(ConfigurationInterfacesTest, ConfigurationProviderPolymorphism)
         std::make_unique<TestConfigurationProvider>();
     EXPECT_NO_THROW(provider->load("config.json", "schema.json"));
     EXPECT_TRUE(provider->getName().empty());
-    EXPECT_TRUE(provider->getNodes().empty());
+    EXPECT_TRUE(provider->getServerNodes().empty());
+    EXPECT_TRUE(provider->getClientNodes().empty());
+    EXPECT_TRUE(provider->getPeerNodes().empty());
     EXPECT_TRUE(provider->getTimers().empty());
     EXPECT_TRUE(provider->getFilesystems().empty());
     EXPECT_TRUE(provider->getActions().empty());

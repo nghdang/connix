@@ -1,150 +1,191 @@
 {
     "name": "Test full workflow",
     "nodes": {
-        "user-tcp-server": {
-            "type": "USER",
-            "transport": "TCP",
-            "endpoint": {
-                "address": "127.0.0.1",
-                "port": 12345
+        "serverNodes": {
+            "test-tcp-server": {
+                "transport": "TCP",
+                "endpoint": {
+                    "address": "127.0.0.1",
+                    "port": 56789
+                },
+                "frame": {
+                    "type": "FIXED_SIZE",
+                    "size": 4
+                },
+                "maxConnections": 20,
+                "bufferSize": 4096,
+                "onReceived": [
+                    {
+                        "patterns": [
+                            "12 34 56 78"
+                        ],
+                        "offset": 0,
+                        "actions": [
+                            "respond"
+                        ]
+                    }
+                ]
             },
-            "frame": {
-                "type": "FIXED_SIZE",
-                "size": 4
+            "test-udp-server": {
+                "transport": "UDP",
+                "endpoint": {
+                    "address": "127.0.0.1",
+                    "port": 12356
+                },
+                "onReceived": [
+                    {
+                        "patterns": [
+                            "12 34 56 78"
+                        ],
+                        "offset": 0,
+                        "actions": [
+                            "respond"
+                        ]
+                    }
+                ],
+                "frame": {
+                    "type": "NONE"
+                }
+            },
+            "test-uds-server": {
+                "transport": "UDS_STREAM",
+                "endpoint": {
+                    "address": "/tmp/test-uds-server.sock"
+                },
+                "frame": {
+                    "type": "LENGTH_PREFIX",
+                    "lengthOffset": 0,
+                    "lengthSize": 2,
+                    "byteOrder": "BIG_ENDIAN"
+                },
+                "onReceived": [
+                    {
+                        "patterns": [
+                            "12 34 56 78"
+                        ],
+                        "offset": 2,
+                        "actions": [
+                            "respond"
+                        ]
+                    }
+                ]
+            },
+            "test-uds-datagram-server": {
+                "transport": "UDS_DATAGRAM",
+                "endpoint": {
+                    "address": "/tmp/test-uds-datagram-server.sock"
+                },
+                "onReceived": [
+                    {
+                        "patterns": [
+                            "12 34 56 78"
+                        ],
+                        "offset": 0,
+                        "actions": [
+                            "respond"
+                        ]
+                    }
+                ],
+                "frame": {
+                    "type": "NONE"
+                }
             }
         },
-        "test-tcp-server": {
-            "type": "SERVER",
-            "transport": "TCP",
-            "endpoint": {
-                "address": "127.0.0.1",
-                "port": 56789
-            },
-            "frame": {
-                "type": "FIXED_SIZE",
-                "size": 4
-            },
-            "maxConnections": 20,
-            "bufferSize": 4096,
-            "onReceived": [
-                {
-                    "patterns": ["12 34 56 78"],
-                    "offset": 0,
-                    "actions": ["respond"]
+        "clientNodes": {
+            "test-uds-datagram-client": {
+                "transport": "UDS_DATAGRAM",
+                "bufferSize": 2048,
+                "onReceived": [
+                    {
+                        "patterns": [
+                            "12 34 56 78"
+                        ],
+                        "offset": 0,
+                        "actions": [
+                            "send-uds-datagram"
+                        ]
+                    }
+                ],
+                "frame": {
+                    "type": "NONE"
                 }
-            ]
+            },
+            "test-tcp-client": {
+                "transport": "TCP",
+                "connectionTimeout": 5000,
+                "idleTimeout": 30000,
+                "frame": {
+                    "type": "FIXED_SIZE",
+                    "size": 4
+                },
+                "bufferSize": 1024,
+                "onReceived": [
+                    {
+                        "patterns": [
+                            "12 34 56 78"
+                        ],
+                        "offset": 0,
+                        "actions": [
+                            "send-tcp"
+                        ]
+                    }
+                ]
+            },
+            "test-udp-client": {
+                "transport": "UDP",
+                "connectionTimeout": 5000,
+                "bufferSize": 4096,
+                "onReceived": [
+                    {
+                        "patterns": [
+                            "12 34 56 78"
+                        ],
+                        "offset": 0,
+                        "actions": [
+                            "send-udp"
+                        ]
+                    }
+                ],
+                "frame": {
+                    "type": "NONE"
+                }
+            },
+            "test-uds-client": {
+                "transport": "UDS_STREAM",
+                "connectionTimeout": 5000,
+                "idleTimeout": 30000,
+                "frame": {
+                    "type": "LENGTH_PREFIX",
+                    "lengthOffset": 0,
+                    "lengthSize": 2,
+                    "byteOrder": "BIG_ENDIAN"
+                },
+                "bufferSize": 2048,
+                "onReceived": [
+                    {
+                        "patterns": [
+                            "12 34 56 78"
+                        ],
+                        "offset": 2,
+                        "actions": [
+                            "send-uds"
+                        ]
+                    }
+                ]
+            }
         },
-        "test-udp-server": {
-            "type": "SERVER",
-            "transport": "UDP",
-            "endpoint": {
-                "address": "127.0.0.1",
-                "port": 12356
-            },
-            "onReceived": [
-                {
-                    "patterns": ["12 34 56 78"],
-                    "offset": 0,
-                    "actions": ["respond"]
+        "peerNodes": {
+            "user-tcp-server": {
+                "transport": "TCP",
+                "endpoint": {
+                    "address": "127.0.0.1",
+                    "port": 12345
+                },
+                "frame": {
+                    "type": "FIXED_SIZE",
+                    "size": 4
                 }
-            ]
-        },
-        "test-uds-server": {
-            "type": "SERVER",
-            "transport": "UDS_STREAM",
-            "endpoint": {
-                "address": "/tmp/test-uds-server.sock"
-            },
-            "frame": {
-                "type": "LENGTH_PREFIX",
-                "lengthOffset": 0,
-                "lengthSize": 2,
-                "byteOrder": "BIG_ENDIAN"
-            },
-            "onReceived": [
-                {
-                    "patterns": ["12 34 56 78"],
-                    "offset": 2,
-                    "actions": ["respond"]
-                }
-            ]
-        },
-        "test-uds-datagram-server": {
-            "type": "SERVER",
-            "transport": "UDS_DATAGRAM",
-            "endpoint": {
-                "address": "/tmp/test-uds-datagram-server.sock"
-            },
-            "onReceived": [
-                {
-                    "patterns": ["12 34 56 78"],
-                    "offset": 0,
-                    "actions": ["respond"]
-                }
-            ]
-        },
-        "test-uds-datagram-client": {
-            "type": "CLIENT",
-            "transport": "UDS_DATAGRAM",
-            "bufferSize": 2048,
-            "onReceived": [
-                {
-                    "patterns": ["12 34 56 78"],
-                    "offset": 0,
-                    "actions": ["send-uds-datagram"]
-                }
-            ]
-        },
-        "test-tcp-client": {
-            "type": "CLIENT",
-            "transport": "TCP",
-            "connectionTimeout": 5000,
-            "idleTimeout": 30000,
-            "frame": {
-                "type": "FIXED_SIZE",
-                "size": 4
-            },
-            "bufferSize": 1024,
-            "onReceived": [
-                {
-                    "patterns": ["12 34 56 78"],
-                    "offset": 0,
-                    "actions": ["send-tcp"]
-                }
-            ]
-        },
-        "test-udp-client": {
-            "type": "CLIENT",
-            "transport": "UDP",
-            "connectionTimeout": 5000,
-            "bufferSize": 4096,
-            "onReceived": [
-                {
-                    "patterns": ["12 34 56 78"],
-                    "offset": 0,
-                    "actions": ["send-udp"]
-                }
-            ]
-        },
-        "test-uds-client": {
-            "type": "CLIENT",
-            "transport": "UDS_STREAM",
-            "connectionTimeout": 5000,
-            "idleTimeout": 30000,
-            "frame": {
-                "type": "LENGTH_PREFIX",
-                "lengthOffset": 0,
-                "lengthSize": 2,
-                "byteOrder": "BIG_ENDIAN"
-            },
-            "bufferSize": 2048,
-            "onReceived": [
-                {
-                    "patterns": ["12 34 56 78"],
-                    "offset": 2,
-                    "actions": ["send-uds"]
-                }
-            ]
+            }
         }
     },
     "timers": {

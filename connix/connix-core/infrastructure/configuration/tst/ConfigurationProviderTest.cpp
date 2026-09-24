@@ -9,17 +9,20 @@
 #include "ConnixCore/Infrastructure/Configuration/ActionConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/ActionPayload.hpp"
 #include "ConnixCore/Infrastructure/Configuration/ActionType.hpp"
+#include "ConnixCore/Infrastructure/Configuration/ClientNodeConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/ConfigurationProvider.hpp"
 #include "ConnixCore/Infrastructure/Configuration/ConnixConfig.hpp"
+#include "ConnixCore/Infrastructure/Configuration/Endpoint.hpp"
 #include "ConnixCore/Infrastructure/Configuration/FilesystemConfig.hpp"
+#include "ConnixCore/Infrastructure/Configuration/FrameConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/IConfigurationProvider.hpp"
 #include "ConnixCore/Infrastructure/Configuration/IFileReader.hpp"
 #include "ConnixCore/Infrastructure/Configuration/IJsonParser.hpp"
 #include "ConnixCore/Infrastructure/Configuration/IJsonValidator.hpp"
-#include "ConnixCore/Infrastructure/Configuration/NodeConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/NodeTransport.hpp"
-#include "ConnixCore/Infrastructure/Configuration/NodeType.hpp"
 #include "ConnixCore/Infrastructure/Configuration/PayloadType.hpp"
+#include "ConnixCore/Infrastructure/Configuration/PeerNodeConfig.hpp"
+#include "ConnixCore/Infrastructure/Configuration/ServerNodeConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/TimerConfig.hpp"
 
 using namespace testing;
@@ -92,11 +95,21 @@ public:
 
 ConnixConfig createSampleConfig()
 {
-    std::unordered_map<std::string, NodeConfig> nodes;
-    nodes.emplace("test_node",
-                  NodeConfig(NodeType::SERVER, NodeTransport::TCP,
-                             std::nullopt, std::nullopt, std::nullopt,
-                             std::nullopt, std::nullopt, std::nullopt, {}));
+    std::unordered_map<std::string, ServerNodeConfig> serverNodes;
+    serverNodes.emplace("test_server",
+                        ServerNodeConfig(NodeTransport::TCP,
+                                         Endpoint("127.0.0.1", 8080),
+                                         FrameConfig(), 10, 4096, {}));
+
+    std::unordered_map<std::string, ClientNodeConfig> clientNodes;
+    clientNodes.emplace("test_client",
+                        ClientNodeConfig(NodeTransport::TCP, FrameConfig(),
+                                         4096, 5000, 30000, {}));
+
+    std::unordered_map<std::string, PeerNodeConfig> peerNodes;
+    peerNodes.emplace("test_peer", PeerNodeConfig(NodeTransport::TCP,
+                                                  Endpoint("127.0.0.1", 8080),
+                                                  FrameConfig()));
 
     std::unordered_map<std::string, TimerConfig> timers;
     timers.emplace("test_timer", TimerConfig(1000, true, { "ACTION" }));
@@ -111,7 +124,8 @@ ConnixConfig createSampleConfig()
                                  ActionPayload(PayloadType::BYTES, "payload"),
                                  "nodeA", "nodeB"));
 
-    return ConnixConfig("SampleConfig", nodes, timers, filesystems, actions);
+    return ConnixConfig("SampleConfig", serverNodes, clientNodes, peerNodes,
+                        timers, filesystems, actions);
 }
 
 } // namespace
@@ -125,7 +139,9 @@ TEST(ConfigurationProviderTest, InitialStateEmpty)
     ConfigurationProvider provider(reader, validator, parser);
 
     EXPECT_TRUE(provider.getName().empty());
-    EXPECT_TRUE(provider.getNodes().empty());
+    EXPECT_TRUE(provider.getServerNodes().empty());
+    EXPECT_TRUE(provider.getClientNodes().empty());
+    EXPECT_TRUE(provider.getPeerNodes().empty());
     EXPECT_TRUE(provider.getTimers().empty());
     EXPECT_TRUE(provider.getFilesystems().empty());
     EXPECT_TRUE(provider.getActions().empty());
@@ -155,7 +171,9 @@ TEST(ConfigurationProviderTest, LoadSuccess)
     EXPECT_EQ(parser.lastParsedJson, "{\"name\": \"test\"}");
 
     EXPECT_EQ(provider.getName(), "SampleConfig");
-    EXPECT_EQ(provider.getNodes().size(), 1);
+    EXPECT_EQ(provider.getServerNodes().size(), 1);
+    EXPECT_EQ(provider.getClientNodes().size(), 1);
+    EXPECT_EQ(provider.getPeerNodes().size(), 1);
     EXPECT_EQ(provider.getTimers().size(), 1);
     EXPECT_EQ(provider.getFilesystems().size(), 1);
     EXPECT_EQ(provider.getActions().size(), 1);
@@ -176,7 +194,9 @@ TEST(ConfigurationProviderTest, LoadFailsWhenConfigFileReadThrows)
         std::runtime_error);
 
     EXPECT_TRUE(provider.getName().empty());
-    EXPECT_TRUE(provider.getNodes().empty());
+    EXPECT_TRUE(provider.getServerNodes().empty());
+    EXPECT_TRUE(provider.getClientNodes().empty());
+    EXPECT_TRUE(provider.getPeerNodes().empty());
     EXPECT_TRUE(validator.lastValidatedJson.empty());
     EXPECT_TRUE(parser.lastParsedJson.empty());
 }
@@ -197,7 +217,9 @@ TEST(ConfigurationProviderTest, LoadFailsWhenSchemaFileReadThrows)
         std::runtime_error);
 
     EXPECT_TRUE(provider.getName().empty());
-    EXPECT_TRUE(provider.getNodes().empty());
+    EXPECT_TRUE(provider.getServerNodes().empty());
+    EXPECT_TRUE(provider.getClientNodes().empty());
+    EXPECT_TRUE(provider.getPeerNodes().empty());
     EXPECT_TRUE(validator.lastValidatedJson.empty());
     EXPECT_TRUE(parser.lastParsedJson.empty());
 }
@@ -220,7 +242,9 @@ TEST(ConfigurationProviderTest, LoadFailsWhenValidatorThrows)
         std::invalid_argument);
 
     EXPECT_TRUE(provider.getName().empty());
-    EXPECT_TRUE(provider.getNodes().empty());
+    EXPECT_TRUE(provider.getServerNodes().empty());
+    EXPECT_TRUE(provider.getClientNodes().empty());
+    EXPECT_TRUE(provider.getPeerNodes().empty());
     EXPECT_TRUE(parser.lastParsedJson.empty());
 }
 
@@ -241,7 +265,9 @@ TEST(ConfigurationProviderTest, LoadFailsWhenParserThrows)
         std::runtime_error);
 
     EXPECT_TRUE(provider.getName().empty());
-    EXPECT_TRUE(provider.getNodes().empty());
+    EXPECT_TRUE(provider.getServerNodes().empty());
+    EXPECT_TRUE(provider.getClientNodes().empty());
+    EXPECT_TRUE(provider.getPeerNodes().empty());
 }
 
 TEST(ConfigurationProviderTest, PolymorphicUsageViaInterface)
@@ -260,7 +286,9 @@ TEST(ConfigurationProviderTest, PolymorphicUsageViaInterface)
     provider->load("config.json", "schema.json");
 
     EXPECT_EQ(provider->getName(), "SampleConfig");
-    EXPECT_EQ(provider->getNodes().size(), 1);
+    EXPECT_EQ(provider->getServerNodes().size(), 1);
+    EXPECT_EQ(provider->getClientNodes().size(), 1);
+    EXPECT_EQ(provider->getPeerNodes().size(), 1);
     EXPECT_EQ(provider->getTimers().size(), 1);
     EXPECT_EQ(provider->getFilesystems().size(), 1);
     EXPECT_EQ(provider->getActions().size(), 1);

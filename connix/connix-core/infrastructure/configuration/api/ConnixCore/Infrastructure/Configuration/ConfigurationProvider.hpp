@@ -5,9 +5,11 @@
 #include <unordered_map>
 
 #include "ConnixCore/Infrastructure/Configuration/ActionConfig.hpp"
+#include "ConnixCore/Infrastructure/Configuration/ClientNodeConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/FilesystemConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/IConfigurationProvider.hpp"
-#include "ConnixCore/Infrastructure/Configuration/NodeConfig.hpp"
+#include "ConnixCore/Infrastructure/Configuration/PeerNodeConfig.hpp"
+#include "ConnixCore/Infrastructure/Configuration/ServerNodeConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/TimerConfig.hpp"
 
 namespace ConnixCore {
@@ -31,8 +33,14 @@ public:
 
     const std::string& getName() const override;
 
-    const std::unordered_map<std::string, NodeConfig>&
-    getNodes() const override;
+    const std::unordered_map<std::string, ServerNodeConfig>&
+    getServerNodes() const override;
+
+    const std::unordered_map<std::string, ClientNodeConfig>&
+    getClientNodes() const override;
+
+    const std::unordered_map<std::string, PeerNodeConfig>&
+    getPeerNodes() const override;
 
     const std::unordered_map<std::string, TimerConfig>&
     getTimers() const override;
@@ -48,7 +56,9 @@ private:
     std::reference_wrapper<const IJsonValidator> m_jsonValidator;
     std::reference_wrapper<const IJsonParser> m_jsonParser;
     std::string m_name;
-    std::unordered_map<std::string, NodeConfig> m_nodes;
+    std::unordered_map<std::string, ServerNodeConfig> m_serverNodes;
+    std::unordered_map<std::string, ClientNodeConfig> m_clientNodes;
+    std::unordered_map<std::string, PeerNodeConfig> m_peerNodes;
     std::unordered_map<std::string, TimerConfig> m_timers;
     std::unordered_map<std::string, FilesystemConfig> m_filesystems;
     std::unordered_map<std::string, ActionConfig> m_actions;

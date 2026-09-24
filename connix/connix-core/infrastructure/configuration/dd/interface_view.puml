@@ -7,7 +7,9 @@ package "Public" {
     interface IConfigurationProvider {
         + {abstract} load(configPath: string, schemaPath: string): void
         + {abstract} getName(): string const
-        + {abstract} getNodes(): const unordered_map<string, NodeConfig>& const
+        + {abstract} getServerNodes(): const unordered_map<string, ServerNodeConfig>& const
+        + {abstract} getClientNodes(): const unordered_map<string, ClientNodeConfig>& const
+        + {abstract} getPeerNodes(): const unordered_map<string, PeerNodeConfig>& const
         + {abstract} getTimers(): const unordered_map<string, TimerConfig>& const
         + {abstract} getFilesystems(): const unordered_map<string, FilesystemConfig>& const
         + {abstract} getActions(): const unordered_map<string, ActionConfig>& const
@@ -18,7 +20,9 @@ package "Public" {
         - jsonValidator: const IJsonValidator&
         - jsonParser: const IJsonParser&
         - name: string
-        - nodes: unordered_map<string, NodeConfig>
+        - serverNodes: unordered_map<string, ServerNodeConfig>
+        - clientNodes: unordered_map<string, ClientNodeConfig>
+        - peerNodes: unordered_map<string, PeerNodeConfig>
         - timers: unordered_map<string, TimerConfig>
         - filesystems: unordered_map<string, FilesystemConfig>
         - actions: unordered_map<string, ActionConfig>

@@ -8,16 +8,17 @@
 #include "ConnixCore/Infrastructure/Configuration/ActionPayload.hpp"
 #include "ConnixCore/Infrastructure/Configuration/ActionType.hpp"
 #include "ConnixCore/Infrastructure/Configuration/ByteOrder.hpp"
+#include "ConnixCore/Infrastructure/Configuration/ClientNodeConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/ConnixConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/Endpoint.hpp"
 #include "ConnixCore/Infrastructure/Configuration/EventRule.hpp"
 #include "ConnixCore/Infrastructure/Configuration/FilesystemConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/FrameConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/FrameType.hpp"
-#include "ConnixCore/Infrastructure/Configuration/NodeConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/NodeTransport.hpp"
-#include "ConnixCore/Infrastructure/Configuration/NodeType.hpp"
 #include "ConnixCore/Infrastructure/Configuration/PayloadType.hpp"
+#include "ConnixCore/Infrastructure/Configuration/PeerNodeConfig.hpp"
+#include "ConnixCore/Infrastructure/Configuration/ServerNodeConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/TimerConfig.hpp"
 
 using namespace ConnixCore::Infrastructure::Configuration;
@@ -42,14 +43,17 @@ TEST(DataStructuresTest, FrameConfig)
     FrameConfig frame(FrameType::LENGTH_PREFIX, 1024, 0, 4,
                       ByteOrder::BIG_ENDIAN);
     EXPECT_EQ(frame.getType(), FrameType::LENGTH_PREFIX);
-    ASSERT_TRUE(frame.getSize().has_value());
-    EXPECT_EQ(frame.getSize().value(), 1024);
-    ASSERT_TRUE(frame.getLengthOffset().has_value());
-    EXPECT_EQ(frame.getLengthOffset().value(), 0);
-    ASSERT_TRUE(frame.getLengthSize().has_value());
-    EXPECT_EQ(frame.getLengthSize().value(), 4);
-    ASSERT_TRUE(frame.getByteOrder().has_value());
-    EXPECT_EQ(frame.getByteOrder().value(), ByteOrder::BIG_ENDIAN);
+    EXPECT_EQ(frame.getSize(), 1024);
+    EXPECT_EQ(frame.getLengthOffset(), 0);
+    EXPECT_EQ(frame.getLengthSize(), 4);
+    EXPECT_EQ(frame.getByteOrder(), ByteOrder::BIG_ENDIAN);
+
+    FrameConfig defaultFrame;
+    EXPECT_EQ(defaultFrame.getType(), FrameType::NONE);
+    EXPECT_EQ(defaultFrame.getSize(), 0);
+    EXPECT_EQ(defaultFrame.getLengthOffset(), 0);
+    EXPECT_EQ(defaultFrame.getLengthSize(), 0);
+    EXPECT_EQ(defaultFrame.getByteOrder(), ByteOrder::BIG_ENDIAN);
 }
 
 TEST(DataStructuresTest, EventRule)
@@ -63,32 +67,51 @@ TEST(DataStructuresTest, EventRule)
     EXPECT_EQ(rule.getActions(), actions);
 }
 
-TEST(DataStructuresTest, NodeConfig)
+TEST(DataStructuresTest, ServerNodeConfig)
 {
     Endpoint endpoint("127.0.0.1", 9000);
-    FrameConfig frame(FrameType::FIXED_SIZE, 512, std::nullopt, std::nullopt,
-                      std::nullopt);
+    FrameConfig frame(FrameType::FIXED_SIZE, 512, 0, 0, ByteOrder::BIG_ENDIAN);
     EventRule rule({ "P1" }, 0, { "A1" });
 
-    NodeConfig node(NodeType::SERVER, NodeTransport::TCP, endpoint, frame, 100,
-                    4096, 5000, 10000, { rule });
+    ServerNodeConfig node(NodeTransport::TCP, endpoint, frame, 100, 4096,
+                          { rule });
 
-    EXPECT_EQ(node.getType(), NodeType::SERVER);
     EXPECT_EQ(node.getTransport(), NodeTransport::TCP);
-    ASSERT_TRUE(node.getEndpoint().has_value());
-    EXPECT_EQ(node.getEndpoint()->getAddress(), "127.0.0.1");
-    ASSERT_TRUE(node.getFrame().has_value());
-    EXPECT_EQ(node.getFrame()->getType(), FrameType::FIXED_SIZE);
-    ASSERT_TRUE(node.getMaxConnections().has_value());
-    EXPECT_EQ(node.getMaxConnections().value(), 100);
-    ASSERT_TRUE(node.getBufferSize().has_value());
-    EXPECT_EQ(node.getBufferSize().value(), 4096);
-    ASSERT_TRUE(node.getConnectionTimeout().has_value());
-    EXPECT_EQ(node.getConnectionTimeout().value(), 5000);
-    ASSERT_TRUE(node.getIdleTimeout().has_value());
-    EXPECT_EQ(node.getIdleTimeout().value(), 10000);
+    EXPECT_EQ(node.getEndpoint().getAddress(), "127.0.0.1");
+    EXPECT_EQ(node.getFrame().getType(), FrameType::FIXED_SIZE);
+    EXPECT_EQ(node.getMaxConnections(), 100);
+    EXPECT_EQ(node.getBufferSize(), 4096);
     ASSERT_EQ(node.getOnReceived().size(), 1);
     EXPECT_EQ(node.getOnReceived()[0].getOffset(), 0);
+}
+
+TEST(DataStructuresTest, ClientNodeConfig)
+{
+    FrameConfig frame(FrameType::FIXED_SIZE, 512, 0, 0, ByteOrder::BIG_ENDIAN);
+    EventRule rule({ "P1" }, 0, { "A1" });
+
+    ClientNodeConfig node(NodeTransport::TCP, frame, 4096, 5000, 10000,
+                          { rule });
+
+    EXPECT_EQ(node.getTransport(), NodeTransport::TCP);
+    EXPECT_EQ(node.getFrame().getType(), FrameType::FIXED_SIZE);
+    EXPECT_EQ(node.getBufferSize(), 4096);
+    EXPECT_EQ(node.getConnectionTimeout(), 5000);
+    EXPECT_EQ(node.getIdleTimeout(), 10000);
+    ASSERT_EQ(node.getOnReceived().size(), 1);
+    EXPECT_EQ(node.getOnReceived()[0].getOffset(), 0);
+}
+
+TEST(DataStructuresTest, PeerNodeConfig)
+{
+    Endpoint endpoint("127.0.0.1", 9000);
+    FrameConfig frame(FrameType::FIXED_SIZE, 512, 0, 0, ByteOrder::BIG_ENDIAN);
+
+    PeerNodeConfig node(NodeTransport::TCP, endpoint, frame);
+
+    EXPECT_EQ(node.getTransport(), NodeTransport::TCP);
+    EXPECT_EQ(node.getEndpoint().getAddress(), "127.0.0.1");
+    EXPECT_EQ(node.getFrame().getType(), FrameType::FIXED_SIZE);
 }
 
 TEST(DataStructuresTest, TimerConfig)
@@ -103,36 +126,32 @@ TEST(DataStructuresTest, TimerConfig)
 
 TEST(DataStructuresTest, FilesystemConfig)
 {
-    std::vector<std::string> modified = { "RELOAD_ACTION" };
-    FilesystemConfig fs("/tmp/watch", 250, modified);
+    std::vector<std::string> modified = { "TRIGGER_ACTION" };
+    FilesystemConfig fs("/tmp/watch", 500, modified);
 
     EXPECT_EQ(fs.getPath(), "/tmp/watch");
-    EXPECT_EQ(fs.getDebounce(), 250);
+    EXPECT_EQ(fs.getDebounce(), 500);
     EXPECT_EQ(fs.getOnModified(), modified);
 }
 
 TEST(DataStructuresTest, ActionPayload)
 {
-    ActionPayload payload(PayloadType::BYTES, "12 34 56 78");
+    ActionPayload payload(PayloadType::BYTES, "01 02 03");
     EXPECT_EQ(payload.getType(), PayloadType::BYTES);
-    EXPECT_EQ(payload.getSource(), "12 34 56 78");
-
-    ActionPayload filePayload(PayloadType::FILE, "/tmp/data.bin");
-    EXPECT_EQ(filePayload.getType(), PayloadType::FILE);
-    EXPECT_EQ(filePayload.getSource(), "/tmp/data.bin");
+    EXPECT_EQ(payload.getSource(), "01 02 03");
 }
 
-TEST(DataStructuresTest, ActionConfigCustomValues)
+TEST(DataStructuresTest, ActionConfig)
 {
-    ActionPayload payload(PayloadType::BYTES, "hello");
-    ActionConfig action(ActionType::SEND, payload, "nodeA", "nodeB", 100, 500,
-                        10);
+    ActionPayload payload(PayloadType::BYTES, "01 02 03");
+    ActionConfig action(ActionType::SEND, payload, "sourceNode", "targetNode",
+                        100, 500, 10);
 
     EXPECT_EQ(action.getType(), ActionType::SEND);
     EXPECT_EQ(action.getPayload().getType(), PayloadType::BYTES);
-    EXPECT_EQ(action.getPayload().getSource(), "hello");
-    EXPECT_EQ(action.getSourceNode(), "nodeA");
-    EXPECT_EQ(action.getTargetNode(), "nodeB");
+    EXPECT_EQ(action.getPayload().getSource(), "01 02 03");
+    EXPECT_EQ(action.getSourceNode(), "sourceNode");
+    EXPECT_EQ(action.getTargetNode(), "targetNode");
     EXPECT_EQ(action.getExecutionDelay(), 100);
     EXPECT_EQ(action.getExecutionTimeout(), 500);
     EXPECT_EQ(action.getMaxPending(), 10);
@@ -157,25 +176,37 @@ TEST(DataStructuresTest, ActionConfigDefaultValuesAndFilePayload)
 
 TEST(DataStructuresTest, ConnixConfig)
 {
-    std::unordered_map<std::string, NodeConfig> nodes;
+    std::unordered_map<std::string, ServerNodeConfig> serverNodes;
+    std::unordered_map<std::string, ClientNodeConfig> clientNodes;
+    std::unordered_map<std::string, PeerNodeConfig> peerNodes;
     std::unordered_map<std::string, TimerConfig> timers;
     std::unordered_map<std::string, FilesystemConfig> filesystems;
     std::unordered_map<std::string, ActionConfig> actions;
 
-    nodes.emplace("serverNode",
-                  NodeConfig(NodeType::SERVER, NodeTransport::TCP,
-                             std::nullopt, std::nullopt, std::nullopt,
-                             std::nullopt, std::nullopt, std::nullopt, {}));
+    serverNodes.emplace("serverNode",
+                        ServerNodeConfig(NodeTransport::TCP,
+                                         Endpoint("127.0.0.1", 8080),
+                                         FrameConfig(), 10, 4096, {}));
+    clientNodes.emplace("clientNode",
+                        ClientNodeConfig(NodeTransport::TCP, FrameConfig(),
+                                         4096, 5000, 30000, {}));
+    peerNodes.emplace("peerNode", PeerNodeConfig(NodeTransport::TCP,
+                                                 Endpoint("127.0.0.1", 8080),
+                                                 FrameConfig()));
+
     timers.emplace("t1", TimerConfig(500, false, {}));
     filesystems.emplace("fs1", FilesystemConfig("/etc/config", 100, {}));
     actions.emplace("act1",
                     ActionConfig(ActionType::RESPOND,
                                  ActionPayload(PayloadType::BYTES, "hello")));
 
-    ConnixConfig config("MainConfig", nodes, timers, filesystems, actions);
+    ConnixConfig config("MainConfig", serverNodes, clientNodes, peerNodes,
+                        timers, filesystems, actions);
 
     EXPECT_EQ(config.getName(), "MainConfig");
-    EXPECT_EQ(config.getNodes().size(), 1);
+    EXPECT_EQ(config.getServerNodes().size(), 1);
+    EXPECT_EQ(config.getClientNodes().size(), 1);
+    EXPECT_EQ(config.getPeerNodes().size(), 1);
     EXPECT_EQ(config.getTimers().size(), 1);
     EXPECT_EQ(config.getFilesystems().size(), 1);
     EXPECT_EQ(config.getActions().size(), 1);
@@ -186,7 +217,9 @@ TEST(DataStructuresTest, ConnixConfigDefaultConstructor)
     ConnixConfig config;
 
     EXPECT_EQ(config.getName(), "");
-    EXPECT_TRUE(config.getNodes().empty());
+    EXPECT_TRUE(config.getServerNodes().empty());
+    EXPECT_TRUE(config.getClientNodes().empty());
+    EXPECT_TRUE(config.getPeerNodes().empty());
     EXPECT_TRUE(config.getTimers().empty());
     EXPECT_TRUE(config.getFilesystems().empty());
     EXPECT_TRUE(config.getActions().empty());

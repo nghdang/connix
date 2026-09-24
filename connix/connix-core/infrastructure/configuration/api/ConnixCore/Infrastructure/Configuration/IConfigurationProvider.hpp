@@ -7,7 +7,9 @@ namespace ConnixCore {
 namespace Infrastructure {
 namespace Configuration {
 
-class NodeConfig;
+class ServerNodeConfig;
+class ClientNodeConfig;
+class PeerNodeConfig;
 class TimerConfig;
 class FilesystemConfig;
 class ActionConfig;
@@ -22,8 +24,14 @@ public:
 
     virtual const std::string& getName() const = 0;
 
-    virtual const std::unordered_map<std::string, NodeConfig>&
-    getNodes() const = 0;
+    virtual const std::unordered_map<std::string, ServerNodeConfig>&
+    getServerNodes() const = 0;
+
+    virtual const std::unordered_map<std::string, ClientNodeConfig>&
+    getClientNodes() const = 0;
+
+    virtual const std::unordered_map<std::string, PeerNodeConfig>&
+    getPeerNodes() const = 0;
 
     virtual const std::unordered_map<std::string, TimerConfig>&
     getTimers() const = 0;
