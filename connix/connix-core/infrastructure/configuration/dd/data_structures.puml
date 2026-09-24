@@ -118,6 +118,21 @@ package "Public" {
         + getMaxPending(): optional<uint32_t> const
         + getFile(): const optional<string>& const
     }
+
+    FrameType <-- FrameConfig : configures
+    ByteOrder <-- FrameConfig : defines
+
+    Endpoint -right-* NodeConfig : contains
+    FrameConfig --* NodeConfig : contains
+    EventRule --* NodeConfig : contains
+    NodeType <-- NodeConfig : categorizes
+    NodeTransport <-- NodeConfig : uses
+
+    ActionType <-- ActionConfig : defines
+
+    NodeConfig -[hidden]right- TimerConfig
+    TimerConfig -[hidden]right- FilesystemConfig
+    FilesystemConfig -[hidden]right- ActionConfig
 }
 
 package "Internal" {
@@ -137,23 +152,10 @@ package "Internal" {
 
 }
 
-    ' Relationships
-    ConnixConfig *-- NodeConfig : aggregates
-    ConnixConfig *-- TimerConfig : aggregates
-    ConnixConfig *-- FilesystemConfig : aggregates
-    ConnixConfig *-- ActionConfig : aggregates
-
-    NodeConfig *-- Endpoint : contains
-    NodeConfig *-- FrameConfig : contains
-    NodeConfig *-- EventRule : contains
-
-    FrameConfig --> FrameType : configures
-    FrameConfig --> ByteOrder : defines
-
-    NodeConfig --> NodeType : categorizes
-    NodeConfig --> NodeTransport : uses
-
-    ActionConfig --> ActionType : defines
+NodeConfig --* ConnixConfig : aggregates
+TimerConfig --* ConnixConfig : aggregates
+FilesystemConfig --* ConnixConfig : aggregates
+ActionConfig --* ConnixConfig : aggregates
 
 }
 

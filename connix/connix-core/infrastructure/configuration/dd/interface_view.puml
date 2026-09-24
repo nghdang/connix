@@ -6,6 +6,7 @@ package "Public" {
 
     interface IConfigurationProvider {
         + {abstract} load(configPath: string, schemaPath: string): void
+        + {abstract} getName(): string const
         + {abstract} getNodes(): const unordered_map<string, NodeConfig>& const
         + {abstract} getTimers(): const unordered_map<string, TimerConfig>& const
         + {abstract} getFilesystems(): const unordered_map<string, FilesystemConfig>& const
@@ -16,8 +17,14 @@ package "Public" {
         - fileReader: const IFileReader&
         - jsonValidator: const IJsonValidator&
         - jsonParser: const IJsonParser&
-        - activeConfig: ConnixConfig
+        - name: string
+        - nodes: unordered_map<string, NodeConfig>
+        - timers: unordered_map<string, TimerConfig>
+        - filesystems: unordered_map<string, FilesystemConfig>
+        - actions: unordered_map<string, ActionConfig>
     }
+
+    IConfigurationProvider <|.. ConfigurationProvider
 
 }
 
@@ -43,19 +50,16 @@ package "Internal" {
 
     class JsonParser
 
-}
-
-    ' Interface Inheritances
-    IConfigurationProvider <|.. ConfigurationProvider
     IFileReader <|.. FileReader
     IJsonValidator <|.. JsonValidator
     IJsonParser <|.. JsonParser
+    IJsonParser ..> ConnixConfig : uses
 
-    ' Associations / Relationships
-    ConfigurationProvider o-- IFileReader : uses
-    ConfigurationProvider o-- IJsonValidator : uses
-    ConfigurationProvider o-- IJsonParser : uses
-    ConfigurationProvider *-- ConnixConfig : stores
+}
+
+ConfigurationProvider o-- IFileReader : uses
+ConfigurationProvider o-- IJsonValidator : uses
+ConfigurationProvider o-- IJsonParser : uses
 
 }
 

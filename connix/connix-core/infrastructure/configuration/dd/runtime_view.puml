@@ -47,6 +47,11 @@ deactivate ConfigurationProvider
 
 == Use Case: Get Configuration ==
 
+Client -> ConfigurationProvider : getName()
+activate ConfigurationProvider
+ConfigurationProvider --> Client
+deactivate ConfigurationProvider
+
 Client -> ConfigurationProvider : getNodes()
 activate ConfigurationProvider
 ConfigurationProvider --> Client
