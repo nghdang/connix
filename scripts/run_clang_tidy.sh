@@ -51,7 +51,7 @@ dump_env ${ENVS[@]}
 
 if [[ ! -d "$BUILD_DIR" ]]
 then
-    echo "Build release profile is required"
+    echo "Build native profile is required"
     exit $E_NG
 fi
 

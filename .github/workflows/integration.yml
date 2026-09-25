@@ -18,6 +18,9 @@ jobs:
       - name: Build
         run: ./scripts/build_application_native.sh
 
+      - name: Clang Tidy
+        run: ./scripts/run_clang_tidy.sh
+
       - name: Unit Tests
         run: |
           ./scripts/run_unit_tests.sh
@@ -59,6 +62,3 @@ jobs:
 
       - name: Build
         run: ./scripts/build_application_release.sh
-
-      - name: Clang Tidy
-        run: ./scripts/run_clang_tidy.sh
