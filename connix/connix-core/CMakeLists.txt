@@ -1,7 +1,8 @@
 add_library(connix-core STATIC)
 
 find_package(nlohmann_json REQUIRED)
-target_link_libraries(connix-core PUBLIC nlohmann_json::nlohmann_json)
+find_package(nlohmann_json_schema_validator REQUIRED)
+target_link_libraries(connix-core PUBLIC nlohmann_json::nlohmann_json nlohmann_json_schema_validator)
 
 install(TARGETS connix-core DESTINATION ${CMAKE_INSTALL_LIBDIR})
 

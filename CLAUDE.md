@@ -69,25 +69,25 @@ in `.clang-tidy`.
 
 ### Source layout (connix-core)
 
-Only one module is actually built out so far: `connix/connix-core/common/logging/`. Each
-module/layer follows this shape, with headers auto-globbed by the module's own `CMakeLists.txt`
-(new files under `inc/`/`api-internal/` or `src/` are picked up automatically, no CMake edits
-needed):
+The implemented `connix-core` modules are currently under
+`connix/connix-core/infrastructure/`:
 
 ```
-connix/connix-core/common/<module>/
-├── inc/ConnixCore/Common/<Module>/   # public headers, globbed into connix-core's PUBLIC sources
-├── src/                              # implementation (*.cpp), globbed as PRIVATE sources
-└── tst/                              # unit tests (UnitTest<Name>), only if BUILD_TESTS
+connix/connix-core/
+├── domain/                           # currently no implementations
+├── application/                      # currently no implementations
+└── infrastructure/
+    ├── configuration/                # configuration APIs, implementation, resources, mocks, tests
+    └── logging/                      # logging API, implementation, tests
 ```
 
-Namespaces mirror the folder path, e.g. `ConnixCore::Common::Logging`.
+Each infrastructure module has its own `CMakeLists.txt` and subdirectories. Public and
+internal headers, implementations, resources, mocks, and tests are declared through the
+module’s CMake files; follow the neighboring module structure when adding files.
 
-`docs/architecture/` (arc42/Sphinx docs) and `GEMINI.md` describe a target architecture — a
-`TransportLayer -> ConnectionLayer -> NodeLayer` communication stack under
-`connix/connix-core/src/Communication/` — that does **not yet exist** in the source tree on this
-branch. Do not assume that structure is present; check the actual directory layout before building
-on top of it.
+`docs/arch/` and `docs/reqs/` document the intended architecture and requirements. Treat them
+as design constraints, but check the source tree before assuming a documented component has
+already been implemented.
 
 ### CMake structure
 
