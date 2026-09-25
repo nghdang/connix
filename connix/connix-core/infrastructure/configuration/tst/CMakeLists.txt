@@ -1,3 +1,4 @@
 create_unit_test(ConfigurationInterfacesTest.cpp)
 create_unit_test(DataStructuresTest.cpp)
 create_unit_test(ConfigurationProviderTest.cpp)
+create_unit_test(FileReaderTest.cpp)

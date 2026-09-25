@@ -11,6 +11,7 @@
 #include "ConnixCore/Infrastructure/Configuration/ActionPayload.hpp"
 #include "ConnixCore/Infrastructure/Configuration/ActionType.hpp"
 #include "ConnixCore/Infrastructure/Configuration/ClientNodeConfig.hpp"
+#include "ConnixCore/Infrastructure/Configuration/ConfigurationException.hpp"
 #include "ConnixCore/Infrastructure/Configuration/ConfigurationProvider.hpp"
 #include "ConnixCore/Infrastructure/Configuration/ConnixConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/Endpoint.hpp"
@@ -129,14 +130,15 @@ TEST(ConfigurationProviderTest, LoadFailsWhenConfigFileReadThrows)
     MockIJsonParser parser;
 
     EXPECT_CALL(reader, readAll("/etc/connix/config.json"))
-        .WillOnce(Throw(
-            std::runtime_error("Failed to read: /etc/connix/config.json")));
+        .WillOnce(Throw(ConfigurationException(
+            ConfigurationErrorCode::FILE_NOT_FOUND,
+            "Failed to read: /etc/connix/config.json")));
 
     ConfigurationProvider provider(reader, validator, parser);
 
     EXPECT_THROW(
         provider.load("/etc/connix/config.json", "/etc/connix/schema.json"),
-        std::runtime_error);
+        ConfigurationException);
 
     EXPECT_TRUE(provider.getName().empty());
     EXPECT_TRUE(provider.getServerNodes().empty());
@@ -153,14 +155,15 @@ TEST(ConfigurationProviderTest, LoadFailsWhenSchemaFileReadThrows)
     EXPECT_CALL(reader, readAll("/etc/connix/config.json"))
         .WillOnce(Return("{\"name\": \"test\"}"));
     EXPECT_CALL(reader, readAll("/etc/connix/schema.json"))
-        .WillOnce(Throw(
-            std::runtime_error("Failed to read: /etc/connix/schema.json")));
+        .WillOnce(Throw(ConfigurationException(
+            ConfigurationErrorCode::FILE_NOT_FOUND,
+            "Failed to read: /etc/connix/schema.json")));
 
     ConfigurationProvider provider(reader, validator, parser);
 
     EXPECT_THROW(
         provider.load("/etc/connix/config.json", "/etc/connix/schema.json"),
-        std::runtime_error);
+        ConfigurationException);
 
     EXPECT_TRUE(provider.getName().empty());
     EXPECT_TRUE(provider.getServerNodes().empty());

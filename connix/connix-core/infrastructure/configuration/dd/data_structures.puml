@@ -27,6 +27,18 @@ package "Public" {
         SEND
     }
 
+    enum ConfigurationErrorCode {
+        FILE_NOT_FOUND
+        FILE_READ_FAILED
+        SCHEMA_VALIDATION_FAILED
+        JSON_PARSE_FAILED
+    }
+
+    class ConfigurationException {
+        - errorCode: ConfigurationErrorCode
+        + getErrorCode(): ConfigurationErrorCode const
+    }
+
     class Endpoint {
         - address: string
         - port: optional<uint16_t>
