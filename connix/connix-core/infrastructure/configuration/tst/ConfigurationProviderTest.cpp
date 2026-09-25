@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "ConnixCore/Infrastructure/Configuration/ActionConfig.hpp"
@@ -66,19 +67,21 @@ ConnixConfig createSampleConfig()
                                  ActionPayload(PayloadType::BYTES, "payload"),
                                  "nodeA", "nodeB"));
 
-    return ConnixConfig("SampleConfig", serverNodes, clientNodes, peerNodes,
-                        timers, filesystems, actions);
+    return { "SampleConfig",         std::move(serverNodes),
+             std::move(clientNodes), std::move(peerNodes),
+             std::move(timers),      std::move(filesystems),
+             std::move(actions) };
 }
 
 } // namespace
 
 TEST(ConfigurationProviderTest, InitialStateEmpty)
 {
-    MockIFileReader reader;
-    MockIJsonValidator validator;
-    MockIJsonParser parser;
+    const MockIFileReader reader;
+    const MockIJsonValidator validator;
+    const MockIJsonParser parser;
 
-    ConfigurationProvider provider(reader, validator, parser);
+    const ConfigurationProvider provider(reader, validator, parser);
 
     EXPECT_TRUE(provider.getName().empty());
     EXPECT_TRUE(provider.getServerNodes().empty());
@@ -91,23 +94,23 @@ TEST(ConfigurationProviderTest, InitialStateEmpty)
 
 TEST(ConfigurationProviderTest, LoadSuccess)
 {
-    MockIFileReader reader;
-    MockIJsonValidator validator;
-    MockIJsonParser parser;
+    const MockIFileReader reader;
+    const MockIJsonValidator validator;
+    const MockIJsonParser parser;
 
     {
-        InSequence seq;
+        const InSequence seq;
         EXPECT_CALL(reader, readAll("/etc/connix/config.json"))
-            .WillOnce(Return("{\"name\": \"test\"}"));
+            .WillOnce(Return(R"({"name": "test"})"));
         EXPECT_CALL(reader, readAll("/etc/connix/schema.json"))
-            .WillOnce(Return("{\"type\": \"object\"}"));
+            .WillOnce(Return(R"({"type": "object"})"));
     }
 
     EXPECT_CALL(validator,
-                validate("{\"name\": \"test\"}", "{\"type\": \"object\"}"))
+                validate(R"({"name": "test"})", R"({"type": "object"})"))
         .Times(1);
 
-    EXPECT_CALL(parser, parse("{\"name\": \"test\"}"))
+    EXPECT_CALL(parser, parse(R"({"name": "test"})"))
         .WillOnce(Return(createSampleConfig()));
 
     ConfigurationProvider provider(reader, validator, parser);
@@ -125,9 +128,9 @@ TEST(ConfigurationProviderTest, LoadSuccess)
 
 TEST(ConfigurationProviderTest, LoadFailsWhenConfigFileReadThrows)
 {
-    MockIFileReader reader;
-    MockIJsonValidator validator;
-    MockIJsonParser parser;
+    const MockIFileReader reader;
+    const MockIJsonValidator validator;
+    const MockIJsonParser parser;
 
     EXPECT_CALL(reader, readAll("/etc/connix/config.json"))
         .WillOnce(Throw(ConfigurationException(
@@ -148,12 +151,12 @@ TEST(ConfigurationProviderTest, LoadFailsWhenConfigFileReadThrows)
 
 TEST(ConfigurationProviderTest, LoadFailsWhenSchemaFileReadThrows)
 {
-    MockIFileReader reader;
-    MockIJsonValidator validator;
-    MockIJsonParser parser;
+    const MockIFileReader reader;
+    const MockIJsonValidator validator;
+    const MockIJsonParser parser;
 
     EXPECT_CALL(reader, readAll("/etc/connix/config.json"))
-        .WillOnce(Return("{\"name\": \"test\"}"));
+        .WillOnce(Return(R"({"name": "test"})"));
     EXPECT_CALL(reader, readAll("/etc/connix/schema.json"))
         .WillOnce(Throw(ConfigurationException(
             ConfigurationErrorCode::FILE_NOT_FOUND,
@@ -173,17 +176,17 @@ TEST(ConfigurationProviderTest, LoadFailsWhenSchemaFileReadThrows)
 
 TEST(ConfigurationProviderTest, LoadFailsWhenValidatorThrows)
 {
-    MockIFileReader reader;
-    MockIJsonValidator validator;
-    MockIJsonParser parser;
+    const MockIFileReader reader;
+    const MockIJsonValidator validator;
+    const MockIJsonParser parser;
 
     EXPECT_CALL(reader, readAll("/etc/connix/config.json"))
-        .WillOnce(Return("{\"name\": \"invalid\"}"));
+        .WillOnce(Return(R"({"name": "invalid"})"));
     EXPECT_CALL(reader, readAll("/etc/connix/schema.json"))
-        .WillOnce(Return("{\"type\": \"object\"}"));
+        .WillOnce(Return(R"({"type": "object"})"));
 
     EXPECT_CALL(validator,
-                validate("{\"name\": \"invalid\"}", "{\"type\": \"object\"}"))
+                validate(R"({"name": "invalid"})", R"({"type": "object"})"))
         .WillOnce(Throw(std::invalid_argument("Validation failed")));
 
     ConfigurationProvider provider(reader, validator, parser);
@@ -200,16 +203,16 @@ TEST(ConfigurationProviderTest, LoadFailsWhenValidatorThrows)
 
 TEST(ConfigurationProviderTest, LoadFailsWhenParserThrows)
 {
-    MockIFileReader reader;
-    MockIJsonValidator validator;
-    MockIJsonParser parser;
+    const MockIFileReader reader;
+    const MockIJsonValidator validator;
+    const MockIJsonParser parser;
 
     EXPECT_CALL(reader, readAll("/etc/connix/config.json"))
         .WillOnce(Return("{corrupted}"));
     EXPECT_CALL(reader, readAll("/etc/connix/schema.json"))
-        .WillOnce(Return("{\"type\": \"object\"}"));
+        .WillOnce(Return(R"({"type": "object"})"));
 
-    EXPECT_CALL(validator, validate("{corrupted}", "{\"type\": \"object\"}"))
+    EXPECT_CALL(validator, validate("{corrupted}", R"({"type": "object"})"))
         .Times(1);
 
     EXPECT_CALL(parser, parse("{corrupted}"))
@@ -229,12 +232,12 @@ TEST(ConfigurationProviderTest, LoadFailsWhenParserThrows)
 
 TEST(ConfigurationProviderTest, PolymorphicUsageViaInterface)
 {
-    MockIFileReader reader;
-    MockIJsonValidator validator;
-    MockIJsonParser parser;
+    const MockIFileReader reader;
+    const MockIJsonValidator validator;
+    const MockIJsonParser parser;
 
     {
-        InSequence seq;
+        const InSequence seq;
         EXPECT_CALL(reader, readAll("config.json")).WillOnce(Return("{}"));
         EXPECT_CALL(reader, readAll("schema.json")).WillOnce(Return("{}"));
     }

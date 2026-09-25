@@ -28,13 +28,12 @@
 
 #ifndef LOG_ASSERT
 #define LOG_ASSERT(condition, ...)                                            \
-    do                                                                        \
-    {                                                                         \
+    [&]() {                                                                   \
         if (!(condition))                                                     \
         {                                                                     \
             ConnixCore::Infrastructure::Logging::Logger::getInstance()        \
                 .record("ASSERT FAILED", __VA_ARGS__);                        \
             assert(condition);                                                \
         }                                                                     \
-    } while (0)
+    }()
 #endif

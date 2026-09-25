@@ -1,5 +1,7 @@
 #include "gtest/gtest.h"
 
+#include <string>
+
 #include "ConnixCore/Infrastructure/Logging/Logging.hpp"
 
 using namespace testing;
@@ -27,13 +29,16 @@ TEST(LoggerTest, MultiArguments)
 
 TEST(LoggerTest, AssertTrue)
 {
-    LOG_ASSERT(true, "Assert condition is true, should not log");
+    const bool condition = true;
+    LOG_ASSERT(condition, "Assert condition is true, should not log");
 }
 
 TEST(LoggerTest, AssertFalse)
 {
+    const bool condition = false;
     EXPECT_DEATH(
-        { LOG_ASSERT(false, "Assert condition is false, should crash"); }, "");
+        { LOG_ASSERT(condition, "Assert condition is false, should crash"); },
+        "");
 }
 
 } // namespace UnitTest

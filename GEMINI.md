@@ -117,9 +117,9 @@ linting.
     ```bash
     ./scripts/run_clang_tidy.sh
     ```
-    *Note: Running `clang-tidy` requires compiling a release build
-    (`./scripts/build_application_release.sh`) first to generate the
-    compilation database.*
+    *Note: Running `clang-tidy` requires compiling a native debug build
+    (`./scripts/build_application_native.sh`) first to generate the
+    compilation database with tests.*
 *   **Strict Diagnostics:** Never suppress compiler warnings or linter
     diagnostics merely to make a change pass.
 *   **Implementation Separation:** Always separate class member function

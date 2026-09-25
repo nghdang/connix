@@ -19,7 +19,7 @@ function print_usage()
 }
 
 TARGET_DIR="${PROJECT_DIR}/${PROJECT_NAME}"
-BUILD_DIR="${PROJECT_DIR}/build-release"
+BUILD_DIR="${PROJECT_DIR}/build-native"
 
 DEFAULT_DRY_RUN="$NO"
 

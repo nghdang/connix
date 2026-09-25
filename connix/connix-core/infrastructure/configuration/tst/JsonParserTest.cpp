@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 
 #include <string>
+#include <vector>
 
 #include "ConnixCore/Infrastructure/Configuration/ActionConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/ActionType.hpp"
@@ -104,8 +105,8 @@ TEST(JsonParserTest, ParseValidFullJson)
         }
     })";
 
-    JsonParser parser;
-    ConnixConfig config = parser.parse(validJson);
+    const JsonParser parser;
+    const ConnixConfig config = parser.parse(validJson);
 
     EXPECT_EQ(config.getName(), "CompleteConfig");
 
@@ -115,7 +116,7 @@ TEST(JsonParserTest, ParseValidFullJson)
     EXPECT_EQ(srv1.getTransport(), NodeTransport::TCP);
     EXPECT_EQ(srv1.getEndpoint().getAddress(), "0.0.0.0");
     ASSERT_TRUE(srv1.getEndpoint().getPort().has_value());
-    EXPECT_EQ(srv1.getEndpoint().getPort().value(), 8080);
+    EXPECT_EQ(srv1.getEndpoint().getPort().value_or(0), 8080);
     EXPECT_EQ(srv1.getFrame().getType(), FrameType::FIXED_SIZE);
     EXPECT_EQ(srv1.getFrame().getSize(), 128);
     EXPECT_EQ(srv1.getMaxConnections(), 50);
@@ -155,7 +156,8 @@ TEST(JsonParserTest, ParseValidFullJson)
     const auto& timer1 = config.getTimers().at("timer1");
     EXPECT_EQ(timer1.getInterval(), 250);
     EXPECT_TRUE(timer1.isSingleShot());
-    EXPECT_EQ(timer1.getOnTimeout(), std::vector<std::string>{ "act1" });
+    const std::vector<std::string> expectedTimeout = { "act1" };
+    EXPECT_EQ(timer1.getOnTimeout(), expectedTimeout);
 
     // Filesystems
     ASSERT_EQ(config.getFilesystems().size(), 1);
@@ -181,7 +183,7 @@ TEST(JsonParserTest, ParseValidFullJson)
 
 TEST(JsonParserTest, ParseInvalidJsonThrows)
 {
-    JsonParser parser;
+    const JsonParser parser;
     EXPECT_THROW(parser.parse("{ invalid json"), ConfigurationException);
 }
 
@@ -200,7 +202,7 @@ TEST(JsonParserTest, ParseUnknownTransportThrows)
         }
     })";
 
-    JsonParser parser;
+    const JsonParser parser;
     try
     {
         parser.parse(invalidJson);
@@ -229,7 +231,7 @@ TEST(JsonParserTest, ParseUnknownFrameTypeThrows)
         }
     })";
 
-    JsonParser parser;
+    const JsonParser parser;
     try
     {
         parser.parse(invalidJson);
@@ -261,7 +263,7 @@ TEST(JsonParserTest, ParseMalformedEventRuleThrows)
         }
     })";
 
-    JsonParser parser;
+    const JsonParser parser;
     EXPECT_THROW(parser.parse(invalidJson), ConfigurationException);
 }
 

@@ -15,17 +15,22 @@ namespace UnitTest {
 
 class FileReaderTest : public ::testing::Test
 {
+public:
+    void TestBody() override
+    {
+    }
+
 protected:
     void SetUp() override
     {
         m_validFilePath = "temp_valid_file.txt";
         std::ofstream ofs(m_validFilePath);
-        ofs << "Hello, Connix FileReader!" << std::endl;
+        ofs << "Hello, Connix FileReader!\n";
         ofs.close();
 
         m_unreadableFilePath = "temp_unreadable_file.txt";
         std::ofstream unreadableOfs(m_unreadableFilePath);
-        unreadableOfs << "secret" << std::endl;
+        unreadableOfs << "secret\n";
         unreadableOfs.close();
         std::filesystem::permissions(m_unreadableFilePath,
                                      std::filesystem::perms::none,
@@ -52,15 +57,15 @@ protected:
 
 TEST_F(FileReaderTest, ReadValidFileSuccess)
 {
-    FileReader reader;
-    std::string content = reader.readAll(m_validFilePath);
+    const FileReader reader;
+    const std::string content = reader.readAll(m_validFilePath);
     EXPECT_EQ(content, "Hello, Connix FileReader!\n");
 }
 
 TEST_F(FileReaderTest, ReadNonExistentFileThrowsFileNotFound)
 {
-    FileReader reader;
-    std::string nonExistentPath = "this_file_does_not_exist_at_all.txt";
+    const FileReader reader;
+    const std::string nonExistentPath = "this_file_does_not_exist_at_all.txt";
 
     try
     {
@@ -76,7 +81,7 @@ TEST_F(FileReaderTest, ReadNonExistentFileThrowsFileNotFound)
 
 TEST_F(FileReaderTest, ReadDirectoryThrowsFileReadFailed)
 {
-    FileReader reader;
+    const FileReader reader;
 
     try
     {
@@ -92,7 +97,7 @@ TEST_F(FileReaderTest, ReadDirectoryThrowsFileReadFailed)
 
 TEST_F(FileReaderTest, ReadUnreadableFileThrowsFileReadFailed)
 {
-    FileReader reader;
+    const FileReader reader;
 
     try
     {
@@ -108,8 +113,8 @@ TEST_F(FileReaderTest, ReadUnreadableFileThrowsFileReadFailed)
 
 TEST(ConfigurationExceptionTest, CheckErrorCodeAndMessage)
 {
-    ConfigurationException ex(ConfigurationErrorCode::SCHEMA_VALIDATION_FAILED,
-                              "schema error");
+    const ConfigurationException ex(
+        ConfigurationErrorCode::SCHEMA_VALIDATION_FAILED, "schema error");
     EXPECT_EQ(ex.getErrorCode(),
               ConfigurationErrorCode::SCHEMA_VALIDATION_FAILED);
     EXPECT_STREQ(ex.what(), "schema error");

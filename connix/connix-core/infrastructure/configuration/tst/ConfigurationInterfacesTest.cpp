@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "ConnixCore/Infrastructure/Configuration/ConnixConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/IConfigurationProvider.hpp"
@@ -22,7 +23,8 @@ namespace UnitTest {
 
 TEST(ConfigurationInterfacesTest, FileReaderPolymorphism)
 {
-    std::unique_ptr<IFileReader> reader = std::make_unique<MockIFileReader>();
+    const std::unique_ptr<IFileReader> reader =
+        std::make_unique<MockIFileReader>();
     auto* mockReader = dynamic_cast<MockIFileReader*>(reader.get());
     ASSERT_NE(mockReader, nullptr);
 
@@ -34,7 +36,7 @@ TEST(ConfigurationInterfacesTest, FileReaderPolymorphism)
 
 TEST(ConfigurationInterfacesTest, JsonValidatorPolymorphism)
 {
-    std::unique_ptr<IJsonValidator> validator =
+    const std::unique_ptr<IJsonValidator> validator =
         std::make_unique<MockIJsonValidator>();
     auto* mockValidator = dynamic_cast<MockIJsonValidator*>(validator.get());
     ASSERT_NE(mockValidator, nullptr);
@@ -46,7 +48,8 @@ TEST(ConfigurationInterfacesTest, JsonValidatorPolymorphism)
 
 TEST(ConfigurationInterfacesTest, JsonParserPolymorphism)
 {
-    std::unique_ptr<IJsonParser> parser = std::make_unique<MockIJsonParser>();
+    const std::unique_ptr<IJsonParser> parser =
+        std::make_unique<MockIJsonParser>();
     auto* mockParser = dynamic_cast<MockIJsonParser*>(parser.get());
     ASSERT_NE(mockParser, nullptr);
 
@@ -54,20 +57,20 @@ TEST(ConfigurationInterfacesTest, JsonParserPolymorphism)
         .WillOnce(
             Return(ConnixConfig("parsed_config", {}, {}, {}, {}, {}, {})));
 
-    ConnixConfig config = parser->parse("{}");
+    const ConnixConfig config = parser->parse("{}");
     EXPECT_EQ(config.getName(), "parsed_config");
 }
 
 TEST(ConfigurationInterfacesTest, ConfigurationProviderPolymorphism)
 {
-    std::unique_ptr<IConfigurationProvider> provider =
+    const std::unique_ptr<IConfigurationProvider> provider =
         std::make_unique<MockIConfigurationProvider>();
     auto* mockProvider =
         dynamic_cast<MockIConfigurationProvider*>(provider.get());
     ASSERT_NE(mockProvider, nullptr);
 
     std::string expectedName = "mock_provider";
-    std::unordered_map<std::string, ServerNodeConfig> emptyServers;
+    const std::unordered_map<std::string, ServerNodeConfig> emptyServers;
 
     EXPECT_CALL(*mockProvider, load("config.json", "schema.json")).Times(1);
     EXPECT_CALL(*mockProvider, getName()).WillOnce(ReturnRef(expectedName));
@@ -81,13 +84,13 @@ TEST(ConfigurationInterfacesTest, ConfigurationProviderPolymorphism)
 
 TEST(ConfigurationInterfacesTest, MockConfigurationProviderFactoryMethods)
 {
-    auto normalMock = MockIConfigurationProvider::create();
+    const auto normalMock = MockIConfigurationProvider::create();
     ASSERT_NE(normalMock, nullptr);
 
-    auto niceMock = MockIConfigurationProvider::createNice();
+    const auto niceMock = MockIConfigurationProvider::createNice();
     ASSERT_NE(niceMock, nullptr);
 
-    auto strictMock = MockIConfigurationProvider::createStrict();
+    const auto strictMock = MockIConfigurationProvider::createStrict();
     ASSERT_NE(strictMock, nullptr);
 
     std::string name = "test";
