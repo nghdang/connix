@@ -1,3 +1,4 @@
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
 #include <memory>
@@ -16,9 +17,9 @@
 #include "ConnixCore/Infrastructure/Configuration/FilesystemConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/FrameConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/IConfigurationProvider.hpp"
-#include "ConnixCore/Infrastructure/Configuration/IFileReader.hpp"
-#include "ConnixCore/Infrastructure/Configuration/IJsonParser.hpp"
-#include "ConnixCore/Infrastructure/Configuration/IJsonValidator.hpp"
+#include "ConnixCore/Infrastructure/Configuration/MockIFileReader.hpp"
+#include "ConnixCore/Infrastructure/Configuration/MockIJsonParser.hpp"
+#include "ConnixCore/Infrastructure/Configuration/MockIJsonValidator.hpp"
 #include "ConnixCore/Infrastructure/Configuration/NodeTransport.hpp"
 #include "ConnixCore/Infrastructure/Configuration/PayloadType.hpp"
 #include "ConnixCore/Infrastructure/Configuration/PeerNodeConfig.hpp"
@@ -32,66 +33,6 @@ namespace ConnixCore {
 namespace UnitTest {
 
 namespace {
-
-class MockFileReader : public IFileReader
-{
-public:
-    std::string readAll(const std::string& filePath) const override
-    {
-        readHistory.push_back(filePath);
-        if (throwOnPath == filePath)
-        {
-            throw std::runtime_error("Failed to read: " + filePath);
-        }
-        auto it = fileContents.find(filePath);
-        if (it != fileContents.end())
-        {
-            return it->second;
-        }
-        return "";
-    }
-
-    std::unordered_map<std::string, std::string> fileContents;
-    std::string throwOnPath;
-    mutable std::vector<std::string> readHistory;
-};
-
-class MockJsonValidator : public IJsonValidator
-{
-public:
-    void validate(const std::string& jsonStr,
-                  const std::string& schemaStr) const override
-    {
-        lastValidatedJson = jsonStr;
-        lastValidatedSchema = schemaStr;
-        if (shouldThrow)
-        {
-            throw std::invalid_argument("Validation failed");
-        }
-    }
-
-    bool shouldThrow = false;
-    mutable std::string lastValidatedJson;
-    mutable std::string lastValidatedSchema;
-};
-
-class MockJsonParser : public IJsonParser
-{
-public:
-    ConnixConfig parse(const std::string& jsonStr) const override
-    {
-        lastParsedJson = jsonStr;
-        if (shouldThrow)
-        {
-            throw std::runtime_error("Parse error");
-        }
-        return parsedConfig;
-    }
-
-    bool shouldThrow = false;
-    mutable std::string lastParsedJson;
-    ConnixConfig parsedConfig;
-};
 
 ConnixConfig createSampleConfig()
 {
@@ -132,9 +73,9 @@ ConnixConfig createSampleConfig()
 
 TEST(ConfigurationProviderTest, InitialStateEmpty)
 {
-    MockFileReader reader;
-    MockJsonValidator validator;
-    MockJsonParser parser;
+    MockIFileReader reader;
+    MockIJsonValidator validator;
+    MockIJsonParser parser;
 
     ConfigurationProvider provider(reader, validator, parser);
 
@@ -149,26 +90,28 @@ TEST(ConfigurationProviderTest, InitialStateEmpty)
 
 TEST(ConfigurationProviderTest, LoadSuccess)
 {
-    MockFileReader reader;
-    reader.fileContents["/etc/connix/config.json"] = "{\"name\": \"test\"}";
-    reader.fileContents["/etc/connix/schema.json"] = "{\"type\": \"object\"}";
+    MockIFileReader reader;
+    MockIJsonValidator validator;
+    MockIJsonParser parser;
 
-    MockJsonValidator validator;
-    MockJsonParser parser;
-    parser.parsedConfig = createSampleConfig();
+    {
+        InSequence seq;
+        EXPECT_CALL(reader, readAll("/etc/connix/config.json"))
+            .WillOnce(Return("{\"name\": \"test\"}"));
+        EXPECT_CALL(reader, readAll("/etc/connix/schema.json"))
+            .WillOnce(Return("{\"type\": \"object\"}"));
+    }
+
+    EXPECT_CALL(validator,
+                validate("{\"name\": \"test\"}", "{\"type\": \"object\"}"))
+        .Times(1);
+
+    EXPECT_CALL(parser, parse("{\"name\": \"test\"}"))
+        .WillOnce(Return(createSampleConfig()));
 
     ConfigurationProvider provider(reader, validator, parser);
 
     provider.load("/etc/connix/config.json", "/etc/connix/schema.json");
-
-    ASSERT_EQ(reader.readHistory.size(), 2);
-    EXPECT_EQ(reader.readHistory[0], "/etc/connix/config.json");
-    EXPECT_EQ(reader.readHistory[1], "/etc/connix/schema.json");
-
-    EXPECT_EQ(validator.lastValidatedJson, "{\"name\": \"test\"}");
-    EXPECT_EQ(validator.lastValidatedSchema, "{\"type\": \"object\"}");
-
-    EXPECT_EQ(parser.lastParsedJson, "{\"name\": \"test\"}");
 
     EXPECT_EQ(provider.getName(), "SampleConfig");
     EXPECT_EQ(provider.getServerNodes().size(), 1);
@@ -181,11 +124,13 @@ TEST(ConfigurationProviderTest, LoadSuccess)
 
 TEST(ConfigurationProviderTest, LoadFailsWhenConfigFileReadThrows)
 {
-    MockFileReader reader;
-    reader.throwOnPath = "/etc/connix/config.json";
+    MockIFileReader reader;
+    MockIJsonValidator validator;
+    MockIJsonParser parser;
 
-    MockJsonValidator validator;
-    MockJsonParser parser;
+    EXPECT_CALL(reader, readAll("/etc/connix/config.json"))
+        .WillOnce(Throw(
+            std::runtime_error("Failed to read: /etc/connix/config.json")));
 
     ConfigurationProvider provider(reader, validator, parser);
 
@@ -197,18 +142,19 @@ TEST(ConfigurationProviderTest, LoadFailsWhenConfigFileReadThrows)
     EXPECT_TRUE(provider.getServerNodes().empty());
     EXPECT_TRUE(provider.getClientNodes().empty());
     EXPECT_TRUE(provider.getPeerNodes().empty());
-    EXPECT_TRUE(validator.lastValidatedJson.empty());
-    EXPECT_TRUE(parser.lastParsedJson.empty());
 }
 
 TEST(ConfigurationProviderTest, LoadFailsWhenSchemaFileReadThrows)
 {
-    MockFileReader reader;
-    reader.fileContents["/etc/connix/config.json"] = "{\"name\": \"test\"}";
-    reader.throwOnPath = "/etc/connix/schema.json";
+    MockIFileReader reader;
+    MockIJsonValidator validator;
+    MockIJsonParser parser;
 
-    MockJsonValidator validator;
-    MockJsonParser parser;
+    EXPECT_CALL(reader, readAll("/etc/connix/config.json"))
+        .WillOnce(Return("{\"name\": \"test\"}"));
+    EXPECT_CALL(reader, readAll("/etc/connix/schema.json"))
+        .WillOnce(Throw(
+            std::runtime_error("Failed to read: /etc/connix/schema.json")));
 
     ConfigurationProvider provider(reader, validator, parser);
 
@@ -220,20 +166,22 @@ TEST(ConfigurationProviderTest, LoadFailsWhenSchemaFileReadThrows)
     EXPECT_TRUE(provider.getServerNodes().empty());
     EXPECT_TRUE(provider.getClientNodes().empty());
     EXPECT_TRUE(provider.getPeerNodes().empty());
-    EXPECT_TRUE(validator.lastValidatedJson.empty());
-    EXPECT_TRUE(parser.lastParsedJson.empty());
 }
 
 TEST(ConfigurationProviderTest, LoadFailsWhenValidatorThrows)
 {
-    MockFileReader reader;
-    reader.fileContents["/etc/connix/config.json"] = "{\"name\": \"invalid\"}";
-    reader.fileContents["/etc/connix/schema.json"] = "{\"type\": \"object\"}";
+    MockIFileReader reader;
+    MockIJsonValidator validator;
+    MockIJsonParser parser;
 
-    MockJsonValidator validator;
-    validator.shouldThrow = true;
+    EXPECT_CALL(reader, readAll("/etc/connix/config.json"))
+        .WillOnce(Return("{\"name\": \"invalid\"}"));
+    EXPECT_CALL(reader, readAll("/etc/connix/schema.json"))
+        .WillOnce(Return("{\"type\": \"object\"}"));
 
-    MockJsonParser parser;
+    EXPECT_CALL(validator,
+                validate("{\"name\": \"invalid\"}", "{\"type\": \"object\"}"))
+        .WillOnce(Throw(std::invalid_argument("Validation failed")));
 
     ConfigurationProvider provider(reader, validator, parser);
 
@@ -245,18 +193,24 @@ TEST(ConfigurationProviderTest, LoadFailsWhenValidatorThrows)
     EXPECT_TRUE(provider.getServerNodes().empty());
     EXPECT_TRUE(provider.getClientNodes().empty());
     EXPECT_TRUE(provider.getPeerNodes().empty());
-    EXPECT_TRUE(parser.lastParsedJson.empty());
 }
 
 TEST(ConfigurationProviderTest, LoadFailsWhenParserThrows)
 {
-    MockFileReader reader;
-    reader.fileContents["/etc/connix/config.json"] = "{corrupted}";
-    reader.fileContents["/etc/connix/schema.json"] = "{\"type\": \"object\"}";
+    MockIFileReader reader;
+    MockIJsonValidator validator;
+    MockIJsonParser parser;
 
-    MockJsonValidator validator;
-    MockJsonParser parser;
-    parser.shouldThrow = true;
+    EXPECT_CALL(reader, readAll("/etc/connix/config.json"))
+        .WillOnce(Return("{corrupted}"));
+    EXPECT_CALL(reader, readAll("/etc/connix/schema.json"))
+        .WillOnce(Return("{\"type\": \"object\"}"));
+
+    EXPECT_CALL(validator, validate("{corrupted}", "{\"type\": \"object\"}"))
+        .Times(1);
+
+    EXPECT_CALL(parser, parse("{corrupted}"))
+        .WillOnce(Throw(std::runtime_error("Parse error")));
 
     ConfigurationProvider provider(reader, validator, parser);
 
@@ -272,13 +226,19 @@ TEST(ConfigurationProviderTest, LoadFailsWhenParserThrows)
 
 TEST(ConfigurationProviderTest, PolymorphicUsageViaInterface)
 {
-    MockFileReader reader;
-    reader.fileContents["config.json"] = "{}";
-    reader.fileContents["schema.json"] = "{}";
+    MockIFileReader reader;
+    MockIJsonValidator validator;
+    MockIJsonParser parser;
 
-    MockJsonValidator validator;
-    MockJsonParser parser;
-    parser.parsedConfig = createSampleConfig();
+    {
+        InSequence seq;
+        EXPECT_CALL(reader, readAll("config.json")).WillOnce(Return("{}"));
+        EXPECT_CALL(reader, readAll("schema.json")).WillOnce(Return("{}"));
+    }
+
+    EXPECT_CALL(validator, validate("{}", "{}")).Times(1);
+
+    EXPECT_CALL(parser, parse("{}")).WillOnce(Return(createSampleConfig()));
 
     std::unique_ptr<IConfigurationProvider> provider =
         std::make_unique<ConfigurationProvider>(reader, validator, parser);

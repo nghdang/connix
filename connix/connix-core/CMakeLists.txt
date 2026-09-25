@@ -2,13 +2,11 @@ add_library(connix-core STATIC)
 
 install(TARGETS connix-core DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-if(BUILD_MOCKS)
-    add_library(connix-core-mocks SHARED)
+add_library(connix-core-mocks SHARED)
 
-    target_link_libraries(connix-core-mocks PUBLIC connix-core gtest::gtest)
+target_link_libraries(connix-core-mocks PUBLIC connix-core gtest::gtest GTest::gmock)
 
-    install(TARGETS connix-core-mocks DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif()
+install(TARGETS connix-core-mocks DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 if(BUILD_TESTS)
     function(create_unit_test src_file)
@@ -18,18 +16,13 @@ if(BUILD_TESTS)
         # ${ARGV} contains list of all function arguments
         add_executable(${TEST_NAME} ${ARGV})
 
-        target_link_libraries(${TEST_NAME} PRIVATE connix-core gtest::gtest)
+        target_link_libraries(${TEST_NAME} PRIVATE connix-core connix-core-mocks gtest::gtest GTest::gmock)
         target_include_directories(${TEST_NAME} PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}/../api
             ${CMAKE_CURRENT_SOURCE_DIR}/../inc
+            ${CMAKE_CURRENT_SOURCE_DIR}/../../gmock/api
+            ${CMAKE_CURRENT_SOURCE_DIR}/../../gmock/api-internal
         )
-
-        if(TARGET connix-core-mocks)
-            target_link_libraries(${TEST_NAME} PRIVATE connix-core-mocks)
-            target_include_directories(${TEST_NAME} PRIVATE
-                ${CMAKE_CURRENT_SOURCE_DIR}/../../mock
-            )
-        endif()
 
         message(STATUS "Add UT: ${TEST_NAME}")
         add_test(${TEST_NAME} ${TEST_NAME} --gtest_output=json:${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}.json)

@@ -58,7 +58,7 @@ linting.
     ```
     *   Automatically runs CMake with debug variables and triggers building of
         all components.
-    *   Configures `BUILD_MOCKS=ON` and `BUILD_TESTS=ON`.
+    *   Configures `BUILD_TESTS=ON`. Mock targets are always built and packaged.
     *   To force a clean rebuild, use the `-f` or `--force` flag:
         ```bash
         ./scripts/build_application_native.sh --force
@@ -74,8 +74,8 @@ linting.
     ```bash
     ./scripts/build_application_release.sh
     ```
-    *   Builds with optimization and disables testing/mocks (`BUILD_MOCKS=OFF`
-        and `BUILD_TESTS=OFF`).
+    *   Builds with optimization and disables testing (`BUILD_TESTS=OFF`).
+        Mock libraries are packaged and delivered with the core library.
     *   Installs the compiled binary artifacts to `build-release/deploy` (or a
         custom prefix folder).
 
@@ -164,10 +164,10 @@ linting.
     mocks whenever possible.
 
 ### Mocks Usage
-*   Mocks are located in the `mock` directories of their respective modules
-    (e.g., `connix-core/infrastructure/network-service/mock/`).
-*   Tests in debug mode are automatically linked against the core mock
-    libraries if declared via the `MOCKS` argument in `create_unit_test()`.
+*   Mocks are located in the `gmock` directories of their respective modules
+    (e.g., `connix-core/infrastructure/network-service/gmock/`).
+*   Tests are automatically linked against the core mock libraries
+    (`connix-core-mocks`).
 
 ### Version Control & Commits
 *   The repository uses **conventional commits** for change tracking (e.g.,

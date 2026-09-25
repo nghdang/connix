@@ -1,20 +1,18 @@
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
 #include <memory>
 #include <string>
-#include <unordered_map>
 
-#include "ConnixCore/Infrastructure/Configuration/ActionConfig.hpp"
-#include "ConnixCore/Infrastructure/Configuration/ClientNodeConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/ConnixConfig.hpp"
-#include "ConnixCore/Infrastructure/Configuration/FilesystemConfig.hpp"
 #include "ConnixCore/Infrastructure/Configuration/IConfigurationProvider.hpp"
 #include "ConnixCore/Infrastructure/Configuration/IFileReader.hpp"
 #include "ConnixCore/Infrastructure/Configuration/IJsonParser.hpp"
 #include "ConnixCore/Infrastructure/Configuration/IJsonValidator.hpp"
-#include "ConnixCore/Infrastructure/Configuration/PeerNodeConfig.hpp"
-#include "ConnixCore/Infrastructure/Configuration/ServerNodeConfig.hpp"
-#include "ConnixCore/Infrastructure/Configuration/TimerConfig.hpp"
+#include "ConnixCore/Infrastructure/Configuration/MockIConfigurationProvider.hpp"
+#include "ConnixCore/Infrastructure/Configuration/MockIFileReader.hpp"
+#include "ConnixCore/Infrastructure/Configuration/MockIJsonParser.hpp"
+#include "ConnixCore/Infrastructure/Configuration/MockIJsonValidator.hpp"
 
 using namespace testing;
 using namespace ConnixCore::Infrastructure::Configuration;
@@ -22,113 +20,40 @@ using namespace ConnixCore::Infrastructure::Configuration;
 namespace ConnixCore {
 namespace UnitTest {
 
-class TestFileReader : public IFileReader
-{
-public:
-    std::string readAll(const std::string& filePath) const override
-    {
-        return "content of " + filePath;
-    }
-};
-
-class TestJsonValidator : public IJsonValidator
-{
-public:
-    void validate(const std::string& jsonStr,
-                  const std::string& schemaStr) const override
-    {
-        (void)jsonStr;
-        (void)schemaStr;
-    }
-};
-
-class TestJsonParser : public IJsonParser
-{
-public:
-    ConnixConfig parse(const std::string& jsonStr) const override
-    {
-        (void)jsonStr;
-        return ConnixConfig("parsed_config", {}, {}, {}, {}, {}, {});
-    }
-};
-
-class TestConfigurationProvider : public IConfigurationProvider
-{
-public:
-    void load(const std::string& configPath,
-              const std::string& schemaPath) override
-    {
-        (void)configPath;
-        (void)schemaPath;
-    }
-
-    const std::string& getName() const override
-    {
-        return m_name;
-    }
-
-    const std::unordered_map<std::string, ServerNodeConfig>&
-    getServerNodes() const override
-    {
-        return m_serverNodes;
-    }
-
-    const std::unordered_map<std::string, ClientNodeConfig>&
-    getClientNodes() const override
-    {
-        return m_clientNodes;
-    }
-
-    const std::unordered_map<std::string, PeerNodeConfig>&
-    getPeerNodes() const override
-    {
-        return m_peerNodes;
-    }
-
-    const std::unordered_map<std::string, TimerConfig>&
-    getTimers() const override
-    {
-        return m_timers;
-    }
-
-    const std::unordered_map<std::string, FilesystemConfig>&
-    getFilesystems() const override
-    {
-        return m_filesystems;
-    }
-
-    const std::unordered_map<std::string, ActionConfig>&
-    getActions() const override
-    {
-        return m_actions;
-    }
-
-private:
-    std::string m_name;
-    std::unordered_map<std::string, ServerNodeConfig> m_serverNodes;
-    std::unordered_map<std::string, ClientNodeConfig> m_clientNodes;
-    std::unordered_map<std::string, PeerNodeConfig> m_peerNodes;
-    std::unordered_map<std::string, TimerConfig> m_timers;
-    std::unordered_map<std::string, FilesystemConfig> m_filesystems;
-    std::unordered_map<std::string, ActionConfig> m_actions;
-};
-
 TEST(ConfigurationInterfacesTest, FileReaderPolymorphism)
 {
-    std::unique_ptr<IFileReader> reader = std::make_unique<TestFileReader>();
+    std::unique_ptr<IFileReader> reader = std::make_unique<MockIFileReader>();
+    auto* mockReader = dynamic_cast<MockIFileReader*>(reader.get());
+    ASSERT_NE(mockReader, nullptr);
+
+    EXPECT_CALL(*mockReader, readAll("test_path.json"))
+        .WillOnce(Return("content of test_path.json"));
+
     EXPECT_EQ(reader->readAll("test_path.json"), "content of test_path.json");
 }
 
 TEST(ConfigurationInterfacesTest, JsonValidatorPolymorphism)
 {
     std::unique_ptr<IJsonValidator> validator =
-        std::make_unique<TestJsonValidator>();
+        std::make_unique<MockIJsonValidator>();
+    auto* mockValidator = dynamic_cast<MockIJsonValidator*>(validator.get());
+    ASSERT_NE(mockValidator, nullptr);
+
+    EXPECT_CALL(*mockValidator, validate("{}", "{}")).Times(1);
+
     EXPECT_NO_THROW(validator->validate("{}", "{}"));
 }
 
 TEST(ConfigurationInterfacesTest, JsonParserPolymorphism)
 {
-    std::unique_ptr<IJsonParser> parser = std::make_unique<TestJsonParser>();
+    std::unique_ptr<IJsonParser> parser = std::make_unique<MockIJsonParser>();
+    auto* mockParser = dynamic_cast<MockIJsonParser*>(parser.get());
+    ASSERT_NE(mockParser, nullptr);
+
+    EXPECT_CALL(*mockParser, parse("{}"))
+        .WillOnce(
+            Return(ConnixConfig("parsed_config", {}, {}, {}, {}, {}, {})));
+
     ConnixConfig config = parser->parse("{}");
     EXPECT_EQ(config.getName(), "parsed_config");
 }
@@ -136,15 +61,38 @@ TEST(ConfigurationInterfacesTest, JsonParserPolymorphism)
 TEST(ConfigurationInterfacesTest, ConfigurationProviderPolymorphism)
 {
     std::unique_ptr<IConfigurationProvider> provider =
-        std::make_unique<TestConfigurationProvider>();
+        std::make_unique<MockIConfigurationProvider>();
+    auto* mockProvider =
+        dynamic_cast<MockIConfigurationProvider*>(provider.get());
+    ASSERT_NE(mockProvider, nullptr);
+
+    std::string expectedName = "mock_provider";
+    std::unordered_map<std::string, ServerNodeConfig> emptyServers;
+
+    EXPECT_CALL(*mockProvider, load("config.json", "schema.json")).Times(1);
+    EXPECT_CALL(*mockProvider, getName()).WillOnce(ReturnRef(expectedName));
+    EXPECT_CALL(*mockProvider, getServerNodes())
+        .WillOnce(ReturnRef(emptyServers));
+
     EXPECT_NO_THROW(provider->load("config.json", "schema.json"));
-    EXPECT_TRUE(provider->getName().empty());
+    EXPECT_EQ(provider->getName(), "mock_provider");
     EXPECT_TRUE(provider->getServerNodes().empty());
-    EXPECT_TRUE(provider->getClientNodes().empty());
-    EXPECT_TRUE(provider->getPeerNodes().empty());
-    EXPECT_TRUE(provider->getTimers().empty());
-    EXPECT_TRUE(provider->getFilesystems().empty());
-    EXPECT_TRUE(provider->getActions().empty());
+}
+
+TEST(ConfigurationInterfacesTest, MockConfigurationProviderFactoryMethods)
+{
+    auto normalMock = MockIConfigurationProvider::create();
+    ASSERT_NE(normalMock, nullptr);
+
+    auto niceMock = MockIConfigurationProvider::createNice();
+    ASSERT_NE(niceMock, nullptr);
+
+    auto strictMock = MockIConfigurationProvider::createStrict();
+    ASSERT_NE(strictMock, nullptr);
+
+    std::string name = "test";
+    EXPECT_CALL(*normalMock, getName()).WillOnce(ReturnRef(name));
+    EXPECT_EQ(normalMock->getName(), "test");
 }
 
 } // namespace UnitTest
