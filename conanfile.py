@@ -13,6 +13,7 @@ class Connix(ConanFile):
         return self.settings.os == "Linux"
 
     def requirements(self):
+        self.requires("nlohmann_json/3.11.3")
         if self.is_native_build():
             self.requires("gtest/1.16.0")  # type: ignore
 

@@ -1,5 +1,8 @@
 add_library(connix-core STATIC)
 
+find_package(nlohmann_json REQUIRED)
+target_link_libraries(connix-core PUBLIC nlohmann_json::nlohmann_json)
+
 install(TARGETS connix-core DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 add_library(connix-core-mocks SHARED)
