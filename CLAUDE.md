@@ -47,9 +47,14 @@ Builds and packages into the local Conan cache using `conan create`.
 ```bash
 ./scripts/run_unit_tests.sh
 ```
-Requires `build-native/` to already exist (run the native build first). Runs the
-`connix-core-unit-tests-run` CMake target (`ctest -j1 --tests-regex "UnitTest" --verbose`), then
-the `gen-code-coverage` target (lcov + genhtml). Coverage report: `build-native/coverage/index.html`.
+Requires `build-native/` to already exist (run the native build first). Runs all
+`UnitTest*` targets and invokes the `gen-code-coverage` target (lcov + genhtml). Coverage report: `build-native/coverage/index.html`.
+
+### Run Integration Tests
+```bash
+./scripts/run_integration_tests.sh
+```
+Runs all `IntegrationTest*` targets via CTest.
 
 ### Run a Single Test File
 ```bash
@@ -114,10 +119,11 @@ already been implemented.
 
 ### Testing
 
-- Test naming: `UnitTest<Name>`, created via `create_unit_test()` in each module's `tst/CMakeLists.txt`.
-- Tests mirror the module's `src/` (e.g. `common/logging/tst/LoggerTest.cpp` tests
-  `common/logging/src/Logger.cpp`).
-- 30-second timeout per test is a hard limit enforced by `create_unit_test()` — design tests to
+- Test structure: tests are organized under `tst/ut/` for unit tests and `tst/it/` for integration tests.
+- Test naming: unit tests are named `<Name>UnitTest.cpp` (registered via `create_unit_test()`), and integration tests are named `<Name>IntegrationTest.cpp` (registered via `create_integration_test()`).
+- Tests mirror the module's `src/` (e.g. `connix-core/infrastructure/logging/tst/LoggerUnitTest.cpp` tests
+  `connix-core/infrastructure/logging/src/Logger.cpp`).
+- 30-second timeout per unit test (60-second for integration test) is enforced by CMake test properties — design tests to
   fail fast and mock anything that would otherwise block on real I/O.
 
 ### Dependencies

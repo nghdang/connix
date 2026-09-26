@@ -1,6 +1,2 @@
-create_unit_test(ConfigurationInterfacesTest.cpp)
-create_unit_test(DataStructuresTest.cpp)
-create_unit_test(ConfigurationProviderTest.cpp)
-create_unit_test(FileReaderTest.cpp)
-create_unit_test(JsonParserTest.cpp)
-create_unit_test(JsonValidatorTest.cpp)
+add_subdirectory(ut)
+add_subdirectory(it)

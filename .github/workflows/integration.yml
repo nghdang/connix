@@ -26,6 +26,9 @@ jobs:
           ./scripts/run_unit_tests.sh
           ./scripts/check_coverage.sh
 
+      - name: Integration Tests
+        run: ./scripts/run_integration_tests.sh
+
   static-analysis:
     runs-on: self-hosted
 

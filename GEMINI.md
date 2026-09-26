@@ -98,6 +98,12 @@ linting.
     *   Runs all tests with the prefix `UnitTest` via CTest.
     *   Generates coverage reports at `build-native/coverage/index.html`.
 
+*   **Run Integration Tests:**
+    ```bash
+    ./scripts/run_integration_tests.sh
+    ```
+    *   Runs integration tests matching `IntegrationTest` via CTest.
+
 *   **Run a Single Unit Test Target:**
     ```bash
     cd build-native

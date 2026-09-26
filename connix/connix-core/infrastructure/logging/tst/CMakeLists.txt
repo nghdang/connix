@@ -1,1 +1,1 @@
-create_unit_test(LoggerTest.cpp)
+create_unit_test(LoggerUnitTest.cpp)
