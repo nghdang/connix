@@ -3,6 +3,7 @@
     "-DCMAKE_BUILD_TYPE=Debug",
     "-DBUILD_TESTS=ON",
     "-DCONAN_BUILD_PROFILE=debug/gcc13_x86_64",
-    "-DCONAN_HOST_PROFILE=debug/gcc13_x86_64",
-  ]
+    "-DCONAN_HOST_PROFILE=debug/gcc13_x86_64"
+  ],
+  "cmake.installPrefix": "${workspaceFolder}/build-native/deploy"
 }

@@ -31,6 +31,10 @@ message(STATUS "BUILD_TESTS: ${BUILD_TESTS}")
 
 include(GNUInstallDirs)
 
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/deploy" CACHE PATH "Default install prefix" FORCE)
+endif()
+
 find_package(GTest REQUIRED)
 
 if(BUILD_TESTS)

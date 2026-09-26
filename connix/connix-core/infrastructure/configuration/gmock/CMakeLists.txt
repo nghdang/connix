@@ -23,6 +23,6 @@ target_include_directories(connix-core-mocks PUBLIC
 
 install(
     DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/public/ConnixCore
-    DESTINATION include
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     FILES_MATCHING PATTERN "*.hpp"
 )
