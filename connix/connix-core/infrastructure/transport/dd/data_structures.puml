@@ -1,0 +1,104 @@
+@startuml Transport Component - Data Structures
+
+namespace ConnixCore::Infrastructure::Transport {
+
+package "Public" {
+
+    enum TransportProtocol {
+        TCP
+        UDP
+        UDS_STREAM
+        UDS_DATAGRAM
+    }
+
+    enum TransportState {
+        CLOSED
+        BOUND
+        LISTENING
+        CONNECTING
+        CONNECTED
+        DISCONNECTED
+    }
+
+    enum TransportErrorCode {
+        SOCKET_CREATION_FAILED
+        SOCKET_OPTION_FAILED
+        BIND_FAILED
+        LISTEN_FAILED
+        ACCEPT_FAILED
+        CONNECT_FAILED
+        SEND_FAILED
+        RECEIVE_FAILED
+        OPERATION_TIMEOUT
+        CONNECTION_CLOSED
+        INVALID_ADDRESS
+        UNSUPPORTED_PROTOCOL
+    }
+
+    class TransportException {
+        - errorCode: TransportErrorCode
+        - message: string
+        + getErrorCode(): TransportErrorCode const
+        + what(): const char* const
+    }
+
+    class TransportEndpoint {
+        - address: string
+        - port: uint16_t
+        + getAddress(): const string& const
+        + getPort(): uint16_t const
+        + isUnixDomain(): bool const
+        + toString(): string const
+    }
+
+    TransportErrorCode <-- TransportException : defines
+
+}
+
+package "Internal" {
+
+    enum SocketDomain {
+        IPV4
+        IPV6
+        UNIX
+    }
+
+    enum SocketType {
+        STREAM
+        DATAGRAM
+    }
+
+    enum SocketProtocol {
+        DEFAULT
+        TCP
+        UDP
+    }
+
+    enum SocketOption {
+        REUSE_ADDRESS
+        NON_BLOCKING
+        RECEIVE_TIMEOUT
+        SEND_TIMEOUT
+    }
+
+    class Socket {
+        - handle: int32_t
+        - domain: SocketDomain
+        - type: SocketType
+        - protocol: SocketProtocol
+        - localEndpoint: TransportEndpoint
+        - remoteEndpoint: TransportEndpoint
+        - isOpenFlag: bool
+    }
+
+    SocketDomain <-- Socket : configures
+    SocketType <-- Socket : configures
+    SocketProtocol <-- Socket : configures
+    SocketOption <-- Socket : configures
+    TransportEndpoint --* Socket : contains
+
+}
+
+}
+
+@enduml

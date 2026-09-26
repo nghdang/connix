@@ -1,0 +1,108 @@
+@startuml Transport Component - Interface View
+
+namespace ConnixCore::Infrastructure::Transport {
+
+package "Public" {
+
+    interface ITransport {
+        + {abstract} bind(endpoint: const TransportEndpoint&): void
+        + {abstract} listen(backlog: uint32_t): void
+        + {abstract} accept(timeoutMs: uint32_t): unique_ptr<ITransport>
+        + {abstract} connect(endpoint: const TransportEndpoint&, timeoutMs: uint32_t): void
+        + {abstract} send(data: const vector<uint8_t>&, timeoutMs: uint32_t): size_t
+        + {abstract} receive(maxBytes: size_t, timeoutMs: uint32_t): vector<uint8_t>
+        + {abstract} close(): void
+        + {abstract} isOpen(): bool const
+        + {abstract} getState(): TransportState const
+        + {abstract} getProtocol(): TransportProtocol const
+        + {abstract} getLocalEndpoint(): const TransportEndpoint& const
+        + {abstract} getRemoteEndpoint(): const TransportEndpoint& const
+    }
+
+    interface ITransportFactory {
+        + {abstract} createTransport(protocol: TransportProtocol): unique_ptr<ITransport>
+        + {abstract} registerTransport(protocol: TransportProtocol, creator: function<unique_ptr<ITransport>()>): void
+    }
+
+    class TransportFactory {
+        - creators: unordered_map<TransportProtocol, function<unique_ptr<ITransport>()>>
+        + createTransport(protocol: TransportProtocol): unique_ptr<ITransport>
+        + registerTransport(protocol: TransportProtocol, creator: function<unique_ptr<ITransport>()>): void
+    }
+
+    ITransportFactory <|.. TransportFactory
+
+}
+
+package "Internal" {
+
+    interface ISocket {
+        + {abstract} open(domain: SocketDomain, type: SocketType, protocol: SocketProtocol): void
+        + {abstract} bind(endpoint: const TransportEndpoint&): void
+        + {abstract} listen(backlog: int32_t): void
+        + {abstract} accept(timeoutMs: uint32_t): unique_ptr<ISocket>
+        + {abstract} connect(endpoint: const TransportEndpoint&, timeoutMs: uint32_t): void
+        + {abstract} send(data: const vector<uint8_t>&, timeoutMs: uint32_t): size_t
+        + {abstract} receive(maxBytes: size_t, timeoutMs: uint32_t): vector<uint8_t>
+        + {abstract} sendTo(data: const vector<uint8_t>&, destination: const TransportEndpoint&, timeoutMs: uint32_t): size_t
+        + {abstract} receiveFrom(maxBytes: size_t, source: TransportEndpoint&, timeoutMs: uint32_t): vector<uint8_t>
+        + {abstract} setOption(option: SocketOption, enable: bool): void
+        + {abstract} close(): void
+        + {abstract} isOpen(): bool const
+        + {abstract} getNativeHandle(): int32_t const
+        + {abstract} getLocalEndpoint(): const TransportEndpoint& const
+        + {abstract} getRemoteEndpoint(): const TransportEndpoint& const
+    }
+
+    class Socket {
+        - handle: int32_t
+        - domain: SocketDomain
+        - type: SocketType
+        - protocol: SocketProtocol
+        - localEndpoint: TransportEndpoint
+        - remoteEndpoint: TransportEndpoint
+        - isOpenFlag: bool
+    }
+
+    class TcpTransport {
+        - socket: unique_ptr<ISocket>
+        - state: TransportState
+        - localEndpoint: TransportEndpoint
+        - remoteEndpoint: TransportEndpoint
+    }
+
+    class UdpTransport {
+        - socket: unique_ptr<ISocket>
+        - state: TransportState
+        - localEndpoint: TransportEndpoint
+        - remoteEndpoint: TransportEndpoint
+    }
+
+    class UdsTransport {
+        - socket: unique_ptr<ISocket>
+        - protocol: TransportProtocol
+        - state: TransportState
+        - localEndpoint: TransportEndpoint
+        - remoteEndpoint: TransportEndpoint
+    }
+
+    ISocket <|.. Socket
+
+    ITransport <|.. TcpTransport
+    ITransport <|.. UdpTransport
+    ITransport <|.. UdsTransport
+
+    TcpTransport o-- ISocket : uses
+    UdpTransport o-- ISocket : uses
+    UdsTransport o-- ISocket : uses
+
+}
+
+TransportFactory ..> ITransport : creates
+TransportFactory ..> TcpTransport : creates
+TransportFactory ..> UdpTransport : creates
+TransportFactory ..> UdsTransport : creates
+
+}
+
+@enduml
