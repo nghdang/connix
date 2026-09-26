@@ -17,10 +17,78 @@ The component satisfies:
 - **`SW_REQ_PROTOCOL_SUPPORT_UDP`**: Datagram-oriented communication over UDP.
 - **`SW_REQ_PROTOCOL_SUPPORT_UDS`**: Stream and datagram communication over Unix Domain Sockets.
 - **`SW_REQ_PROTOCOL_EXTENSIBILITY`**: Extensible protocol architecture enabling additional protocols without modifying core orchestration logic.
+- **`SW_REQ_CONNECTION_MANAGEMENT_CONNECT_AND_ACCEPT_TIMEOUT_BOUNDS`**: Connect and accept operations bounded by 5 seconds.
+- **`SW_REQ_CONNECTION_MANAGEMENT_RECEIVE_TIMEOUT_BOUND`**: Receive operations bounded by 10 seconds.
+- **`SW_REQ_CONNECTION_MANAGEMENT_SEND_TIMEOUT_BOUND`**: Send operations bounded by 5 seconds.
+- **`SW_REQ_CONNECTION_MANAGEMENT_TIMEOUT_SOCKET_CLOSURE`**: Prompt socket closure after any connection operation timeout.
 
 ---
 
-## 2. Static View
+## 2. Use Cases
+
+The primary use cases supported by the Transport component are modeled in
+
+```plantuml
+!include use_case.puml
+```
+
+### 2.1 Use Case Specifications
+
+1. **`Create Transport (UC1)`**:
+   - Executed during connection cycle initialization or engine setup by an external caller (`Client`).
+   - Requests a transport instance via `ITransportFactory::createTransport(protocol)` passing a strongly typed `TransportProtocol` (`TCP`, `UDP`, `UDS_STREAM`, `UDS_DATAGRAM`).
+   - The factory instantiates the corresponding concrete transport (`TcpTransport`, `UdpTransport`, or `UdsTransport`) and injects its underlying POSIX socket abstraction (`Socket`).
+   - The created transport instance is initialized in the `TransportState::CLOSED` state with underlying socket resources unallocated until connection or binding.
+   - Enforces extensibility (`SW_REQ_PROTOCOL_EXTENSIBILITY`): custom or test mock protocols registered via `ITransportFactory::registerTransport()` are instantiated through the same factory interface without altering core orchestration logic.
+   - If an unsupported or unregistered protocol is requested, the factory raises a typed `TransportException` with `TransportErrorCode::UNSUPPORTED_PROTOCOL`.
+
+2. **`Establish Outbound Connection (UC2)`**:
+   - Executed by `Client` (connection-cycle use case or protocol gateway) in `CLIENT` role or during the client leg of a `DUAL` cycle (`SW_REQ_CONNECTION_MANAGEMENT_CLIENT`).
+   - Invokes `ITransport::connect(endpoint, timeoutMs)` providing the destination `TransportEndpoint` (IP address and port, or Unix Domain Socket path) and operation timeout.
+   - Transitions state from `TransportState::CLOSED` or `TransportState::BOUND` to `TransportState::CONNECTING`.
+   - Allocates the underlying OS socket file descriptor and initiates connection to the remote endpoint. For stream sockets (`TCP`, `UDS_STREAM`), performs non-blocking connection polling bounded by the configured timeout (5 seconds per `SW_REQ_CONNECTION_MANAGEMENT_CLIENT_CONNECT_TIMEOUT` and `SW_REQ_CONNECTION_MANAGEMENT_CONNECT_AND_ACCEPT_TIMEOUT_BOUNDS`). For datagram sockets (`UDP`, `UDS_DATAGRAM`), associates the default destination address.
+   - On success, transitions to `TransportState::CONNECTED` and records the peer endpoint.
+   - Enforces timeout bounds: if connection establishment exceeds 5 seconds, raises `TransportException` with `TransportErrorCode::OPERATION_TIMEOUT` and immediately closes the underlying socket descriptor (`SW_REQ_CONNECTION_MANAGEMENT_TIMEOUT_SOCKET_CLOSURE`).
+   - Network unreachable, host down, or connection refused errors raise a typed `TransportException` with `TransportErrorCode::CONNECT_FAILED` or `INVALID_ADDRESS`.
+
+3. **`Accept Inbound Connection (UC3)`**:
+   - Executed by `Client` in `SERVER` role or during the server leg of a `DUAL` cycle (`SW_REQ_CONNECTION_MANAGEMENT_SERVER`).
+   - Sequences `ITransport::bind(endpoint)`, `ITransport::listen(backlog)`, and `ITransport::accept(timeoutMs)`.
+   - Binds the socket to the local `TransportEndpoint` (setting `SO_REUSEADDR` to avoid bind conflicts), places stream sockets in listening mode (`TransportState::LISTENING`), and awaits inbound client connections.
+   - Awaits incoming connection requests bounded by the configured timeout (5 seconds per `SW_REQ_CONNECTION_MANAGEMENT_SERVER_ACCEPT_TIMEOUT` and `SW_REQ_CONNECTION_MANAGEMENT_CONNECT_AND_ACCEPT_TIMEOUT_BOUNDS`).
+   - On inbound connection, accepts the socket via `accept()` and returns a new connected `ITransport` instance in `TransportState::CONNECTED` representing the client session.
+   - Enforces timeout bounds: if no incoming connection arrives within 5 seconds, raises `TransportException` with `TransportErrorCode::OPERATION_TIMEOUT` and closes the listening socket descriptor (`SW_REQ_CONNECTION_MANAGEMENT_TIMEOUT_SOCKET_CLOSURE`).
+   - Port conflicts, privilege restrictions, or OS socket errors raise a typed `TransportException` with `TransportErrorCode::BIND_FAILED`, `LISTEN_FAILED`, or `ACCEPT_FAILED`.
+
+4. **`Send Data (UC4)`**:
+   - Executed by `Client` or rule action executors during an active connection cycle to transmit network payloads (`SW_REQ_PROTOCOL_SUPPORT_TCP`, `SW_REQ_PROTOCOL_SUPPORT_UDP`, `SW_REQ_PROTOCOL_SUPPORT_UDS`).
+   - Invokes `ITransport::send(data, timeoutMs)` providing the payload bytes `const std::vector<uint8_t>&` and timeout bound.
+   - Verifies the transport is in `TransportState::CONNECTED` (or `BOUND` for datagram sockets with destination).
+   - Monitors socket write-readiness via non-blocking polling and transmits data chunks until the buffer is exhausted or timeout expires.
+   - Returns the exact number of bytes transmitted.
+   - Enforces timeout bounds: if transmission cannot complete within 5 seconds (`SW_REQ_CONNECTION_MANAGEMENT_CLIENT_SEND_TIMEOUT`, `SW_REQ_CONNECTION_MANAGEMENT_SERVER_SEND_TIMEOUT`, `SW_REQ_CONNECTION_MANAGEMENT_SEND_TIMEOUT_BOUND`), raises `TransportException` with `TransportErrorCode::OPERATION_TIMEOUT` and closes the affected socket (`SW_REQ_CONNECTION_MANAGEMENT_TIMEOUT_SOCKET_CLOSURE`).
+   - Broken pipes or remote connection resets raise `TransportException` with `TransportErrorCode::SEND_FAILED` or `CONNECTION_CLOSED`, transitioning the state to `TransportState::DISCONNECTED`.
+
+5. **`Receive Data (UC5)`**:
+   - Executed by `Client` or event-matching engines during an active connection cycle to receive network payloads (`SW_REQ_PROTOCOL_SUPPORT_TCP`, `SW_REQ_PROTOCOL_SUPPORT_UDP`, `SW_REQ_PROTOCOL_SUPPORT_UDS`).
+   - Invokes `ITransport::receive(maxBytes, timeoutMs)` specifying maximum read capacity and operation timeout.
+   - Monitors socket read-readiness via non-blocking polling bounded by the configured timeout (10 seconds per `SW_REQ_CONNECTION_MANAGEMENT_CLIENT_RECEIVE_TIMEOUT`, `SW_REQ_CONNECTION_MANAGEMENT_SERVER_RECEIVE_TIMEOUT`, and `SW_REQ_CONNECTION_MANAGEMENT_RECEIVE_TIMEOUT_BOUND`).
+   - Reads available incoming bytes into `std::vector<uint8_t>` up to `maxBytes`.
+   - On graceful peer disconnect (`recv()` returns 0), transitions state to `TransportState::DISCONNECTED` and returns received data or throws `TransportException` with `TransportErrorCode::CONNECTION_CLOSED`.
+   - Enforces timeout bounds: if no data arrives within 10 seconds, raises `TransportException` with `TransportErrorCode::OPERATION_TIMEOUT` and immediately closes the socket (`SW_REQ_CONNECTION_MANAGEMENT_TIMEOUT_SOCKET_CLOSURE`).
+   - OS read errors raise `TransportException` with `TransportErrorCode::RECEIVE_FAILED`.
+
+6. **`Close Transport (UC6)`**:
+   - Executed by `Client` at the completion of every connection cycle, during error handling, or on shutdown (`SW_REQ_CONNECTION_MANAGEMENT`).
+   - Invokes `ITransport::close()` to terminate network communication and release operating-system resources.
+   - Closes the underlying socket file descriptor via `close()` immediately, and unlinks filesystem socket paths if applicable for Unix Domain Sockets.
+   - Resets state to `TransportState::CLOSED` and clears local/remote endpoint caches.
+   - Guarantees idempotent execution: safe to call repeatedly or from any state without throwing errors or leaking file descriptors.
+   - Enforces prompt cleanup on timeout failures (`SW_REQ_CONNECTION_MANAGEMENT_TIMEOUT_SOCKET_CLOSURE`) and ensures independent socket lifecycle in concurrent hybrid cycles (`SW_REQ_CONNECTION_MANAGEMENT_HYBRID_INDEPENDENT_CLOSURE`).
+
+---
+
+## 3. Static View
 
 The static relationship of modules and interfaces within the Transport
 component is detailed in
@@ -73,7 +141,7 @@ component is detailed in
 
 ---
 
-## 3. Interface View
+## 4. Interface View
 
 Details of core object behaviors, public/internal interfaces, concrete implementations,
 and dependency relationships are modeled in
@@ -82,7 +150,7 @@ and dependency relationships are modeled in
 !include interface_view.puml
 ```
 
-### 3.1 Interface Specifications
+### 4.1 Interface Specifications
 
 1. **`ITransport` (Public Interface)**:
    - Serves as the common client/server transport abstraction (`SW_REQ_PROTOCOL_EXTENSIBILITY`).
@@ -118,7 +186,7 @@ and dependency relationships are modeled in
 
 ---
 
-## 4. Data Structures
+## 5. Data Structures
 
 The data structures, enums, exception types, and their relationships are modeled in
 
@@ -126,7 +194,7 @@ The data structures, enums, exception types, and their relationships are modeled
 !include data_structures.puml
 ```
 
-### 4.1 Data Structure Specifications
+### 5.1 Data Structure Specifications
 
 1. **`TransportProtocol` (Public Enum)**:
    - Strongly typed enum representing supported transport protocols:

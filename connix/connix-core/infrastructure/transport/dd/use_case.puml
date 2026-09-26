@@ -1,0 +1,23 @@
+@startuml Transport Component - Use Case Diagram
+
+left to right direction
+
+actor Client
+
+rectangle "Transport Component" {
+    usecase "Create Transport" as UC1
+    usecase "Establish Outbound Connection" as UC2
+    usecase "Accept Inbound Connection" as UC3
+    usecase "Send Data" as UC4
+    usecase "Receive Data" as UC5
+    usecase "Close Transport" as UC6
+}
+
+Client --> UC1
+Client --> UC2
+Client --> UC3
+Client --> UC4
+Client --> UC5
+Client --> UC6
+
+@enduml
