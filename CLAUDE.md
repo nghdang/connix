@@ -35,6 +35,14 @@ Builds with `-DCMAKE_BUILD_TYPE=Release` (mocks/tests off by default) and instal
 `build-release/deploy`. Required before running clang-tidy (generates the compile database in
 `build-release/`).
 
+### Build Conan Package
+```bash
+./scripts/build_conan_package.sh
+# Or with a force rebuild (removes existing package from cache first):
+./scripts/build_conan_package.sh --force
+```
+Builds and packages into the local Conan cache using `conan create`.
+
 ### Run Unit Tests
 ```bash
 ./scripts/run_unit_tests.sh

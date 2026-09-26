@@ -62,3 +62,6 @@ jobs:
 
       - name: Build
         run: ./scripts/build_application_release.sh
+
+      - name: Build Conan and Install
+        run: ./scripts/build_conan_package.sh

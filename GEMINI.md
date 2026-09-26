@@ -79,6 +79,15 @@ linting.
     *   Installs the compiled binary artifacts to `build-release/deploy` (or a
         custom prefix folder).
 
+*   **Build Conan Package:**
+    ```bash
+    ./scripts/build_conan_package.sh
+    ```
+    *   Creates and installs the package into the local Conan cache via `conan create`.
+    *   Defaults to the release profile (`release/gcc13_x86_64`).
+    *   Supports `--host-profile <profile>`, `--build-profile <profile>`, `-f` or `--force`
+        (to remove existing cached versions first), and `-d` or `--dry-run`.
+
 ### Running Unit Tests
 
 *   **Run All Tests (and generate coverage report):**
