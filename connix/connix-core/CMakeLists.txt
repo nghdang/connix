@@ -22,10 +22,11 @@ if(BUILD_TESTS)
 
         target_link_libraries(${TEST_NAME} PRIVATE connix-core connix-core-mocks gtest::gtest GTest::gmock)
         target_include_directories(${TEST_NAME} PRIVATE
-            ${CMAKE_CURRENT_SOURCE_DIR}/../api
+            ${CMAKE_CURRENT_SOURCE_DIR}/../api/public
+            ${CMAKE_CURRENT_SOURCE_DIR}/../api/internal
             ${CMAKE_CURRENT_SOURCE_DIR}/../inc
-            ${CMAKE_CURRENT_SOURCE_DIR}/../../gmock/api
-            ${CMAKE_CURRENT_SOURCE_DIR}/../../gmock/api-internal
+            ${CMAKE_CURRENT_SOURCE_DIR}/../../gmock/public
+            ${CMAKE_CURRENT_SOURCE_DIR}/../../gmock/internal
         )
 
         message(STATUS "Add UT: ${TEST_NAME}")
