@@ -89,9 +89,11 @@ connix/connix-core/
     └── logging/                      # logging API, implementation, tests
 ```
 
-Each infrastructure module has its own `CMakeLists.txt` and subdirectories. Public and
-internal headers, implementations, resources, mocks, and tests are declared through the
-module’s CMake files; follow the neighboring module structure when adding files.
+Each infrastructure module has its own `CMakeLists.txt` and subdirectories. Header files
+follow a 3-tier distribution: `api/public/` (packaged and installed in the delivery package),
+`api/internal/` (referred across components, but not installed in the delivery package), and
+`inc/` (strictly private to the component implementation). Mocks, resources, and tests mirror
+this layout. Follow the neighboring module structure when adding files.
 
 `docs/arch/` and `docs/reqs/` document the intended architecture and requirements. Treat them
 as design constraints, but check the source tree before assuming a documented component has

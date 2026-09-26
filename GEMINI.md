@@ -152,9 +152,13 @@ linting.
 *   **Namespaces:** Match the folder structure under `ConnixCore::` (e.g.,
     `ConnixCore::Infrastructure::Logging`,
     `ConnixCore::Infrastructure::Configuration`).
-*   **Public API Headers:** Exposed in `api/public/` or `inc/` directories under
-    `ConnixCore/` path.
-*   **Internal API Headers:** Exposed in `api/internal/` subdirectories.
+*   **Public API Headers:** Exposed in `api/public/` subdirectories under
+    `ConnixCore/` path; included in the delivery package.
+*   **Internal API Headers:** Exposed in `api/internal/` subdirectories under
+    `ConnixCore/` path; referred to by other components but not included in
+    the delivery package.
+*   **Component-Private Headers:** Located in `inc/` subdirectories under
+    `ConnixCore/` path; used strictly internally inside the component.
 
 ### Unit Testing Practices
 *   **Directory Mapping:** Tests are located in corresponding `tst`
