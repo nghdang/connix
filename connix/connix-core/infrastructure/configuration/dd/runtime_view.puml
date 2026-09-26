@@ -52,7 +52,17 @@ activate ConfigurationProvider
 ConfigurationProvider --> Client
 deactivate ConfigurationProvider
 
-Client -> ConfigurationProvider : getNodes()
+Client -> ConfigurationProvider : getServerNodes()
+activate ConfigurationProvider
+ConfigurationProvider --> Client
+deactivate ConfigurationProvider
+
+Client -> ConfigurationProvider : getClientNodes()
+activate ConfigurationProvider
+ConfigurationProvider --> Client
+deactivate ConfigurationProvider
+
+Client -> ConfigurationProvider : getPeerNodes()
 activate ConfigurationProvider
 ConfigurationProvider --> Client
 deactivate ConfigurationProvider

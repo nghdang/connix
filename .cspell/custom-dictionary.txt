@@ -1,6 +1,12 @@
 # Project specifics
 Connix
 
+# Libraries / Third-party
+nlohmann
+
+# C++ keywords / idioms
+nullopt
+
 # Private name
 Volere
 
