@@ -18,10 +18,16 @@ jobs:
       - name: Build
         run: ./scripts/build_application_native.sh
 
+      - name: Clang Tidy
+        run: ./scripts/run_clang_tidy.sh
+
       - name: Unit Tests
         run: |
           ./scripts/run_unit_tests.sh
           ./scripts/check_coverage.sh
+
+      - name: Integration Tests
+        run: ./scripts/run_integration_tests.sh
 
   static-analysis:
     runs-on: self-hosted
@@ -60,5 +66,5 @@ jobs:
       - name: Build
         run: ./scripts/build_application_release.sh
 
-      - name: Clang Tidy
-        run: ./scripts/run_clang_tidy.sh
+      - name: Build Conan and Install
+        run: ./scripts/build_conan_package.sh

@@ -5,7 +5,7 @@ THIS_NAME="$(basename "${BASH_SOURCE[0]}")"
 
 source "${THIS_DIR}/env.sh"
 
-function usage()
+function print_usage()
 {
     echo "Usage: $THIS_NAME [OPTIONS]"
     echo "Run clang-tidy."
@@ -19,7 +19,7 @@ function usage()
 }
 
 TARGET_DIR="${PROJECT_DIR}/${PROJECT_NAME}"
-BUILD_DIR="${PROJECT_DIR}/build-release"
+BUILD_DIR="${PROJECT_DIR}/build-native"
 
 DEFAULT_DRY_RUN="$NO"
 
@@ -51,7 +51,7 @@ dump_env ${ENVS[@]}
 
 if [[ ! -d "$BUILD_DIR" ]]
 then
-    echo "Build release profile is required"
+    echo "Build native profile is required"
     exit $E_NG
 fi
 
@@ -59,6 +59,23 @@ RUN_CLANG_TIDY_EXEC="$(find /usr/bin -type l -name "run-clang-tidy-*.py" \
     | sort -t"-" -k4 -n -r | head -n 1)"
 
 pushd "$BUILD_DIR" > /dev/null
-dump_and_run_command "$RUN_CLANG_TIDY_EXEC" -header-filter="($PROJECT_NAME)" \
-    "$TARGET_DIR"
+
+CLANG_TIDY_ARGS=("-quiet")
+CLANG_TIDY_ARGS+=("-warnings-as-errors=*")
+CLANG_TIDY_ARGS+=("-header-filter=($PROJECT_NAME)")
+CLANG_TIDY_ARGS+=("${EXTRA_OPTIONS[@]}")
+CLANG_TIDY_ARGS+=("$TARGET_DIR")
+
+dump_command "$RUN_CLANG_TIDY_EXEC" "${CLANG_TIDY_ARGS[@]}"
+
+STATUS_CODE=$E_OK
+if [[ "$DRY_RUN" == "$NO" ]]
+then
+    "$RUN_CLANG_TIDY_EXEC" "${CLANG_TIDY_ARGS[@]}" 2>&1 \
+        | grep -v -E "(^[0-9]+ (warning|error)s? generated\.|^clang-tidy|Suppressed [0-9]+ warnings?|Use -header-filter=)"
+    STATUS_CODE=${PIPESTATUS[0]}
+fi
+
 popd > /dev/null
+
+exit $STATUS_CODE

@@ -2,6 +2,6 @@
 
 int main()
 {
-    std::cout << "Hello, Connix GUI!" << std::endl;
+    std::cout << "Hello, Connix GUI!\n";
     return 0;
 }

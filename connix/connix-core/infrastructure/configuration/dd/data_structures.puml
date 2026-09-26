@@ -1,0 +1,209 @@
+@startuml Configuration Component - Data Structures
+
+namespace ConnixCore::Infrastructure::Configuration {
+
+package "Public" {
+
+    enum FrameType {
+        NONE
+        FIXED_SIZE
+        LENGTH_PREFIX
+    }
+
+    enum ByteOrder {
+        BIG_ENDIAN
+        LITTLE_ENDIAN
+    }
+
+    enum NodeTransport {
+        TCP
+        UDP
+        UDS_STREAM
+        UDS_DATAGRAM
+    }
+
+    enum ActionType {
+        RESPOND
+        SEND
+    }
+
+    enum ConfigurationErrorCode {
+        FILE_NOT_FOUND
+        FILE_READ_FAILED
+        SCHEMA_VALIDATION_FAILED
+        JSON_PARSE_FAILED
+    }
+
+    class ConfigurationException {
+        - errorCode: ConfigurationErrorCode
+        + getErrorCode(): ConfigurationErrorCode const
+    }
+
+    class Endpoint {
+        - address: string
+        - port: optional<uint16_t>
+        + getAddress(): string const
+        + getPort(): optional<uint16_t> const
+    }
+
+    class FrameConfig {
+        - type: FrameType
+        - size: uint32_t
+        - lengthOffset: uint32_t
+        - lengthSize: uint32_t
+        - byteOrder: ByteOrder
+        + getType(): FrameType const
+        + getSize(): uint32_t const
+        + getLengthOffset(): uint32_t const
+        + getLengthSize(): uint32_t const
+        + getByteOrder(): ByteOrder const
+    }
+
+    class EventRule {
+        - patterns: vector<string>
+        - offset: uint32_t
+        - actions: vector<string>
+        + getPatterns(): const vector<string>& const
+        + getOffset(): uint32_t const
+        + getActions(): const vector<string>& const
+    }
+
+    class ServerNodeConfig {
+        - transport: NodeTransport
+        - endpoint: Endpoint
+        - frame: FrameConfig
+        - maxConnections: uint32_t
+        - bufferSize: uint32_t
+        - onReceived: vector<EventRule>
+        + getTransport(): NodeTransport const
+        + getEndpoint(): const Endpoint& const
+        + getFrame(): const FrameConfig& const
+        + getMaxConnections(): uint32_t const
+        + getBufferSize(): uint32_t const
+        + getOnReceived(): const vector<EventRule>& const
+    }
+
+    class ClientNodeConfig {
+        - transport: NodeTransport
+        - frame: FrameConfig
+        - bufferSize: uint32_t
+        - connectionTimeout: uint32_t
+        - idleTimeout: uint32_t
+        - onReceived: vector<EventRule>
+        + getTransport(): NodeTransport const
+        + getFrame(): const FrameConfig& const
+        + getBufferSize(): uint32_t const
+        + getConnectionTimeout(): uint32_t const
+        + getIdleTimeout(): uint32_t const
+        + getOnReceived(): const vector<EventRule>& const
+    }
+
+    class PeerNodeConfig {
+        - transport: NodeTransport
+        - endpoint: Endpoint
+        - frame: FrameConfig
+        + getTransport(): NodeTransport const
+        + getEndpoint(): const Endpoint& const
+        + getFrame(): const FrameConfig& const
+    }
+
+    class TimerConfig {
+        - interval: uint32_t
+        - singleShot: bool
+        - onTimeout: vector<string>
+        + getInterval(): uint32_t const
+        + isSingleShot(): bool const
+        + getOnTimeout(): const vector<string>& const
+    }
+
+    class FilesystemConfig {
+        - path: string
+        - debounce: uint32_t
+        - onModified: vector<string>
+        + getPath(): string const
+        + getDebounce(): uint32_t const
+        + getOnModified(): const vector<string>& const
+    }
+
+    enum PayloadType {
+        BYTES
+        FILE
+    }
+
+    class ActionPayload {
+        - type: PayloadType
+        - source: string
+        + getType(): PayloadType const
+        + getSource(): string const
+    }
+
+    class ActionConfig {
+        - type: ActionType
+        - payload: ActionPayload
+        - sourceNode: string
+        - targetNode: string
+        - executionDelay: uint32_t
+        - executionTimeout: uint32_t
+        - maxPending: uint32_t
+        + getType(): ActionType const
+        + getPayload(): const ActionPayload& const
+        + getSourceNode(): string const
+        + getTargetNode(): string const
+        + getExecutionDelay(): uint32_t const
+        + getExecutionTimeout(): uint32_t const
+        + getMaxPending(): uint32_t const
+    }
+
+    FrameType <-- FrameConfig : configures
+    ByteOrder <-- FrameConfig : defines
+
+    Endpoint --* ServerNodeConfig : contains
+    FrameConfig --* ServerNodeConfig : contains
+    EventRule --* ServerNodeConfig : contains
+    NodeTransport <-- ServerNodeConfig : uses
+
+    FrameConfig --* ClientNodeConfig : contains
+    EventRule --* ClientNodeConfig : contains
+    NodeTransport <-- ClientNodeConfig : uses
+
+    Endpoint --* PeerNodeConfig : contains
+    FrameConfig --* PeerNodeConfig : contains
+    NodeTransport <-- PeerNodeConfig : uses
+
+    PayloadType <-- ActionPayload : defines
+    ActionPayload --* ActionConfig : contains
+    ActionType <-- ActionConfig : defines
+
+}
+
+package "Internal" {
+
+    class ConnixConfig {
+        - name: string
+        - serverNodes: unordered_map<string, ServerNodeConfig>
+        - clientNodes: unordered_map<string, ClientNodeConfig>
+        - peerNodes: unordered_map<string, PeerNodeConfig>
+        - timers: unordered_map<string, TimerConfig>
+        - filesystems: unordered_map<string, FilesystemConfig>
+        - actions: unordered_map<string, ActionConfig>
+        + getName(): string const
+        + getServerNodes(): const unordered_map<string, ServerNodeConfig>& const
+        + getClientNodes(): const unordered_map<string, ClientNodeConfig>& const
+        + getPeerNodes(): const unordered_map<string, PeerNodeConfig>& const
+        + getTimers(): const unordered_map<string, TimerConfig>& const
+        + getFilesystems(): const unordered_map<string, FilesystemConfig>& const
+        + getActions(): const unordered_map<string, ActionConfig>& const
+    }
+
+}
+
+ServerNodeConfig --* ConnixConfig : aggregates
+ClientNodeConfig --* ConnixConfig : aggregates
+PeerNodeConfig --* ConnixConfig : aggregates
+TimerConfig --* ConnixConfig : aggregates
+FilesystemConfig --* ConnixConfig : aggregates
+ActionConfig --* ConnixConfig : aggregates
+
+}
+
+@enduml

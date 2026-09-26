@@ -1,0 +1,15 @@
+@startuml Configuration Component - Use Case Diagram
+
+left to right direction
+
+actor Client
+
+rectangle "Configuration Component" {
+    usecase "Load Configuration" as UC1
+    usecase "Get Configuration" as UC2
+}
+
+Client --> UC1
+Client --> UC2
+
+@enduml
