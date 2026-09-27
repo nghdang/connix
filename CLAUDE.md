@@ -78,6 +78,13 @@ Runs clang-format over every `.hpp`/`.cpp` under `connix/`, per `.clang-format` 
 Runs `run-clang-tidy-*.py` from `build-release/` with `-header-filter="(connix)"`, per the rules
 in `.clang-tidy`.
 
+### Spelling Checks
+```bash
+./scripts/check_spelling.sh            # check connix/ and docs/ (default)
+./scripts/check_spelling.sh <paths...> # check specific files or directories
+```
+Runs cspell with `.gitignore` filtering over source code and documentation.
+
 ## Architecture
 
 ### Source layout (connix-core)

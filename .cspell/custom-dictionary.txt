@@ -14,3 +14,48 @@ Volere
 curl
 socat
 netcat
+nohup
+tanp
+
+# PlantUML
+startuml
+enduml
+usecase
+
+# Testing / Google Test & Mock
+gmock
+GMOCK
+STREQ
+ISTQB
+CTFL
+
+# Build tools & CMake
+DCMAKE
+conanfile
+genhtml
+endfunction
+CTEST
+SPHINXBUILD
+SOURCEDIR
+SPHINXOPTS
+
+# Sphinx & Documentation
+subfolders
+toctree
+extrabody
+sphinxcontrib
+includehidden
+
+# Technical terms & Domain vocabulary
+extensionless
+Whitebox
+lifecycles
+Daemonization
+daemonization
+daemonizing
+scriptable
+automatable
+unrepresentatively
+
+# Contributor
+Hadan

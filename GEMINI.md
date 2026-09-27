@@ -135,6 +135,11 @@ linting.
     *Note: Running `clang-tidy` requires compiling a native debug build
     (`./scripts/build_application_native.sh`) first to generate the
     compilation database with tests.*
+*   **Spelling Checks:** Automated spell checking via `cspell` based on
+    `cspell.json` and `.cspell/custom-dictionary.txt`.
+    ```bash
+    ./scripts/check_spelling.sh
+    ```
 *   **Strict Diagnostics:** Never suppress compiler warnings or linter
     diagnostics merely to make a change pass.
 *   **Implementation Separation:** Always separate class member function

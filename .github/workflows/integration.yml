@@ -38,6 +38,9 @@ jobs:
       - name: Clang Format
         run: ./scripts/run_clang_format.sh --dry-run
 
+      - name: Check Spelling
+        run: ./scripts/check_spelling.sh
+
   documentation:
     runs-on: self-hosted
     steps:

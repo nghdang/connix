@@ -1,6 +1,12 @@
 {
     "version": "0.2",
-    "ignorePaths": [],
+    "ignorePaths": [
+        "**/_build/**",
+        "build/**",
+        "build-*/**",
+        ".git/**",
+        ".cache/**"
+    ],
     "dictionaryDefinitions": [
         {
             "name": "custom-dictionary",

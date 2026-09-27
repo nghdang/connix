@@ -78,7 +78,8 @@ function dump_and_run_command()
 THIS_NAME="$(basename "${BASH_SOURCE[1]}")"
 
 CXX_COMPILER_EXEC=$(which g++)
-CXX_COMPILER_VERSION="$(check_tool_version "g++" "head -n1 | awk '{print \$4}'")"
+CXX_COMPILER_VERSION="$(check_tool_version "g++" \
+    "head -n1 | awk '{print \$4}'")"
 
 CMAKE_EXEC=$(which cmake)
 CMAKE_VERSION="$(check_tool_version "cmake" "head -n1 | awk '{print \$3}'")"
@@ -106,6 +107,22 @@ PYTHON_VERSION="$(check_tool_version "python")"
 
 CONAN_EXEC=$(which conan)
 CONAN_VERSION="$(check_tool_version "conan" "awk '{print \$3}'")"
+
+CSPELL_EXEC=$(which cspell 2>/dev/null)
+if [[ -z "$CSPELL_EXEC" ]]
+then
+    for candidate in "$HOME/.nvm/versions/node/"*"/bin/cspell" \
+        "$HOME/.local/bin/cspell"
+    do
+        if [[ -x "$candidate" ]]
+        then
+            CSPELL_EXEC="$candidate"
+            export PATH="$(dirname "$candidate"):$PATH"
+            break
+        fi
+    done
+fi
+CSPELL_VERSION="$(check_tool_version "cspell")"
 
 PROJECT_DIR=$(git rev-parse --show-toplevel 2>/dev/null)
 if [[ -z "$PROJECT_DIR" ]]
