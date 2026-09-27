@@ -1,6 +1,12 @@
 {
     "version": "0.2",
-    "ignorePaths": [],
+    "ignorePaths": [
+        "**/_build/**",
+        "build/**",
+        "build-*/**",
+        ".git/**",
+        ".cache/**"
+    ],
     "dictionaryDefinitions": [
         {
             "name": "custom-dictionary",
@@ -20,7 +26,10 @@
         "custom-dictionary-workspace",
         "custom-dictionary"
     ],
-    "words": [],
+    "words": [
+        "connectionless",
+        "nlohmann"
+    ],
     "ignoreWords": [],
     "import": []
 }
