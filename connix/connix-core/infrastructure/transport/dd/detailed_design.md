@@ -97,7 +97,7 @@ component is detailed in
 !include static_view.puml
 ```
 
-### 2.1 Module Responsibilities
+### 3.1 Module Responsibilities
 
 1. **`Client`**:
    - External consumer of the transport component (such as the connection-cycle use case or application orchestration layer in Clean Architecture).
@@ -245,3 +245,53 @@ The data structures, enums, exception types, and their relationships are modeled
    - `SocketType`: `STREAM` (`SOCK_STREAM`), `DATAGRAM` (`SOCK_DGRAM`).
    - `SocketProtocol`: `DEFAULT` (`0`), `TCP` (`IPPROTO_TCP`), `UDP` (`IPPROTO_UDP`).
    - `SocketOption`: `REUSE_ADDRESS`, `NON_BLOCKING`, `RECEIVE_TIMEOUT`, `SEND_TIMEOUT`.
+
+---
+
+## 6. Design Decisions
+
+### 6.1 Socket Readiness Polling Mechanism (`poll` vs `select` vs `epoll`)
+
+The `Socket` abstraction and concrete transport implementations utilize POSIX
+`poll(2)` to monitor socket read and write readiness within configured
+operation timeout bounds
+(`SW_REQ_CONNECTION_MANAGEMENT_CONNECT_AND_ACCEPT_TIMEOUT_BOUNDS`,
+`SW_REQ_CONNECTION_MANAGEMENT_RECEIVE_TIMEOUT_BOUND`,
+`SW_REQ_CONNECTION_MANAGEMENT_SEND_TIMEOUT_BOUND`).
+
+1. **Why `select(2)` Was Rejected**:
+   - `select(2)` is fundamentally restricted to descriptor values below
+     `FD_SETSIZE` (typically 1024). In modern server and containerized
+     environments, open file descriptor values can easily exceed 1024, causing
+     buffer overruns and undefined behavior when manipulating `fd_set`.
+   - `select(2)` mutates the passed file descriptor bitsets in-place, requiring
+     callers to re-initialize the sets prior to every poll call.
+
+2. **Why `epoll(7)` Was Rejected at the Transport Socket Layer**:
+   - The low-level `Socket` abstraction performs timeout-bounded readiness
+     checks on **a single socket descriptor** ($N = 1$).
+   - `epoll(7)` requires managing an auxiliary kernel epoll file descriptor
+     (`epoll_create1`) and registering/deregistering target descriptors via
+     `epoll_ctl`. For point-in-time checks on a single descriptor, this overhead
+     introduces unnecessary system calls and file descriptor churn.
+   - `epoll(7)` is a Linux-specific API, whereas `poll(2)` is standard POSIX
+     (`<poll.h>`), keeping the low-level socket abstraction clean and portable.
+
+3. **Why `poll(2)` Was Selected**:
+   - `poll(2)` operates on arrays of `struct pollfd` and has no `FD_SETSIZE`
+     threshold limit, safely handling descriptor values arbitrarily high up to
+     process resource limits (`RLIMIT_NOFILE`).
+   - For a single descriptor, `poll(&pfd, 1, timeoutMs)` executes as an $O(1)$
+     direct kernel readiness check with zero state initialization overhead.
+   - It maintains a clean separation between requested events (`events`:
+     `POLLIN`, `POLLOUT`) and returned events (`revents`: `POLLERR`, `POLLHUP`,
+     `POLLNVAL`).
+
+4. **Separation of Multiplexing Concerns**:
+   - The transport layer remains focused on wire I/O and descriptor lifecycle.
+   - Proactive multi-connection event demultiplexing or reactive dispatch
+     across multiple concurrent connections is an Application Layer
+     orchestration concern. The application layer can inspect
+     `ISocket::getNativeHandle()` to integrate with an application-level event
+     loop or `epoll(7)` reactor without coupling the transport layer to a
+     specific multiplexer.

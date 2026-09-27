@@ -55,6 +55,8 @@ PARAMDOC
 COLORSTYLE
 
 # Technical terms & Domain vocabulary
+demultiplexing
+deregistering
 extensionless
 Whitebox
 lifecycles

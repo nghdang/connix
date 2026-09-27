@@ -1,2 +1,3 @@
 create_unit_test(TransportDataStructuresUnitTest.cpp)
 create_unit_test(TransportInterfacesUnitTest.cpp)
+create_unit_test(TcpTransportUnitTest.cpp)
