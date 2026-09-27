@@ -1,0 +1,6 @@
+create_unit_test(ConfigurationInterfacesUnitTest.cpp)
+create_unit_test(DataStructuresUnitTest.cpp)
+create_unit_test(ConfigurationProviderUnitTest.cpp)
+create_unit_test(FileReaderUnitTest.cpp)
+create_unit_test(JsonParserUnitTest.cpp)
+create_unit_test(JsonValidatorUnitTest.cpp)
