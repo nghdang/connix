@@ -1,0 +1,70 @@
+@startuml Configuration Component - Interface View
+
+namespace ConnixCore::Infrastructure::Configuration {
+
+package "Public" {
+
+    interface IConfigurationProvider {
+        + {abstract} load(configPath: string, schemaPath: string): void
+        + {abstract} getName(): string const
+        + {abstract} getServerNodes(): const unordered_map<string, ServerNodeConfig>& const
+        + {abstract} getClientNodes(): const unordered_map<string, ClientNodeConfig>& const
+        + {abstract} getPeerNodes(): const unordered_map<string, PeerNodeConfig>& const
+        + {abstract} getTimers(): const unordered_map<string, TimerConfig>& const
+        + {abstract} getFilesystems(): const unordered_map<string, FilesystemConfig>& const
+        + {abstract} getActions(): const unordered_map<string, ActionConfig>& const
+    }
+
+    class ConfigurationProvider {
+        - fileReader: const IFileReader&
+        - jsonValidator: const IJsonValidator&
+        - jsonParser: const IJsonParser&
+        - name: string
+        - serverNodes: unordered_map<string, ServerNodeConfig>
+        - clientNodes: unordered_map<string, ClientNodeConfig>
+        - peerNodes: unordered_map<string, PeerNodeConfig>
+        - timers: unordered_map<string, TimerConfig>
+        - filesystems: unordered_map<string, FilesystemConfig>
+        - actions: unordered_map<string, ActionConfig>
+    }
+
+    IConfigurationProvider <|.. ConfigurationProvider
+
+}
+
+package "Internal" {
+
+    interface IFileReader {
+        + {abstract} readAll(filePath: string): string
+    }
+
+    interface IJsonValidator {
+        + {abstract} validate(jsonStr: string, schemaStr: string): void
+    }
+
+    interface IJsonParser {
+        + {abstract} parse(jsonStr: string): ConnixConfig
+    }
+
+    class ConnixConfig <<struct>>
+
+    class FileReader
+
+    class JsonValidator
+
+    class JsonParser
+
+    IFileReader <|.. FileReader
+    IJsonValidator <|.. JsonValidator
+    IJsonParser <|.. JsonParser
+    IJsonParser ..> ConnixConfig : uses
+
+}
+
+ConfigurationProvider o-- IFileReader : uses
+ConfigurationProvider o-- IJsonValidator : uses
+ConfigurationProvider o-- IJsonParser : uses
+
+}
+
+@enduml
