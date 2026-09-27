@@ -35,6 +35,10 @@ message(STATUS "BUILD_TESTS: ${BUILD_TESTS}")
 
 include(GNUInstallDirs)
 
+if(BUILD_MOCKS OR BUILD_TESTS)
+    find_package(GTest REQUIRED)
+endif()
+
 if(BUILD_TESTS)
     include(CTest)
     enable_testing()

@@ -1,7 +1,7 @@
-#include "ConnixCore/Logging/Logging.hpp"
+#include <iostream>
 
 int main()
 {
-    LOG_I("Hello, Connix GUI!");
+    std::cout << "Hello, Connix GUI!" << std::endl;
     return 0;
 }
