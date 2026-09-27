@@ -1,0 +1,35 @@
+@startuml CLIENT Connection Cycle
+actor Trigger
+participant "Network peer" as peer
+
+box "Use Cases"
+participant "Execution scheduler" as scheduler
+participant "Connection-cycle use case" as cycle
+end box
+
+box "Interface Adapters"
+participant "Protocol gateway" as gateway
+participant "Observation port" as output
+end box
+
+Trigger -> scheduler : eligible CLIENT trigger
+scheduler -> cycle : start CLIENT cycle
+cycle -> gateway : connect (5 s)
+gateway -> peer : connect
+peer --> gateway : connected
+gateway --> cycle : connected
+cycle -> output : connect event
+cycle -> gateway : send (5 s)
+gateway -> peer : message
+peer --> gateway : send complete
+gateway --> cycle : sent
+cycle -> gateway : receive (10 s)
+gateway -> peer : await response
+peer --> gateway : response
+gateway --> cycle : received
+cycle -> output : traffic events
+cycle -> gateway : close
+gateway -> peer : close
+cycle -> output : close event
+cycle --> scheduler : cycle complete
+@enduml

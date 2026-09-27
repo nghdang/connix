@@ -1,0 +1,28 @@
+@startuml PERIODIC Trigger and Rule Execution
+box "Frameworks & Drivers"
+participant "Timer runtime" as timer
+end box
+
+box "Use Cases"
+participant "Execution scheduler" as scheduler
+participant "Event and rule use case" as rules
+participant "Connection-cycle use case" as cycle
+end box
+
+box "Interface Adapters"
+participant "Observation port" as output
+end box
+
+loop configured PERIODIC interval
+  timer -> scheduler : timer event
+  alt no cycle active
+    scheduler -> rules : dispatch timer event
+    rules -> cycle : start scoped cycle
+    cycle -> rules : connect/accept and close events
+    rules -> output : matching action and traffic
+    cycle --> scheduler : cycle complete
+  else cycle active
+    scheduler -> scheduler : skip overlapping trigger
+  end
+end
+@enduml
