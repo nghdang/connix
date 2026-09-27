@@ -35,13 +35,26 @@ Builds with `-DCMAKE_BUILD_TYPE=Release` (mocks/tests off by default) and instal
 `build-release/deploy`. Required before running clang-tidy (generates the compile database in
 `build-release/`).
 
+### Build Conan Package
+```bash
+./scripts/build_conan_package.sh
+# Or with a force rebuild (removes existing package from cache first):
+./scripts/build_conan_package.sh --force
+```
+Builds and packages into the local Conan cache using `conan create`.
+
 ### Run Unit Tests
 ```bash
 ./scripts/run_unit_tests.sh
 ```
-Requires `build-native/` to already exist (run the native build first). Runs the
-`connix-core-unit-tests-run` CMake target (`ctest -j1 --tests-regex "UnitTest" --verbose`), then
-the `gen-code-coverage` target (lcov + genhtml). Coverage report: `build-native/coverage/index.html`.
+Requires `build-native/` to already exist (run the native build first). Runs all
+`UnitTest*` targets and invokes the `gen-code-coverage` target (lcov + genhtml). Coverage report: `build-native/coverage/index.html`.
+
+### Run Integration Tests
+```bash
+./scripts/run_integration_tests.sh
+```
+Runs all `IntegrationTest*` targets via CTest.
 
 ### Run a Single Test File
 ```bash
@@ -69,25 +82,27 @@ in `.clang-tidy`.
 
 ### Source layout (connix-core)
 
-Only one module is actually built out so far: `connix/connix-core/common/logging/`. Each
-module/layer follows this shape, with headers auto-globbed by the module's own `CMakeLists.txt`
-(new files under `inc/`/`api-internal/` or `src/` are picked up automatically, no CMake edits
-needed):
+The implemented `connix-core` modules are currently under
+`connix/connix-core/infrastructure/`:
 
 ```
-connix/connix-core/common/<module>/
-├── inc/ConnixCore/Common/<Module>/   # public headers, globbed into connix-core's PUBLIC sources
-├── src/                              # implementation (*.cpp), globbed as PRIVATE sources
-└── tst/                              # unit tests (UnitTest<Name>), only if BUILD_TESTS
+connix/connix-core/
+├── domain/                           # currently no implementations
+├── application/                      # currently no implementations
+└── infrastructure/
+    ├── configuration/                # configuration APIs, implementation, resources, mocks, tests
+    └── logging/                      # logging API, implementation, tests
 ```
 
-Namespaces mirror the folder path, e.g. `ConnixCore::Common::Logging`.
+Each infrastructure module has its own `CMakeLists.txt` and subdirectories. Header files
+follow a 3-tier distribution: `api/public/` (packaged and installed in the delivery package),
+`api/internal/` (referred across components, but not installed in the delivery package), and
+`inc/` (strictly private to the component implementation). Mocks, resources, and tests mirror
+this layout. Follow the neighboring module structure when adding files.
 
-`docs/architecture/` (arc42/Sphinx docs) and `GEMINI.md` describe a target architecture — a
-`TransportLayer -> ConnectionLayer -> NodeLayer` communication stack under
-`connix/connix-core/src/Communication/` — that does **not yet exist** in the source tree on this
-branch. Do not assume that structure is present; check the actual directory layout before building
-on top of it.
+`docs/arch/` and `docs/reqs/` document the intended architecture and requirements. Treat them
+as design constraints, but check the source tree before assuming a documented component has
+already been implemented.
 
 ### CMake structure
 
@@ -104,10 +119,11 @@ on top of it.
 
 ### Testing
 
-- Test naming: `UnitTest<Name>`, created via `create_unit_test()` in each module's `tst/CMakeLists.txt`.
-- Tests mirror the module's `src/` (e.g. `common/logging/tst/LoggerTest.cpp` tests
-  `common/logging/src/Logger.cpp`).
-- 30-second timeout per test is a hard limit enforced by `create_unit_test()` — design tests to
+- Test structure: tests are organized under `tst/ut/` for unit tests and `tst/it/` for integration tests.
+- Test naming: unit tests are named `<Name>UnitTest.cpp` (registered via `create_unit_test()`), and integration tests are named `<Name>IntegrationTest.cpp` (registered via `create_integration_test()`).
+- Tests mirror the module's `src/` (e.g. `connix-core/infrastructure/logging/tst/LoggerUnitTest.cpp` tests
+  `connix-core/infrastructure/logging/src/Logger.cpp`).
+- 30-second timeout per unit test (60-second for integration test) is enforced by CMake test properties — design tests to
   fail fast and mock anything that would otherwise block on real I/O.
 
 ### Dependencies

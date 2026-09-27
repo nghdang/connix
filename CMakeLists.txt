@@ -18,26 +18,24 @@ if(NOT "${CONAN_BUILD}" STREQUAL "ON")
     include(conan_toolchain)
 endif()
 
-option(BUILD_MOCKS "Option for build mocking files" OFF)
 option(BUILD_TESTS "Option for build testing files" OFF)
 
 message(STATUS "CMAKE_SYSROOT: ${CMAKE_SYSROOT}")
 if(NOT CMAKE_SYSROOT)
-    set(BUILD_MOCKS ON)
-
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         set(BUILD_TESTS ON)
     endif()
 endif()
 
-message(STATUS "BUILD_MOCKS: ${BUILD_MOCKS}")
 message(STATUS "BUILD_TESTS: ${BUILD_TESTS}")
 
 include(GNUInstallDirs)
 
-if(BUILD_MOCKS OR BUILD_TESTS)
-    find_package(GTest REQUIRED)
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/deploy" CACHE PATH "Default install prefix" FORCE)
 endif()
+
+find_package(GTest REQUIRED)
 
 if(BUILD_TESTS)
     include(CTest)
@@ -65,6 +63,8 @@ if(BUILD_TESTS)
         set(LCOV_ARG2 "-r" "coverage.info")
         list(APPEND LCOV_ARG2 "*c++/*")
         list(APPEND LCOV_ARG2 "gtest/*")
+        list(APPEND LCOV_ARG2 "gmock/*")
+        list(APPEND LCOV_ARG2 "*nlohmann/*")
         list(APPEND LCOV_ARG2 "tst/*")
         list(APPEND LCOV_ARG2 "-b" "${CMAKE_BINARY_DIR}")
         list(APPEND LCOV_ARG2 "--branch-coverage")
