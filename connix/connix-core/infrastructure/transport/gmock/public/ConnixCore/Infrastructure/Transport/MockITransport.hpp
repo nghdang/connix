@@ -10,6 +10,9 @@ namespace ConnixCore {
 namespace Infrastructure {
 namespace Transport {
 
+/**
+ * @brief Google Mock implementation of the ITransport interface.
+ */
 class MockITransport : public ITransport
 {
 public:
@@ -38,8 +41,22 @@ public:
     MOCK_METHOD(const TransportEndpoint&, getRemoteEndpoint, (),
                 (const, override));
 
+    /**
+     * @brief Creates a shared pointer to a standard MockITransport instance.
+     * @return Shared pointer to MockITransport.
+     */
     static std::shared_ptr<MockITransport> create();
+
+    /**
+     * @brief Creates a shared pointer to a NiceMock MockITransport instance.
+     * @return Shared pointer to NiceMock<MockITransport>.
+     */
     static std::shared_ptr<::testing::NiceMock<MockITransport>> createNice();
+
+    /**
+     * @brief Creates a shared pointer to a StrictMock MockITransport instance.
+     * @return Shared pointer to StrictMock<MockITransport>.
+     */
     static std::shared_ptr<::testing::StrictMock<MockITransport>>
     createStrict();
 };

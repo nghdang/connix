@@ -40,6 +40,8 @@ SOURCEDIR
 SPHINXOPTS
 
 # Sphinx & Documentation
+docstring
+docstrings
 subfolders
 toctree
 extrabody

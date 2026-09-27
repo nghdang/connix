@@ -151,6 +151,11 @@ linting.
 *   **Avoid using `std::optional`:** Avoid using `std::optional` as much as
     possible; prefer concrete default values, empty containers/strings, or
     dedicated encapsulated types to eliminate caller ambiguity.
+*   **Documentation & Docstrings:** Always write comprehensive Doxygen-style
+    docstrings (`/** ... */` with `@brief`, `@param`, `@return`, `@throws`)
+    for all classes, interfaces, public/internal methods, enumerations, and
+    data structures when writing or modifying code. Keep documentation
+    synchronized with implementation changes.
 
 ### Architecture & Design Documentation
 *   Treat existing architecture and detailed-design documentation

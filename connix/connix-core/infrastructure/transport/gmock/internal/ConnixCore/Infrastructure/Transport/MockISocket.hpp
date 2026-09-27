@@ -10,6 +10,9 @@ namespace ConnixCore {
 namespace Infrastructure {
 namespace Transport {
 
+/**
+ * @brief Google Mock implementation of the ISocket interface.
+ */
 class MockISocket : public ISocket
 {
 public:
@@ -52,8 +55,22 @@ public:
     MOCK_METHOD(const TransportEndpoint&, getRemoteEndpoint, (),
                 (const, override));
 
+    /**
+     * @brief Creates a shared pointer to a standard MockISocket instance.
+     * @return Shared pointer to MockISocket.
+     */
     static std::shared_ptr<MockISocket> create();
+
+    /**
+     * @brief Creates a shared pointer to a NiceMock MockISocket instance.
+     * @return Shared pointer to NiceMock<MockISocket>.
+     */
     static std::shared_ptr<::testing::NiceMock<MockISocket>> createNice();
+
+    /**
+     * @brief Creates a shared pointer to a StrictMock MockISocket instance.
+     * @return Shared pointer to StrictMock<MockISocket>.
+     */
     static std::shared_ptr<::testing::StrictMock<MockISocket>> createStrict();
 };
 

@@ -85,6 +85,17 @@ in `.clang-tidy`.
 ```
 Runs cspell with `.gitignore` filtering over source code and documentation.
 
+### Coding Standards & Docstrings
+- **Docstrings:** Always write comprehensive Doxygen-style docstrings (`/** ... */`)
+  with `@brief`, `@param`, `@return`, and `@throws` for all classes, interfaces,
+  methods, enumerations, and data structures when writing or modifying code.
+- **Implementation Separation:** Always separate class member function implementations
+  into `*.cpp` files rather than defining them inline in header files (except for
+  templates or defaulted destructors).
+- **Namespaces:** Always use full namespace resolution (`ConnixCore::Infrastructure::...`).
+- **Standard Library:** Avoid using `std::optional`; prefer concrete defaults or dedicated
+  types to eliminate caller ambiguity.
+
 ## Architecture
 
 ### Source layout (connix-core)
