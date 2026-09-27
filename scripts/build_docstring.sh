@@ -10,21 +10,25 @@ function print_usage()
     echo "Usage: $THIS_NAME [OPTIONS]"
     echo "Build Doxygen docstrings documentation."
     echo ""
-    echo "    -c, --clean     Clean build directory before building."
-    echo "    -d, --dry-run   Run the command without executing anything."
-    echo "    -h, --help      Show this help."
+    echo "    -c, --clean       Clean build directory before building."
+    echo "        --clean-only  Clean build directory and exit without building."
+    echo "    -d, --dry-run     Run the command without executing anything."
+    echo "    -h, --help        Show this help."
     echo ""
     echo "Example:"
     echo "    $THIS_NAME"
     echo "    $THIS_NAME --clean"
+    echo "    $THIS_NAME --clean-only"
     echo "    $THIS_NAME --dry-run"
     echo ""
 }
 
 DEFAULT_SHOULD_CLEAN="$NO"
+DEFAULT_CLEAN_ONLY="$NO"
 DEFAULT_DRY_RUN="$NO"
 
 SHOULD_CLEAN="$DEFAULT_SHOULD_CLEAN"
+CLEAN_ONLY="$DEFAULT_CLEAN_ONLY"
 DRY_RUN="$DEFAULT_DRY_RUN"
 EXTRA_OPTIONS=()
 
@@ -33,6 +37,11 @@ do
     case "$1" in
         -c|--clean)
             SHOULD_CLEAN="$YES"
+            shift
+            ;;
+        --clean-only)
+            SHOULD_CLEAN="$YES"
+            CLEAN_ONLY="$YES"
             shift
             ;;
         -d|--dry-run)
@@ -60,8 +69,19 @@ DOXYFILE="${DOXYGEN_DIR}/Doxyfile"
 OUTPUT_DIR="${DOXYGEN_DIR}/_build"
 
 ENVS=(DOXYGEN_VERSION DOXYFILE OUTPUT_DIR)
-ENVS+=(SHOULD_CLEAN DRY_RUN EXTRA_OPTIONS)
+ENVS+=(SHOULD_CLEAN CLEAN_ONLY DRY_RUN EXTRA_OPTIONS)
 dump_env ${ENVS[@]}
+
+if [[ "$SHOULD_CLEAN" == "$YES" ]]
+then
+    dump_command rm -rf "$OUTPUT_DIR"
+    run_command rm -rf "$OUTPUT_DIR"
+fi
+
+if [[ "$CLEAN_ONLY" == "$YES" ]]
+then
+    exit $E_OK
+fi
 
 if [[ -z "$DOXYGEN_EXEC" ]]
 then
@@ -73,12 +93,6 @@ if [[ ! -f "$DOXYFILE" ]]
 then
     echo "Doxyfile not found at $DOXYFILE"
     exit $E_NG
-fi
-
-if [[ "$SHOULD_CLEAN" == "$YES" ]]
-then
-    dump_command rm -rf "$OUTPUT_DIR"
-    run_command rm -rf "$OUTPUT_DIR"
 fi
 
 pushd "$DOXYGEN_DIR" > /dev/null

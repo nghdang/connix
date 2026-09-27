@@ -91,10 +91,15 @@ linting.
 *   **Build Docstrings HTML:**
     ```bash
     ./scripts/build_docstring.sh
+    # Or clean and rebuild:
+    ./scripts/build_docstring.sh --clean
+    # Or clean only:
+    ./scripts/build_docstring.sh --clean-only
     ```
     *   Generates Doxygen HTML API documentation from source docstrings into
         `docs/doxygen/_build/html`.
-    *   Supports `-c` or `--clean` to remove old builds, and `-d` or `--dry-run`.
+    *   Supports `-c` or `--clean` to remove old builds, `--clean-only` to clean
+        without rebuilding, and `-d` or `--dry-run`.
 
 ### Running Unit Tests
 

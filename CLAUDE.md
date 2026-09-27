@@ -45,8 +45,9 @@ Builds and packages into the local Conan cache using `conan create`.
 
 ### Docstrings HTML
 ```bash
-./scripts/build_docstring.sh         # build Doxygen docstrings documentation
-./scripts/build_docstring.sh --clean # clean and rebuild Doxygen docstrings
+./scripts/build_docstring.sh              # build Doxygen docstrings documentation
+./scripts/build_docstring.sh --clean      # clean and rebuild Doxygen docstrings
+./scripts/build_docstring.sh --clean-only # clean build output without rebuilding
 ```
 Generates Doxygen HTML API documentation from docstrings into `docs/doxygen/_build/html`.
 
