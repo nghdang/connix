@@ -1,0 +1,33 @@
+@startuml Transport Component - Static Component Diagram
+
+[Client]
+
+rectangle "Transport" {
+    [TransportFactory]
+    [TcpTransport]
+    [UdpTransport]
+    [UdsTransport]
+    [Socket]
+}
+
+rectangle "Operating System" {
+    [POSIX Sockets] as posix_sockets
+}
+
+Client -right(0- TransportFactory
+Client -(0- TcpTransport
+Client -(0- UdpTransport
+Client -(0- UdsTransport
+
+TransportFactory ..> TcpTransport : creates
+TransportFactory ..> UdpTransport : creates
+TransportFactory ..> UdsTransport : creates
+TransportFactory ..> Socket : creates
+
+TcpTransport -(0- Socket
+UdpTransport -(0- Socket
+UdsTransport -(0- Socket
+
+Socket ..> posix_sockets
+
+@enduml
