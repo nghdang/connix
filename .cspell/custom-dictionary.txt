@@ -31,6 +31,7 @@ CTFL
 
 # Build tools & CMake
 DCMAKE
+DCONAN
 conanfile
 genhtml
 endfunction

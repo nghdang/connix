@@ -10,8 +10,8 @@ function print_usage()
     echo "Usage: $THIS_NAME [OPTIONS]"
     echo "Run integration tests."
     echo ""
-    echo "    -d, --dry-run   Run the command without execute anything."
-    echo "    -h, --help      Show this help."
+    echo "    --dry-run   Run the command without executing anything."
+    echo "    --help      Show this help."
     echo ""
     echo "Example:"
     echo "    $THIS_NAME --dry-run"
@@ -33,11 +33,11 @@ EXTRA_OPTIONS=()
 while [[ $# -gt 0 ]]
 do
     case "$1" in
-        -d|--dry-run)
+        --dry-run)
             DRY_RUN="$YES"
             shift
             ;;
-        -h|--help)
+        --help)
             print_usage
             exit
             ;;

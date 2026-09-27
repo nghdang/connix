@@ -59,7 +59,7 @@ linting.
     *   Automatically runs CMake with debug variables and triggers building of
         all components.
     *   Configures `BUILD_TESTS=ON`. Mock targets are always built and packaged.
-    *   To force a clean rebuild, use the `-f` or `--force` flag:
+    *   To force a clean rebuild, use the `--force` flag:
         ```bash
         ./scripts/build_application_native.sh --force
         ```
@@ -85,8 +85,8 @@ linting.
     ```
     *   Creates and installs the package into the local Conan cache via `conan create`.
     *   Defaults to the release profile (`release/gcc13_x86_64`).
-    *   Supports `--host-profile <profile>`, `--build-profile <profile>`, `-f` or `--force`
-        (to remove existing cached versions first), and `-d` or `--dry-run`.
+    *   Supports `--host-profile <profile>`, `--build-profile <profile>`, `--force`
+        (to remove existing cached versions first), and `--dry-run`.
 
 *   **Build Docstrings HTML:**
     ```bash
@@ -98,8 +98,8 @@ linting.
     ```
     *   Generates Doxygen HTML API documentation from source docstrings into
         `docs/doxygen/_build/html`.
-    *   Supports `-c` or `--clean` to remove old builds, `--clean-only` to clean
-        without rebuilding, and `-d` or `--dry-run`.
+    *   Supports `--clean` to remove old builds, `--clean-only` to clean
+        without rebuilding, and `--dry-run`.
 
 ### Running Unit Tests
 

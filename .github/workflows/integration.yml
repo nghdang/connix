@@ -36,7 +36,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Clang Format
-        run: ./scripts/run_clang_format.sh --dry-run
+        run: ./scripts/run_clang_format.sh --check
 
       - name: Check Spelling
         run: ./scripts/check_spelling.sh

@@ -10,10 +10,10 @@ function print_usage()
     echo "Usage: $THIS_NAME [OPTIONS]"
     echo "Build Doxygen docstrings documentation."
     echo ""
-    echo "    -c, --clean       Clean build directory before building."
-    echo "        --clean-only  Clean build directory and exit without building."
-    echo "    -d, --dry-run     Run the command without executing anything."
-    echo "    -h, --help        Show this help."
+    echo "    --clean       Clean build directory before building."
+    echo "    --clean-only  Clean build directory and exit without building."
+    echo "    --dry-run     Run the command without executing anything."
+    echo "    --help        Show this help."
     echo ""
     echo "Example:"
     echo "    $THIS_NAME"
@@ -35,7 +35,7 @@ EXTRA_OPTIONS=()
 while [[ $# -gt 0 ]]
 do
     case "$1" in
-        -c|--clean)
+        --clean)
             SHOULD_CLEAN="$YES"
             shift
             ;;
@@ -44,11 +44,11 @@ do
             CLEAN_ONLY="$YES"
             shift
             ;;
-        -d|--dry-run)
+        --dry-run)
             DRY_RUN="$YES"
             shift
             ;;
-        -h|--help)
+        --help)
             print_usage
             exit
             ;;

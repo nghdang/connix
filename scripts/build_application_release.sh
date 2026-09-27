@@ -5,16 +5,16 @@ THIS_NAME="$(basename "${BASH_SOURCE[0]}")"
 
 source "${THIS_DIR}/env.sh"
 
-function usage()
+function print_usage()
 {
     echo "Usage: $THIS_NAME [OPTIONS]"
     echo "Build application with release profile."
     echo ""
     echo "    --host-profile      Conan host profile."
     echo "    --build-profile     Conan build profile."
-    echo "    -f, --force     Force rebuild entire project."
-    echo "    -d, --dry-run   Run the command without execute anything."
-    echo "    -h, --help      Show this help."
+    echo "    --force             Force rebuild entire project."
+    echo "    --dry-run           Run the command without executing anything."
+    echo "    --help              Show this help."
     echo ""
     echo "Example:"
     echo "    $THIS_NAME --dry-run"
@@ -46,15 +46,15 @@ do
             BUILD_PROFILE="$2"
             shift 2
             ;;
-        -f|--force)
+        --force)
             FORCE_REBUILD="$YES"
             shift
             ;;
-        -d|--dry-run)
+        --dry-run)
             DRY_RUN="$YES"
             shift
             ;;
-        -h|--help)
+        --help)
             print_usage
             exit
             ;;

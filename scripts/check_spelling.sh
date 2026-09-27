@@ -10,8 +10,8 @@ function print_usage()
     echo "Usage: $THIS_NAME [OPTIONS] [PATHS...]"
     echo "Check spelling using cspell."
     echo ""
-    echo "    -d, --dry-run   Run the command without executing anything."
-    echo "    -h, --help      Show this help."
+    echo "    --dry-run   Run the command without executing anything."
+    echo "    --help      Show this help."
     echo ""
     echo "Default paths if none specified: connix docs"
     echo ""
@@ -31,11 +31,11 @@ TARGET_PATHS=()
 while [[ $# -gt 0 ]]
 do
     case "$1" in
-        -d|--dry-run)
+        --dry-run)
             DRY_RUN="$YES"
             shift
             ;;
-        -h|--help)
+        --help)
             print_usage
             exit
             ;;
