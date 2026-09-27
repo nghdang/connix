@@ -19,9 +19,10 @@ namespace Transport {
  * @brief Concrete Unix Domain Socket implementation of the ITransport
  *        interface.
  *
- * Encapsulates stream-oriented (and datagram-oriented) IPC communication over
- * filesystem socket paths via AF_UNIX, delegating low-level socket descriptor
- * operations to an injected ISocket instance.
+ * Encapsulates both stream-oriented (`UDS_STREAM` via `SOCK_STREAM`) and
+ * datagram-oriented (`UDS_DATAGRAM` via `SOCK_DGRAM`) IPC communication over
+ * local filesystem socket paths using AF_UNIX, delegating low-level socket
+ * descriptor operations to an injected ISocket instance.
  */
 class UdsTransport : public ITransport
 {

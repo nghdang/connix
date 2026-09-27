@@ -419,6 +419,30 @@ TEST_F(UdsTransportTest, ConnectStreamSuccess)
     EXPECT_CALL(*m_mockSocket, close()).Times(1);
 }
 
+TEST_F(UdsTransportTest, ConnectDatagramSuccess)
+{
+    EXPECT_CALL(*m_mockSocket, close()).Times(1);
+
+    auto dgramMock = std::make_unique<StrictMock<MockISocket>>();
+    const TransportEndpoint serverEp("/tmp/server_dgram.sock");
+    const TransportEndpoint clientEp("/tmp/client_dgram.sock");
+
+    EXPECT_CALL(*dgramMock, isOpen()).WillOnce(Return(false));
+    EXPECT_CALL(*dgramMock, open(SocketDomain::UNIX, SocketType::DATAGRAM,
+                                 SocketProtocol::DEFAULT))
+        .Times(1);
+    EXPECT_CALL(*dgramMock, connect(serverEp, 5000)).Times(1);
+    EXPECT_CALL(*dgramMock, getLocalEndpoint()).WillOnce(ReturnRef(clientEp));
+    EXPECT_CALL(*dgramMock, close()).Times(1);
+
+    UdsTransport transport(std::move(dgramMock),
+                           TransportProtocol::UDS_DATAGRAM);
+    transport.connect(serverEp, 5000);
+    EXPECT_EQ(transport.getState(), TransportState::CONNECTED);
+    EXPECT_EQ(transport.getRemoteEndpoint(), serverEp);
+    EXPECT_EQ(transport.getLocalEndpoint(), clientEp);
+}
+
 TEST_F(UdsTransportTest, ConnectEmptyPathThrows)
 {
     const TransportEndpoint ep("");
@@ -502,6 +526,30 @@ TEST_F(UdsTransportTest, SendConnectedSuccess)
     EXPECT_EQ(m_transport->send(payload, 2000), 3);
 
     EXPECT_CALL(*m_mockSocket, close()).Times(1);
+}
+
+TEST_F(UdsTransportTest, SendConnectedDatagramSuccess)
+{
+    EXPECT_CALL(*m_mockSocket, close()).Times(1);
+
+    auto dgramMock = std::make_unique<StrictMock<MockISocket>>();
+    const TransportEndpoint serverEp("/tmp/server_dgram.sock");
+    const TransportEndpoint clientEp("/tmp/client_dgram.sock");
+    const std::vector<std::uint8_t> payload = { 0x55, 0x66 };
+
+    EXPECT_CALL(*dgramMock, isOpen()).WillOnce(Return(false));
+    EXPECT_CALL(*dgramMock, open(SocketDomain::UNIX, SocketType::DATAGRAM,
+                                 SocketProtocol::DEFAULT))
+        .Times(1);
+    EXPECT_CALL(*dgramMock, connect(serverEp, 1000)).Times(1);
+    EXPECT_CALL(*dgramMock, getLocalEndpoint()).WillOnce(ReturnRef(clientEp));
+    EXPECT_CALL(*dgramMock, send(payload, 2000)).WillOnce(Return(2));
+    EXPECT_CALL(*dgramMock, close()).Times(1);
+
+    UdsTransport transport(std::move(dgramMock),
+                           TransportProtocol::UDS_DATAGRAM);
+    transport.connect(serverEp, 1000);
+    EXPECT_EQ(transport.send(payload, 2000), 2);
 }
 
 TEST_F(UdsTransportTest, SendConnectedTimeoutClosesSocket)
@@ -660,6 +708,30 @@ TEST_F(UdsTransportTest, ReceiveConnectedSuccess)
     EXPECT_CALL(*m_mockSocket, close()).Times(1);
 }
 
+TEST_F(UdsTransportTest, ReceiveConnectedDatagramSuccess)
+{
+    EXPECT_CALL(*m_mockSocket, close()).Times(1);
+
+    auto dgramMock = std::make_unique<StrictMock<MockISocket>>();
+    const TransportEndpoint serverEp("/tmp/server_dgram.sock");
+    const TransportEndpoint clientEp("/tmp/client_dgram.sock");
+    const std::vector<std::uint8_t> expected = { 0x77, 0x88 };
+
+    EXPECT_CALL(*dgramMock, isOpen()).WillOnce(Return(false));
+    EXPECT_CALL(*dgramMock, open(SocketDomain::UNIX, SocketType::DATAGRAM,
+                                 SocketProtocol::DEFAULT))
+        .Times(1);
+    EXPECT_CALL(*dgramMock, connect(serverEp, 1000)).Times(1);
+    EXPECT_CALL(*dgramMock, getLocalEndpoint()).WillOnce(ReturnRef(clientEp));
+    EXPECT_CALL(*dgramMock, receive(256, 3000)).WillOnce(Return(expected));
+    EXPECT_CALL(*dgramMock, close()).Times(1);
+
+    UdsTransport transport(std::move(dgramMock),
+                           TransportProtocol::UDS_DATAGRAM);
+    transport.connect(serverEp, 1000);
+    EXPECT_EQ(transport.receive(256, 3000), expected);
+}
+
 TEST_F(UdsTransportTest, ReceiveConnectedTimeoutClosesSocket)
 {
     const TransportEndpoint serverEp("/tmp/server.sock");
@@ -725,6 +797,36 @@ TEST_F(UdsTransportTest, ReceiveDatagramBoundSuccess)
     const auto received = transport.receive(512, 3000);
     EXPECT_EQ(received, expected);
     EXPECT_EQ(transport.getRemoteEndpoint(), senderEp);
+}
+
+TEST_F(UdsTransportTest, ReceiveAndReplyBoundDatagram)
+{
+    EXPECT_CALL(*m_mockSocket, close()).Times(1);
+
+    const TransportEndpoint serverEp("/tmp/server_dgram.sock");
+    const TransportEndpoint clientEp("/tmp/client_dgram.sock");
+    const std::vector<std::uint8_t> request = { 'P', 'I', 'N', 'G' };
+    const std::vector<std::uint8_t> reply = { 'P', 'O', 'N', 'G' };
+
+    auto boundMock = std::make_unique<StrictMock<MockISocket>>();
+    EXPECT_CALL(*boundMock, isOpen()).WillOnce(Return(false));
+    EXPECT_CALL(*boundMock, open(SocketDomain::UNIX, SocketType::DATAGRAM,
+                                 SocketProtocol::DEFAULT))
+        .Times(1);
+    EXPECT_CALL(*boundMock, bind(serverEp)).Times(1);
+    EXPECT_CALL(*boundMock, receiveFrom(1024, _, 5000))
+        .WillOnce(DoAll(SetArgReferee<1>(clientEp), Return(request)));
+    EXPECT_CALL(*boundMock, sendTo(reply, clientEp, 5000)).WillOnce(Return(4));
+    EXPECT_CALL(*boundMock, close()).Times(1);
+
+    UdsTransport transport(std::move(boundMock),
+                           TransportProtocol::UDS_DATAGRAM);
+    transport.bind(serverEp);
+    const auto received = transport.receive(1024, 5000);
+    EXPECT_EQ(received, request);
+    EXPECT_EQ(transport.getRemoteEndpoint(), clientEp);
+
+    EXPECT_EQ(transport.send(reply, 5000), 4);
 }
 
 TEST_F(UdsTransportTest, ReceiveDatagramBoundTimeoutClosesSocket)
