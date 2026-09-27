@@ -88,6 +88,14 @@ linting.
     *   Supports `--host-profile <profile>`, `--build-profile <profile>`, `-f` or `--force`
         (to remove existing cached versions first), and `-d` or `--dry-run`.
 
+*   **Build Docstrings HTML:**
+    ```bash
+    ./scripts/build_docstring.sh
+    ```
+    *   Generates Doxygen HTML API documentation from source docstrings into
+        `docs/doxygen/_build/html`.
+    *   Supports `-c` or `--clean` to remove old builds, and `-d` or `--dry-run`.
+
 ### Running Unit Tests
 
 *   **Run All Tests (and generate coverage report):**

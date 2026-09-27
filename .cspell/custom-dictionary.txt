@@ -47,6 +47,12 @@ toctree
 extrabody
 sphinxcontrib
 includehidden
+Doxyfile
+DOXYFILE
+AUTOBRIEF
+UNDOC
+PARAMDOC
+COLORSTYLE
 
 # Technical terms & Domain vocabulary
 extensionless

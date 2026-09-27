@@ -43,6 +43,13 @@ Builds with `-DCMAKE_BUILD_TYPE=Release` (mocks/tests off by default) and instal
 ```
 Builds and packages into the local Conan cache using `conan create`.
 
+### Docstrings HTML
+```bash
+./scripts/build_docstring.sh         # build Doxygen docstrings documentation
+./scripts/build_docstring.sh --clean # clean and rebuild Doxygen docstrings
+```
+Generates Doxygen HTML API documentation from docstrings into `docs/doxygen/_build/html`.
+
 ### Run Unit Tests
 ```bash
 ./scripts/run_unit_tests.sh

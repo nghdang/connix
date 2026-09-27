@@ -56,6 +56,9 @@ jobs:
           cd docs/arch
           make clean && make html
 
+      - name: Build Docstrings HTML
+        run: ./scripts/build_docstring.sh --clean
+
       - name: Upload Architecture artifacts
         uses: actions/upload-pages-artifact@v3
         with:
