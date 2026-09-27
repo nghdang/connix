@@ -1,5 +1,6 @@
 {
-  "[restructuredtext]": {
-    "editor.rulers": [100]
-  }
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "editor.rulers": [100],
+  "editor.formatOnSave": true
 }
