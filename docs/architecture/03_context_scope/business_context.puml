@@ -1,0 +1,19 @@
+@startuml Business Context
+
+left to right direction
+
+actor Users
+actor Developers
+actor Integrators
+
+rectangle Connix {
+    [connix-core] as connix_core
+    [connix] as connix_cli
+    [connix-gui] as connix_gui
+}
+
+Users --> connix_gui : use
+Developers --> connix_cli : use
+Integrators --> connix_core : use
+
+@enduml

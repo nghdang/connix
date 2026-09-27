@@ -1,0 +1,19 @@
+@startuml Building Block View 1st Level
+title Building Block View 1st Level
+
+actor Users
+[Client]
+
+package Connix {
+    [Interface Layer] as interface_layer
+    [Application Layer] as application_layer
+    [Service Layer] as service_layer
+}
+
+application_layer -up0)- interface_layer
+service_layer -up0)- application_layer
+
+Users <..> interface_layer
+Client <.left.> service_layer
+
+@enduml
