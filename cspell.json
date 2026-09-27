@@ -20,7 +20,10 @@
         "custom-dictionary-workspace",
         "custom-dictionary"
     ],
-    "words": [],
+    "words": [
+        "connectionless",
+        "nlohmann"
+    ],
     "ignoreWords": [],
     "import": []
 }
