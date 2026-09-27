@@ -52,8 +52,7 @@ TEST_F(TcpTransportTest, ConstructorThrowsOnNullSocket)
             try
             {
                 const TcpTransport transport(nullptr);
-            }
-            catch (const TransportException& ex)
+            } catch (const TransportException& ex)
             {
                 EXPECT_EQ(ex.getErrorCode(),
                           TransportErrorCode::SOCKET_CREATION_FAILED);
@@ -66,12 +65,10 @@ TEST_F(TcpTransportTest, ConstructorThrowsOnNullSocket)
         {
             try
             {
-                const TcpTransport transport(nullptr,
-                                             TransportState::CONNECTED,
-                                             TransportEndpoint(),
-                                             TransportEndpoint());
-            }
-            catch (const TransportException& ex)
+                const TcpTransport transport(
+                    nullptr, TransportState::CONNECTED, TransportEndpoint(),
+                    TransportEndpoint());
+            } catch (const TransportException& ex)
             {
                 EXPECT_EQ(ex.getErrorCode(),
                           TransportErrorCode::SOCKET_CREATION_FAILED);
