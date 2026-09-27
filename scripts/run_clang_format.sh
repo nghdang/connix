@@ -5,17 +5,20 @@ THIS_NAME="$(basename "${BASH_SOURCE[0]}")"
 
 source "${THIS_DIR}/env.sh"
 
-function usage()
+function print_usage()
 {
     echo "Usage: $THIS_NAME [OPTIONS]"
     echo "Run clang-format."
     echo ""
-    echo "    -f, --fix       Fix clang-format issues."
-    echo "    -s, --show      Show clang-format issues."
-    echo "    -d, --dry-run   Run the command without execute anything."
-    echo "    -h, --help      Show this help."
+    echo "    --check         Check clang-format issues (default)."
+    echo "    --fix           Fix clang-format issues."
+    echo "    --dry-run       Run the command without executing anything."
+    echo "    --help          Show this help."
     echo ""
     echo "Example:"
+    echo "    $THIS_NAME"
+    echo "    $THIS_NAME --check"
+    echo "    $THIS_NAME --fix"
     echo "    $THIS_NAME --dry-run"
     echo ""
 }
@@ -32,19 +35,19 @@ EXTRA_OPTIONS=()
 while [[ $# -gt 0 ]]
 do
     case "$1" in
-        -f|--fix)
-            SHOULD_FIX="$YES"
-            shift
-            ;;
-        -s|--show)
+        --check)
             SHOULD_FIX="$NO"
             shift
             ;;
-        -d|--dry-run)
+        --fix)
+            SHOULD_FIX="$YES"
+            shift
+            ;;
+        --dry-run)
             DRY_RUN="$YES"
             shift
             ;;
-        -h|--help)
+        --help)
             print_usage
             exit
             ;;

@@ -31,6 +31,7 @@ CTFL
 
 # Build tools & CMake
 DCMAKE
+DCONAN
 conanfile
 genhtml
 endfunction
@@ -40,13 +41,23 @@ SOURCEDIR
 SPHINXOPTS
 
 # Sphinx & Documentation
+docstring
+docstrings
 subfolders
 toctree
 extrabody
 sphinxcontrib
 includehidden
+Doxyfile
+DOXYFILE
+AUTOBRIEF
+UNDOC
+PARAMDOC
+COLORSTYLE
 
 # Technical terms & Domain vocabulary
+demultiplexing
+deregistering
 extensionless
 Whitebox
 lifecycles

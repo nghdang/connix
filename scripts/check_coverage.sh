@@ -5,14 +5,14 @@ THIS_NAME="$(basename "${BASH_SOURCE[0]}")"
 
 source "${THIS_DIR}/env.sh"
 
-function usage()
+function print_usage()
 {
     echo "Usage: $THIS_NAME [OPTIONS]"
-    echo "Check whether code coverage satisfy the threshold."
+    echo "Check whether code coverage satisfies the threshold."
     echo ""
-    echo "    -m, --min       Minimum percentage to archive."
-    echo "    -d, --dry-run   Run the command without execute anything."
-    echo "    -h, --help      Show this help."
+    echo "    --min           Minimum percentage to achieve."
+    echo "    --dry-run       Run the command without executing anything."
+    echo "    --help          Show this help."
     echo ""
     echo "Example:"
     echo "    $THIS_NAME --dry-run"
@@ -31,15 +31,15 @@ EXTRA_OPTIONS=()
 while [[ $# -gt 0 ]]
 do
     case "$1" in
-        -m|--min)
+        --min)
             MIN_COVERAGE="$2"
             shift 2
             ;;
-        -d|--dry-run)
+        --dry-run)
             DRY_RUN="$YES"
             shift
             ;;
-        -h|--help)
+        --help)
             print_usage
             exit
             ;;

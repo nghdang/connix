@@ -24,7 +24,7 @@ root `CMakeLists.txt` as the source of truth for the actual standard in use.
 # Or with a specific profile:
 ./scripts/build_application_native.sh --host-profile debug/gcc13_x86_64
 ```
-Use `-f`/`--force` to wipe `build-native/` and rebuild clean. Debug builds pass
+Use `--force` to wipe `build-native/` and rebuild clean. Debug builds pass
 `-DBUILD_MOCKS=ON -DBUILD_TESTS=ON` to CMake.
 
 ### Release Build
@@ -42,6 +42,14 @@ Builds with `-DCMAKE_BUILD_TYPE=Release` (mocks/tests off by default) and instal
 ./scripts/build_conan_package.sh --force
 ```
 Builds and packages into the local Conan cache using `conan create`.
+
+### Docstrings HTML
+```bash
+./scripts/build_docstring.sh              # build Doxygen docstrings documentation
+./scripts/build_docstring.sh --clean      # clean and rebuild Doxygen docstrings
+./scripts/build_docstring.sh --clean-only # clean build output without rebuilding
+```
+Generates Doxygen HTML API documentation from docstrings into `docs/doxygen/_build/html`.
 
 ### Run Unit Tests
 ```bash
@@ -65,8 +73,9 @@ ctest -R "UnitTest<Name>" --verbose
 
 ### Code Formatting
 ```bash
-./scripts/run_clang_format.sh          # check (--dry-run)
-./scripts/run_clang_format.sh --fix    # apply (-i)
+./scripts/run_clang_format.sh          # check only (default)
+./scripts/run_clang_format.sh --check  # check only
+./scripts/run_clang_format.sh --fix    # apply changes in-place (-i)
 ```
 Runs clang-format over every `.hpp`/`.cpp` under `connix/`, per `.clang-format` (LLVM-based).
 
@@ -84,6 +93,17 @@ in `.clang-tidy`.
 ./scripts/check_spelling.sh <paths...> # check specific files or directories
 ```
 Runs cspell with `.gitignore` filtering over source code and documentation.
+
+### Coding Standards & Docstrings
+- **Docstrings:** Always write comprehensive Doxygen-style docstrings (`/** ... */`)
+  with `@brief`, `@param`, `@return`, and `@throws` for all classes, interfaces,
+  methods, enumerations, and data structures when writing or modifying code.
+- **Implementation Separation:** Always separate class member function implementations
+  into `*.cpp` files rather than defining them inline in header files (except for
+  templates or defaulted destructors).
+- **Namespaces:** Always use full namespace resolution (`ConnixCore::Infrastructure::...`).
+- **Standard Library:** Avoid using `std::optional`; prefer concrete defaults or dedicated
+  types to eliminate caller ambiguity.
 
 ## Architecture
 

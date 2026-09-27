@@ -59,7 +59,7 @@ linting.
     *   Automatically runs CMake with debug variables and triggers building of
         all components.
     *   Configures `BUILD_TESTS=ON`. Mock targets are always built and packaged.
-    *   To force a clean rebuild, use the `-f` or `--force` flag:
+    *   To force a clean rebuild, use the `--force` flag:
         ```bash
         ./scripts/build_application_native.sh --force
         ```
@@ -85,8 +85,21 @@ linting.
     ```
     *   Creates and installs the package into the local Conan cache via `conan create`.
     *   Defaults to the release profile (`release/gcc13_x86_64`).
-    *   Supports `--host-profile <profile>`, `--build-profile <profile>`, `-f` or `--force`
-        (to remove existing cached versions first), and `-d` or `--dry-run`.
+    *   Supports `--host-profile <profile>`, `--build-profile <profile>`, `--force`
+        (to remove existing cached versions first), and `--dry-run`.
+
+*   **Build Docstrings HTML:**
+    ```bash
+    ./scripts/build_docstring.sh
+    # Or clean and rebuild:
+    ./scripts/build_docstring.sh --clean
+    # Or clean only:
+    ./scripts/build_docstring.sh --clean-only
+    ```
+    *   Generates Doxygen HTML API documentation from source docstrings into
+        `docs/doxygen/_build/html`.
+    *   Supports `--clean` to remove old builds, `--clean-only` to clean
+        without rebuilding, and `--dry-run`.
 
 ### Running Unit Tests
 
@@ -151,6 +164,11 @@ linting.
 *   **Avoid using `std::optional`:** Avoid using `std::optional` as much as
     possible; prefer concrete default values, empty containers/strings, or
     dedicated encapsulated types to eliminate caller ambiguity.
+*   **Documentation & Docstrings:** Always write comprehensive Doxygen-style
+    docstrings (`/** ... */` with `@brief`, `@param`, `@return`, `@throws`)
+    for all classes, interfaces, public/internal methods, enumerations, and
+    data structures when writing or modifying code. Keep documentation
+    synchronized with implementation changes.
 
 ### Architecture & Design Documentation
 *   Treat existing architecture and detailed-design documentation
