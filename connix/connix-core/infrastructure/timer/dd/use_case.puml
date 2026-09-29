@@ -1,0 +1,23 @@
+@startuml Timer Component - Use Case Diagram
+
+left to right direction
+
+actor Client
+
+rectangle "Timer Component" {
+    usecase "Create Timer" as UC1
+    usecase "Register Timer" as UC2
+    usecase "Unregister Timer" as UC3
+    usecase "Control Timer Lifecycle" as UC4
+    usecase "Dispatch Timer Event" as UC5
+    usecase "Stop All Timers" as UC6
+}
+
+Client --> UC1
+Client --> UC2
+Client --> UC3
+Client --> UC4
+Client --> UC5
+Client --> UC6
+
+@enduml

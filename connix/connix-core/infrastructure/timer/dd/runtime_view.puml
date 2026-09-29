@@ -1,0 +1,102 @@
+@startuml Timer Component - Runtime View
+
+participant Client
+
+box "Timer"
+    participant TimerService
+    participant TimerFactory
+    participant Timer
+    participant Clock
+end box
+
+participant "Operating System" as OS
+
+== Scenario 1: Timer Creation and Registration ==
+
+Client -> TimerFactory : createPeriodicTimer(interval, callback)
+activate TimerFactory
+TimerFactory -> Clock : uses shared clock
+TimerFactory -> Timer ** : create(interval, PERIODIC, clock, callback)
+TimerFactory --> Client : timer: shared_ptr<ITimer>
+deactivate TimerFactory
+
+Client -> TimerService : registerTimer(timer)
+activate TimerService
+TimerService -> Timer : setCallback(internalTimeoutHook)
+TimerService --> Client : timerId: string
+deactivate TimerService
+
+== Scenario 2: Timer Arming and Lifecycle Control ==
+
+Client -> Timer : start()
+activate Timer
+Timer -> Clock : now()
+activate Clock
+Clock -> OS : clock_gettime(CLOCK_MONOTONIC)
+activate OS
+OS --> Clock : time_point
+deactivate OS
+Clock --> Timer : current_time
+deactivate Clock
+Timer -> Timer : deadline = current_time + interval\nstate = RUNNING
+Timer --> Client
+deactivate Timer
+
+Client -> Timer : isRunning()
+activate Timer
+Timer --> Client : true
+deactivate Timer
+
+== Scenario 3: Autonomous Expiration and Event Pumping ==
+
+... monotonic time elapses ...
+
+Timer -> Clock : now()
+activate Timer
+activate Clock
+Clock -> OS : clock_gettime(CLOCK_MONOTONIC)
+activate OS
+OS --> Clock : time_point
+deactivate OS
+Clock --> Timer : current_time (>= deadline)
+deactivate Clock
+
+alt Single-Shot Timer
+    Timer -> Timer : state = EXPIRED
+else Periodic Timer
+    Timer -> Timer : deadline = deadline + interval\nstate = RUNNING
+end
+
+Timer -> TimerService : internalTimeoutHook()
+deactivate Timer
+activate TimerService
+TimerService -> TimerService : create TimerEvent(timerId, type, timestamp)
+TimerService -> Client : onTimerEvent(timerEvent)
+deactivate TimerService
+
+== Scenario 4: Timer Deregistration and Bulk Teardown ==
+
+Client -> TimerService : unregisterTimer(timerId)
+activate TimerService
+TimerService -> Timer : stop()
+activate Timer
+Timer -> Timer : state = STOPPED
+Timer --> TimerService
+deactivate Timer
+TimerService -> TimerService : remove timer from registry
+TimerService --> Client
+deactivate TimerService
+
+Client -> TimerService : stopAll()
+activate TimerService
+loop for each registered timer
+    TimerService -> Timer : stop()
+    activate Timer
+    Timer -> Timer : state = STOPPED
+    Timer --> TimerService
+    deactivate Timer
+end
+TimerService --> Client
+deactivate TimerService
+
+@enduml
