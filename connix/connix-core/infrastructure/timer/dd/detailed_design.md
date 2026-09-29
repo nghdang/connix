@@ -24,7 +24,65 @@ The component satisfies:
 
 ---
 
-## 2. Static View
+## 2. Use Cases
+
+The primary use cases supported by the Timer component are modeled in
+
+```plantuml
+!include use_case.puml
+```
+
+### 2.1 Use Case Specifications
+
+1. **`Create Timer (UC1)`**:
+   - Executed by an external caller (`Client`) such as the application orchestrator, execution scheduler, or connection-cycle use case.
+   - Requests a timer instance via `ITimerFactory::createSingleShotTimer(interval, callback)` or `ITimerFactory::createPeriodicTimer(interval, callback)`.
+   - The factory instantiates a concrete `Timer` configured with the specified `TimerDuration` interval and `TimerType` (`SINGLE_SHOT` or `PERIODIC`), injecting the monotonic `IClock` abstraction.
+   - Initializes the timer in `TimerState::STOPPED` with deadline not computed until started.
+   - If the interval is zero or invalid, raises a typed `TimerException` with `TimerErrorCode::INVALID_DURATION`.
+   - Traceability: `SW_REQ_EVENT_HANDLING_TIMER`, `SW_REQ_EVENT_HANDLING_PERIODIC_TIMER_SOURCE`, `SW_REQ_EXECUTION_MODES_ONETIME`, `SW_REQ_EXECUTION_MODES_PERIODIC`.
+
+2. **`Register Timer (UC2)`**:
+   - Executed by `Client` to register an active or armed timer with the engine's central timer service (`SW_REQ_EXECUTION_MODES_BUILT_IN_SCHEDULING`).
+   - Invokes `ITimerService::registerTimer(timer)` passing a `std::shared_ptr<ITimer>`.
+   - `TimerService` assigns a unique, internally managed `timerId` (string), binds the timer's expiration to emit a `TimerEvent`, and stores the timer in its active registry.
+   - Returns the assigned `timerId` to the caller for subsequent lifecycle tracking and lookup.
+   - Traceability: `SW_REQ_EXECUTION_MODES_BUILT_IN_SCHEDULING`.
+
+3. **`Unregister Timer (UC3)`**:
+   - Executed by `Client` during trigger cancellation, rule teardown, or cycle completion.
+   - Invokes `ITimerService::unregisterTimer(timerId)` providing the registered timer identifier.
+   - If `timerId` does not exist in the registry, raises `TimerException` with `TimerErrorCode::TIMER_NOT_FOUND`.
+   - Halts the timer if running, and removes it from the internal registry.
+   - Traceability: `SW_REQ_EXECUTION_MODES_BUILT_IN_SCHEDULING`.
+
+4. **`Control Timer Lifecycle (UC4)`**:
+   - Executed by `Client` to directly arm, disarm, re-arm, or inspect individual timer instances.
+   - Operations include:
+     - `start()`: Computes deadline via `IClock::now() + interval` and transitions state from `TimerState::STOPPED` to `TimerState::RUNNING`. If already running, raises `TimerException` with `TimerErrorCode::TIMER_ALREADY_RUNNING`.
+     - `stop()`: Halts countdown and transitions state to `TimerState::STOPPED`. Idempotent if already stopped.
+     - `reset()`: Recomputes the deadline from current monotonic clock time and arms the timer in `TimerState::RUNNING`.
+     - `setCallback(callback)`: Registers or updates the callback invoked upon expiration.
+     - State inspection: Queries `isRunning()`, `getType()`, `getState()`, and `getInterval()`.
+   - Traceability: `SW_REQ_EVENT_HANDLING_TIMER`, `SW_REQ_EXECUTION_MODES_ONETIME`, `SW_REQ_EXECUTION_MODES_PERIODIC`.
+
+5. **`Dispatch Timer Event (UC5)`**:
+   - Initiated autonomously when an active timer's countdown expires (`IClock::now() >= deadline`).
+   - For single-shot timers: invokes registered callback and transitions state to `TimerState::EXPIRED` (`SW_REQ_EXECUTION_MODES_ONETIME`).
+   - For periodic timers: invokes registered callback, advances deadline monotonically (`deadline += interval`) without accumulated drift, and remains in `TimerState::RUNNING` (`SW_REQ_EXECUTION_MODES_PERIODIC`).
+   - When managed by `TimerService`, constructs a strongly typed `TimerEvent` (`timerId`, `type`, `timestamp`) and pumps it to the registered `TimerEventHandler`.
+   - Enables central event ordering (`SW_REQ_EVENT_HANDLING_INCOMING_EVENT_ORDER`) alongside socket I/O events, allowing the scheduler and rule engine to trigger connection cycles without race conditions.
+   - Traceability: `SW_REQ_EVENT_HANDLING_TIMER`, `SW_REQ_EVENT_HANDLING_PERIODIC_TIMER_SOURCE`, `SW_REQ_EVENT_HANDLING_INCOMING_EVENT_ORDER`.
+
+6. **`Stop All Timers (UC6)`**:
+   - Executed by `Client` during engine shutdown, execution mode transitions, or connection cycle teardown (`SW_REQ_EXECUTION_MODES_BUILT_IN_SCHEDULING`).
+   - Invokes `ITimerService::stopAll()` to halt all registered countdowns simultaneously.
+   - Transitions all running timers to `TimerState::STOPPED`, ensuring zero pending timeouts or lingering background callbacks.
+   - Traceability: `SW_REQ_EXECUTION_MODES_BUILT_IN_SCHEDULING`.
+
+---
+
+## 3. Static View
 
 The static relationship of modules and interfaces within the Timer
 component is detailed in
@@ -33,7 +91,7 @@ component is detailed in
 !include static_view.puml
 ```
 
-### 2.1 Module Responsibilities
+### 3.1 Module Responsibilities
 
 1. **`Client`**:
    - External consumer of the timer component (such as the execution scheduler, connection-cycle use case, rule engine, or application orchestration layer in Clean Architecture).
@@ -66,7 +124,7 @@ component is detailed in
 6. **`Operating System (POSIX Clock / Timer APIs)`**:
    - The underlying Linux platform timing facilities and standard POSIX clock interfaces (`<chrono>`, `<ctime>`, `clock_gettime`, `nanosleep`).
 
-### 2.2 Design Principles & Architectural Alignment
+### 3.2 Design Principles & Architectural Alignment
 
 - **Clean Architecture:** `Timer` belongs to the Infrastructure / Frameworks & Drivers layer (`connix-core/infrastructure/timer/`). It realizes inward-facing interfaces (`ITimerService`, `ITimerFactory`, `ITimer`), isolating low-level OS time retrieval from Domain Entities and Application Use Cases.
 - **Single Responsibility Principle (SRP):** `TimerService` manages timer registration, lookup, and lifecycle teardown; `TimerFactory` isolates object instantiation and dependency wiring; `Timer` encapsulates interval deadline tracking and automatic callback invocation; `Clock` isolates operating-system time queries.
@@ -76,7 +134,7 @@ component is detailed in
 
 ---
 
-## 3. Interface View
+## 4. Interface View
 
 Details of core object behaviors, public/internal interfaces, concrete implementations,
 and dependency relationships are modeled in
@@ -85,7 +143,7 @@ and dependency relationships are modeled in
 !include interface_view.puml
 ```
 
-### 3.1 Interface Specifications
+### 4.1 Interface Specifications
 
 1. **`ITimer` (Public Interface)**:
    - Represents an individual timer entity supporting arming, disarming, reset, and automatic expiration notification.
@@ -129,7 +187,7 @@ and dependency relationships are modeled in
 
 ---
 
-## 4. Data Structures
+## 5. Data Structures
 
 The data structures, enums, exception types, and their relationships are modeled in
 
@@ -137,7 +195,7 @@ The data structures, enums, exception types, and their relationships are modeled
 !include data_structures.puml
 ```
 
-### 4.1 Data Structure Specifications
+### 5.1 Data Structure Specifications
 
 1. **`TimerType` (Public Enum)**:
    - Strongly typed enumeration classifying the operational recurrence of a timer:
@@ -174,9 +232,9 @@ The data structures, enums, exception types, and their relationships are modeled
 
 ---
 
-## 5. Design Decisions
+## 6. Design Decisions
 
-### 5.1 Autonomous Timer Expiration vs POSIX Asynchronous Signal Timers (`timer_create` / `SIGALRM`)
+### 6.1 Autonomous Timer Expiration vs POSIX Asynchronous Signal Timers (`timer_create` / `SIGALRM`)
 
 Timers operate with internal scheduling and automatic callback invocation utilizing monotonic clock calculations rather than OS signal-based timers (`timer_create(2)`, `setitimer(2)`, `SIGALRM`).
 
@@ -189,7 +247,7 @@ Timers operate with internal scheduling and automatic callback invocation utiliz
    - Timers evaluate deadlines using `IClock::now()`.
    - Expiration callbacks execute synchronously or via managed dispatch without signal handler restrictions.
 
-### 5.2 Drift Prevention in Periodic Timers
+### 6.2 Drift Prevention in Periodic Timers
 
 When managing recurring triggers (`SW_REQ_EVENT_HANDLING_PERIODIC_TIMER_SOURCE`, `SW_REQ_EXECUTION_MODES_PERIODIC`),
 `Timer` (in periodic mode) computes the next deadline via:
@@ -207,7 +265,7 @@ $$\text{next\_deadline} = \text{now}() + \text{interval}$$
    - In contrast, accumulating monotonic intervals (`previous_deadline + interval`) preserves exact harmonic
      cadence regardless of execution latency or thread scheduling jitter.
 
-### 5.3 Testability through Clock Decoupling (`IClock` Injection)
+### 6.3 Testability through Clock Decoupling (`IClock` Injection)
 
 Requirements `TC_EVT_04` and `TC_EVT_05` specify that timer rules and PERIODIC mode intervals must be verified
 deterministically without real-time sleep:
@@ -219,7 +277,7 @@ deterministically without real-time sleep:
      by arbitrary intervals (e.g., advancing 2 seconds three times in microseconds), verifying rule triggers and
      action dispatches with zero CPU delay or flaky timing dependencies.
 
-### 5.4 Centralized Event Pumping vs Direct Callback Execution
+### 6.4 Centralized Event Pumping vs Direct Callback Execution
 
 Connix is an event-driven network interaction engine (`SW_REQ_EVENT_HANDLING_TIMER`,
 `SW_REQ_EVENT_HANDLING_PERIODIC_TIMER_SOURCE`, `SW_REQ_EVENT_HANDLING_INCOMING_EVENT_ORDER`).
