@@ -1,0 +1,98 @@
+@startuml Timer Component - Interface View
+
+namespace ConnixCore::Infrastructure::Timer {
+
+package "Public" {
+
+    interface ITimer {
+        + {abstract} start(): void
+        + {abstract} stop(): void
+        + {abstract} reset(): void
+        + {abstract} isRunning(): bool const
+        + {abstract} getType(): TimerType const
+        + {abstract} getState(): TimerState const
+        + {abstract} getInterval(): milliseconds const
+        + {abstract} setCallback(callback: TimerCallback): void
+    }
+
+    interface ITimerFactory {
+        + {abstract} createSingleShotTimer(interval: milliseconds, callback: TimerCallback): shared_ptr<ITimer>
+        + {abstract} createPeriodicTimer(interval: milliseconds, callback: TimerCallback): shared_ptr<ITimer>
+    }
+
+    interface ITimerService {
+        + {abstract} registerTimer(timer: shared_ptr<ITimer>): string
+        + {abstract} unregisterTimer(timerId: string): void
+        + {abstract} getTimer(timerId: string): shared_ptr<ITimer> const
+        + {abstract} hasTimer(timerId: string): bool const
+        + {abstract} stopAll(): void
+        + {abstract} setEventHandler(handler: TimerEventHandler): void
+    }
+
+    class TimerFactory {
+        - clock: shared_ptr<IClock>
+        + createSingleShotTimer(interval: milliseconds, callback: TimerCallback): shared_ptr<ITimer>
+        + createPeriodicTimer(interval: milliseconds, callback: TimerCallback): shared_ptr<ITimer>
+    }
+
+    class TimerService {
+        - timers: unordered_map<string, shared_ptr<ITimer>>
+        - eventHandler: TimerEventHandler
+        + registerTimer(timer: shared_ptr<ITimer>): string
+        + unregisterTimer(timerId: string): void
+        + getTimer(timerId: string): shared_ptr<ITimer> const
+        + hasTimer(timerId: string): bool const
+        + stopAll(): void
+        + setEventHandler(handler: TimerEventHandler): void
+    }
+
+    ITimerFactory <|.. TimerFactory
+    ITimerService <|.. TimerService
+
+}
+
+package "Internal" {
+
+    interface IClock {
+        + {abstract} now(): steady_clock::time_point const
+        + {abstract} sleepFor(duration: milliseconds): void
+    }
+
+    class Clock {
+        + now(): steady_clock::time_point const
+        + sleepFor(duration: milliseconds): void
+    }
+
+    class Timer {
+        - clock: shared_ptr<IClock>
+        - type: TimerType
+        - interval: milliseconds
+        - deadline: steady_clock::time_point
+        - state: TimerState
+        - callback: TimerCallback
+        + start(): void
+        + stop(): void
+        + reset(): void
+        + isRunning(): bool const
+        + getType(): TimerType const
+        + getState(): TimerState const
+        + getInterval(): milliseconds const
+        + setCallback(callback: TimerCallback): void
+    }
+
+    IClock <|.. Clock
+
+    ITimer <|.. Timer
+
+    Timer o-- IClock : uses
+    TimerFactory o-- IClock : uses
+    TimerService o-- ITimer : manages
+
+}
+
+TimerFactory ..> ITimer : creates
+TimerFactory ..> Timer : creates
+
+}
+
+@enduml

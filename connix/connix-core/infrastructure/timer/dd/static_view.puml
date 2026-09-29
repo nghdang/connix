@@ -2,11 +2,10 @@
 
 [Client]
 
-rectangle "Timer" {
+rectangle "Timer" as timer_module {
     [TimerService]
     [TimerFactory]
-    [SingleShotTimer]
-    [PeriodicTimer]
+    [Timer]
     [Clock]
 }
 
@@ -16,20 +15,15 @@ rectangle "Operating System" {
 
 Client -right(0- TimerService
 Client -(0- TimerFactory
-Client -(0- SingleShotTimer
-Client -(0- PeriodicTimer
+Client -(0- Timer
 
-TimerService -(0- TimerFactory
-TimerService -(0- SingleShotTimer
-TimerService -(0- PeriodicTimer
+TimerService -(0- Timer
 TimerService -(0- Clock
 
-TimerFactory ..> SingleShotTimer : creates
-TimerFactory ..> PeriodicTimer : creates
+TimerFactory ..> Timer : creates
 TimerFactory ..> Clock : creates
 
-SingleShotTimer -(0- Clock
-PeriodicTimer -(0- Clock
+Timer -(0- Clock
 
 Clock ..> posix_clock
 

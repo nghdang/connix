@@ -1,0 +1,49 @@
+@startuml Timer Component - Data Structures
+
+namespace ConnixCore::Infrastructure::Timer {
+
+package "Public" {
+
+    enum TimerType {
+        SINGLE_SHOT
+        PERIODIC
+    }
+
+    enum TimerState {
+        STOPPED
+        RUNNING
+        EXPIRED
+    }
+
+    enum TimerErrorCode {
+        TIMER_NOT_FOUND
+        INVALID_DURATION
+        TIMER_ALREADY_RUNNING
+        TIMER_NOT_RUNNING
+        SYSTEM_CLOCK_ERROR
+    }
+
+    class TimerException {
+        - errorCode: TimerErrorCode
+        - message: string
+        + getErrorCode(): TimerErrorCode const
+        + what(): const char* const
+    }
+
+    class TimerEvent {
+        - timerId: string
+        - type: TimerType
+        - timestamp: steady_clock::time_point
+        + getTimerId(): const string& const
+        + getType(): TimerType const
+        + getTimestamp(): steady_clock::time_point const
+    }
+
+    TimerErrorCode <-- TimerException : defines
+    TimerType <-- TimerEvent : classifies
+
+}
+
+}
+
+@enduml
