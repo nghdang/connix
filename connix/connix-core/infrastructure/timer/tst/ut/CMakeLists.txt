@@ -1,0 +1,6 @@
+create_unit_test(TimerDataStructuresUnitTest.cpp)
+create_unit_test(TimerInterfacesUnitTest.cpp)
+create_unit_test(ClockUnitTest.cpp)
+create_unit_test(TimerUnitTest.cpp)
+create_unit_test(TimerFactoryUnitTest.cpp)
+create_unit_test(TimerServiceUnitTest.cpp)
