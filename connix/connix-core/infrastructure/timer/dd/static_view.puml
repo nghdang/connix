@@ -1,0 +1,36 @@
+@startuml Timer Component - Static Component Diagram
+
+[Client]
+
+rectangle "Timer" {
+    [TimerService]
+    [TimerFactory]
+    [SingleShotTimer]
+    [PeriodicTimer]
+    [Clock]
+}
+
+rectangle "Operating System" {
+    [POSIX Clock / Timer APIs] as posix_clock
+}
+
+Client -right(0- TimerService
+Client -(0- TimerFactory
+Client -(0- SingleShotTimer
+Client -(0- PeriodicTimer
+
+TimerService -(0- TimerFactory
+TimerService -(0- SingleShotTimer
+TimerService -(0- PeriodicTimer
+TimerService -(0- Clock
+
+TimerFactory ..> SingleShotTimer : creates
+TimerFactory ..> PeriodicTimer : creates
+TimerFactory ..> Clock : creates
+
+SingleShotTimer -(0- Clock
+PeriodicTimer -(0- Clock
+
+Clock ..> posix_clock
+
+@enduml
