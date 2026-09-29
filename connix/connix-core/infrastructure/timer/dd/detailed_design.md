@@ -232,9 +232,48 @@ The data structures, enums, exception types, and their relationships are modeled
 
 ---
 
-## 6. Design Decisions
+## 6. Runtime View
 
-### 6.1 Autonomous Timer Expiration vs POSIX Asynchronous Signal Timers (`timer_create` / `SIGALRM`)
+The runtime interactions between Timer modules, the operating system, and external
+clients during timer creation, registration, execution, expiration event pumping,
+and teardown are modeled in
+
+```plantuml
+!include runtime_view.puml
+```
+
+### 6.1 Runtime Sequence Specifications
+
+1. **Scenario 1: Timer Creation and Registration**:
+   - `Client` requests `TimerFactory::createPeriodicTimer(interval, callback)` (or `createSingleShotTimer`).
+   - `TimerFactory` injects the shared monotonic `IClock` abstraction and instantiates a concrete `Timer` object in `TimerState::STOPPED`.
+   - `TimerFactory` returns a `std::shared_ptr<ITimer>` to `Client`.
+   - `Client` registers the timer via `TimerService::registerTimer(timer)`.
+   - `TimerService` binds an internal expiration hook to the timer, generates a unique, managed `timerId`, stores the instance in its registry, and returns `timerId` to `Client`.
+
+2. **Scenario 2: Timer Arming and Lifecycle Control**:
+   - `Client` arms the timer by calling `timer->start()`.
+   - `Timer` queries `Clock::now()` (which delegates to OS `clock_gettime(CLOCK_MONOTONIC)`).
+   - `Timer` computes `deadline = current_time + interval` and sets its state to `TimerState::RUNNING`.
+   - `Client` inspects status via `timer->isRunning()` or `timer->getState()` without intermediate service overhead.
+
+3. **Scenario 3: Autonomous Expiration and Event Pumping**:
+   - Monotonic time progresses until `Clock::now()` meets or exceeds the target deadline.
+   - For single-shot timers: `Timer` transitions state to `TimerState::EXPIRED`.
+   - For periodic timers: `Timer` computes `deadline = deadline + interval` to eliminate cumulative drift and remains in `TimerState::RUNNING`.
+   - `Timer` invokes the registered expiration hook bound to `TimerService`.
+   - `TimerService` constructs a strongly typed `TimerEvent(timerId, type, timestamp)` and dispatches it to the registered `TimerEventHandler`.
+   - `Client` (such as the execution scheduler or event-rule use case) receives the event in strict FIFO sequence with socket events (`SW_REQ_EVENT_HANDLING_INCOMING_EVENT_ORDER`), driving connection cycles and rule evaluations.
+
+4. **Scenario 4: Timer Deregistration and Bulk Teardown**:
+   - **Individual Deregistration**: `Client` calls `TimerService::unregisterTimer(timerId)`. `TimerService` stops the timer via `timer->stop()`, removing it from the registry.
+   - **Bulk Teardown**: During shutdown or cycle completion, `Client` calls `TimerService::stopAll()`. `TimerService` iterates over all registered timers and invokes `stop()` on each, transitioning active countdowns to `TimerState::STOPPED` and guaranteeing zero lingering callbacks.
+
+---
+
+## 7. Design Decisions
+
+### 7.1 Autonomous Timer Expiration vs POSIX Asynchronous Signal Timers (`timer_create` / `SIGALRM`)
 
 Timers operate with internal scheduling and automatic callback invocation utilizing monotonic clock calculations rather than OS signal-based timers (`timer_create(2)`, `setitimer(2)`, `SIGALRM`).
 
@@ -247,7 +286,7 @@ Timers operate with internal scheduling and automatic callback invocation utiliz
    - Timers evaluate deadlines using `IClock::now()`.
    - Expiration callbacks execute synchronously or via managed dispatch without signal handler restrictions.
 
-### 6.2 Drift Prevention in Periodic Timers
+### 7.2 Drift Prevention in Periodic Timers
 
 When managing recurring triggers (`SW_REQ_EVENT_HANDLING_PERIODIC_TIMER_SOURCE`, `SW_REQ_EXECUTION_MODES_PERIODIC`),
 `Timer` (in periodic mode) computes the next deadline via:
@@ -265,7 +304,7 @@ $$\text{next\_deadline} = \text{now}() + \text{interval}$$
    - In contrast, accumulating monotonic intervals (`previous_deadline + interval`) preserves exact harmonic
      cadence regardless of execution latency or thread scheduling jitter.
 
-### 6.3 Testability through Clock Decoupling (`IClock` Injection)
+### 7.3 Testability through Clock Decoupling (`IClock` Injection)
 
 Requirements `TC_EVT_04` and `TC_EVT_05` specify that timer rules and PERIODIC mode intervals must be verified
 deterministically without real-time sleep:
@@ -277,7 +316,7 @@ deterministically without real-time sleep:
      by arbitrary intervals (e.g., advancing 2 seconds three times in microseconds), verifying rule triggers and
      action dispatches with zero CPU delay or flaky timing dependencies.
 
-### 6.4 Centralized Event Pumping vs Direct Callback Execution
+### 7.4 Centralized Event Pumping vs Direct Callback Execution
 
 Connix is an event-driven network interaction engine (`SW_REQ_EVENT_HANDLING_TIMER`,
 `SW_REQ_EVENT_HANDLING_PERIODIC_TIMER_SOURCE`, `SW_REQ_EVENT_HANDLING_INCOMING_EVENT_ORDER`).
