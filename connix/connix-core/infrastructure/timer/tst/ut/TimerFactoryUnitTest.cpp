@@ -3,6 +3,7 @@
 #include <chrono>
 #include <memory>
 
+#include "ConnixCore/Infrastructure/Timer/ITimerFactory.hpp"
 #include "ConnixCore/Infrastructure/Timer/MockIClock.hpp"
 #include "ConnixCore/Infrastructure/Timer/TimerFactory.hpp"
 #include "ConnixCore/Infrastructure/Timer/TimerState.hpp"
@@ -45,6 +46,14 @@ TEST(TimerFactoryUnitTest, DefaultClockCreation)
     const auto timer =
         factory.createSingleShotTimer(std::chrono::milliseconds(20));
     ASSERT_NE(timer, nullptr);
+}
+
+TEST(TimerFactoryUnitTest, PolymorphicDeletionViaInterfacePointer)
+{
+    std::unique_ptr<ITimerFactory> factory = std::make_unique<TimerFactory>();
+    EXPECT_NE(factory->createSingleShotTimer(std::chrono::milliseconds(20)),
+              nullptr);
+    factory.reset();
 }
 
 } // namespace UnitTest

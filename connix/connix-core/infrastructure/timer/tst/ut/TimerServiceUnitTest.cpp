@@ -1,17 +1,22 @@
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
 #include <atomic>
 #include <chrono>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <thread>
 
+#include "ConnixCore/Infrastructure/Timer/ITimerService.hpp"
+#include "ConnixCore/Infrastructure/Timer/MockITimer.hpp"
 #include "ConnixCore/Infrastructure/Timer/Timer.hpp"
 #include "ConnixCore/Infrastructure/Timer/TimerEvent.hpp"
 #include "ConnixCore/Infrastructure/Timer/TimerException.hpp"
 #include "ConnixCore/Infrastructure/Timer/TimerService.hpp"
 #include "ConnixCore/Infrastructure/Timer/TimerType.hpp"
 
+using namespace testing;
 using namespace ConnixCore::Infrastructure::Timer;
 
 namespace ConnixCore {
@@ -113,6 +118,27 @@ TEST(TimerServiceUnitTest, TimerExpirationPumpsEventToHandler)
     EXPECT_TRUE(eventReceived);
     EXPECT_EQ(receivedTimerId, id);
     EXPECT_EQ(receivedType, TimerType::SINGLE_SHOT);
+}
+
+TEST(TimerServiceUnitTest,
+     RegisterTimerRollsBackAndPropagatesOnCallbackFailure)
+{
+    TimerService service;
+    const auto mockTimer = std::make_shared<MockITimer>();
+    EXPECT_CALL(*mockTimer, getType())
+        .WillOnce(Return(TimerType::SINGLE_SHOT));
+    EXPECT_CALL(*mockTimer, setCallback(_))
+        .WillOnce(Throw(std::runtime_error("Callback setup failed")));
+
+    EXPECT_THROW(service.registerTimer(mockTimer), std::runtime_error);
+    EXPECT_FALSE(service.hasTimer("timer_0"));
+}
+
+TEST(TimerServiceUnitTest, PolymorphicDeletionViaInterfacePointer)
+{
+    std::unique_ptr<ITimerService> service = std::make_unique<TimerService>();
+    EXPECT_FALSE(service->hasTimer("nonexistent"));
+    service.reset();
 }
 
 } // namespace UnitTest

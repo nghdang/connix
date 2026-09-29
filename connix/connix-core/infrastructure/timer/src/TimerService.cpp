@@ -39,20 +39,28 @@ std::string TimerService::registerTimer(std::shared_ptr<ITimer> timer)
         m_timers.emplace(timerId, timer);
     }
 
-    const TimerType type = timer->getType();
-    timer->setCallback([this, timerId, type]() {
-        TimerEventHandler handler;
-        {
-            const std::lock_guard<std::mutex> lock(m_mutex);
-            handler = m_eventHandler;
-        }
-        if (handler)
-        {
-            const auto now = std::chrono::steady_clock::now();
-            const TimerEvent event(timerId, type, now);
-            handler(event);
-        }
-    });
+    try
+    {
+        const TimerType type = timer->getType();
+        timer->setCallback([this, timerId, type]() {
+            TimerEventHandler handler;
+            {
+                const std::lock_guard<std::mutex> lock(m_mutex);
+                handler = m_eventHandler;
+            }
+            if (handler)
+            {
+                const auto now = std::chrono::steady_clock::now();
+                const TimerEvent event(timerId, type, now);
+                handler(event);
+            }
+        });
+    } catch (...)
+    {
+        const std::lock_guard<std::mutex> lock(m_mutex);
+        m_timers.erase(timerId);
+        throw;
+    }
 
     return timerId;
 }

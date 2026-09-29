@@ -5,6 +5,7 @@
 #include <memory>
 #include <thread>
 
+#include "ConnixCore/Infrastructure/Timer/ITimer.hpp"
 #include "ConnixCore/Infrastructure/Timer/Timer.hpp"
 #include "ConnixCore/Infrastructure/Timer/TimerException.hpp"
 #include "ConnixCore/Infrastructure/Timer/TimerState.hpp"
@@ -125,6 +126,36 @@ TEST(TimerUnitTest, SetCallbackUpdatesExecution)
 
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
     EXPECT_EQ(flag.load(), 42);
+}
+
+TEST(TimerUnitTest, RestartExpiredTimerRejoinsAndStarts)
+{
+    std::atomic<int> counter{ 0 };
+    Timer timer(std::chrono::milliseconds(20), TimerType::SINGLE_SHOT, nullptr,
+                [&counter]() {
+                    counter++;
+                });
+
+    timer.start();
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    EXPECT_EQ(timer.getState(), TimerState::EXPIRED);
+    EXPECT_EQ(counter.load(), 1);
+
+    timer.start();
+    EXPECT_TRUE(timer.isRunning());
+    EXPECT_EQ(timer.getState(), TimerState::RUNNING);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    EXPECT_EQ(timer.getState(), TimerState::EXPIRED);
+    EXPECT_EQ(counter.load(), 2);
+}
+
+TEST(TimerUnitTest, PolymorphicDeletionViaInterfacePointer)
+{
+    std::unique_ptr<ITimer> timer = std::make_unique<Timer>(
+        std::chrono::milliseconds(20), TimerType::SINGLE_SHOT);
+    EXPECT_EQ(timer->getState(), TimerState::STOPPED);
+    timer.reset();
 }
 
 } // namespace UnitTest

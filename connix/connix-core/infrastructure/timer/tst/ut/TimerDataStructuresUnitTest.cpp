@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 
 #include <chrono>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -58,6 +59,14 @@ TEST(TimerDataStructuresTest, TimerExceptionPolymorphicCatch)
     {
         EXPECT_STREQ(error.what(), "Timer timer_1 not found");
     }
+}
+
+TEST(TimerDataStructuresTest, TimerExceptionPolymorphicDeletion)
+{
+    std::unique_ptr<std::runtime_error> ex = std::make_unique<TimerException>(
+        TimerErrorCode::INVALID_DURATION, "Invalid duration");
+    EXPECT_STREQ(ex->what(), "Invalid duration");
+    ex.reset();
 }
 
 TEST(TimerDataStructuresTest, TimerEventProperties)
