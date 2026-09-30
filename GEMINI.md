@@ -153,6 +153,13 @@ linting.
     ```bash
     ./scripts/check_spelling.sh
     ```
+*   **Line Length Checks:** Automated line length checking ensuring lines
+    adhere to the 80-character limit (excluding long URLs).
+    ```bash
+    ./scripts/check_line_length.sh
+    # Or check specific files:
+    ./scripts/check_line_length.sh path/to/file
+    ```
 *   **Strict Diagnostics:** Never suppress compiler warnings or linter
     diagnostics merely to make a change pass.
 *   **Implementation Separation:** Always separate class member function

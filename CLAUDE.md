@@ -94,6 +94,13 @@ in `.clang-tidy`.
 ```
 Runs cspell with `.gitignore` filtering over source code and documentation.
 
+### Line Length Checks
+```bash
+./scripts/check_line_length.sh            # check connix/ and docs/ (default)
+./scripts/check_line_length.sh <paths...> # check specific files or directories
+```
+Checks files for lines exceeding 80 characters (excluding long URLs).
+
 ### Coding Standards & Docstrings
 - **Docstrings:** Always write comprehensive Doxygen-style docstrings (`/** ... */`)
   with `@brief`, `@param`, `@return`, and `@throws` for all classes, interfaces,

@@ -1,0 +1,224 @@
+@startuml Transport Component - Runtime View
+
+participant Client
+
+box "Transport"
+    participant TransportFactory
+    participant Transport
+    participant Socket
+end box
+
+participant "Operating System" as OS
+
+== Scenario 1: Transport Factory Creation (UC1) ==
+
+Client -> TransportFactory : createTransport(protocol)
+activate TransportFactory
+TransportFactory -> Socket ** : create()
+TransportFactory -> Transport ** : create(socket)
+note right of Transport : State = CLOSED
+TransportFactory --> Client : transport: unique_ptr<ITransport>
+deactivate TransportFactory
+
+== Scenario 2: Outbound Connection Establishment (UC2) ==
+
+Client -> Transport : connect(endpoint, timeoutMs)
+activate Transport
+Transport -> Transport : state = CONNECTING
+
+opt socket is not open
+    Transport -> Socket : open(domain, type, protocol)
+    activate Socket
+    Socket -> OS : socket(domain, type, protocol)
+    activate OS
+    OS --> Socket : fd
+    deactivate OS
+    Socket --> Transport
+    deactivate Socket
+end
+
+Transport -> Socket : connect(endpoint, timeoutMs)
+activate Socket
+Socket -> OS : connect(fd, sockaddr, addrlen)
+activate OS
+OS --> Socket : EINPROGRESS
+deactivate OS
+Socket -> OS : poll(&pfd, 1, timeoutMs)
+activate OS
+OS --> Socket : revents: POLLOUT
+deactivate OS
+Socket -> Socket : retrieve local endpoint
+Socket --> Transport
+deactivate Socket
+
+alt Connection Established
+    Transport -> Transport : cache endpoints\nstate = CONNECTED
+    Transport --> Client
+else Connection Timeout (> 5 s)
+    Transport -> Socket : close()
+    activate Socket
+    Socket -> OS : close(fd)
+    activate OS
+    OS --> Socket
+    deactivate OS
+    Socket --> Transport
+    deactivate Socket
+    Transport -> Transport : state = CLOSED
+    Transport --> Client : throw TransportException(OPERATION_TIMEOUT)
+end
+deactivate Transport
+
+== Scenario 3: Server Inbound Connection Acceptance (UC3) ==
+
+Client -> Transport : bind(endpoint)
+activate Transport
+opt socket is not open
+    Transport -> Socket : open(domain, type, protocol)
+    activate Socket
+    Socket -> OS : socket(domain, type, protocol)
+    activate OS
+    OS --> Socket : fd
+    deactivate OS
+    Socket --> Transport
+    deactivate Socket
+end
+Transport -> Socket : setOption(REUSE_ADDRESS, true)
+activate Socket
+Socket -> OS : setsockopt(fd, SO_REUSEADDR)
+activate OS
+OS --> Socket
+deactivate OS
+Socket --> Transport
+deactivate Socket
+Transport -> Socket : bind(endpoint)
+activate Socket
+Socket -> OS : bind(fd, sockaddr, addrlen)
+activate OS
+OS --> Socket
+deactivate OS
+Socket --> Transport
+deactivate Socket
+Transport -> Transport : state = BOUND\nlocalEndpoint = endpoint
+Transport --> Client
+deactivate Transport
+
+Client -> Transport : listen(backlog)
+activate Transport
+Transport -> Socket : listen(backlog)
+activate Socket
+Socket -> OS : listen(fd, backlog)
+activate OS
+OS --> Socket
+deactivate OS
+Socket --> Transport
+deactivate Socket
+Transport -> Transport : state = LISTENING
+Transport --> Client
+deactivate Transport
+
+Client -> Transport : accept(timeoutMs)
+activate Transport
+Transport -> Socket : accept(timeoutMs)
+activate Socket
+Socket -> OS : poll(&pfd, 1, timeoutMs)
+activate OS
+OS --> Socket : revents: POLLIN
+deactivate OS
+Socket -> OS : accept4(fd, addr, len, SOCK_NONBLOCK)
+activate OS
+OS --> Socket : clientFd
+deactivate OS
+Socket -> Socket : create clientSocket(clientFd)
+Socket --> Transport : clientSocket: unique_ptr<ISocket>
+deactivate Socket
+Transport -> Transport : create acceptedTransport\nstate = CONNECTED
+Transport --> Client : clientTransport: unique_ptr<ITransport>
+deactivate Transport
+
+== Scenario 4: Data Transmission (UC4) ==
+
+Client -> Transport : send(data, timeoutMs)
+activate Transport
+Transport -> Socket : send(data, timeoutMs)
+activate Socket
+Socket -> OS : poll(&pfd, 1, timeoutMs)
+activate OS
+OS --> Socket : revents: POLLOUT
+deactivate OS
+Socket -> OS : send(fd, buffer, length, MSG_NOSIGNAL)
+activate OS
+OS --> Socket : bytesSent
+deactivate OS
+Socket --> Transport : bytesSent
+deactivate Socket
+Transport --> Client : bytesSent
+deactivate Transport
+
+alt Send Timeout (> 5 s)
+    Transport -> Socket : close()
+    activate Transport
+    activate Socket
+    Socket -> OS : close(fd)
+    activate OS
+    OS --> Socket
+    deactivate OS
+    Socket --> Transport
+    deactivate Socket
+    Transport -> Transport : state = CLOSED
+    Transport --> Client : throw TransportException(OPERATION_TIMEOUT)
+    deactivate Transport
+end
+
+== Scenario 5: Data Reception (UC5) ==
+
+Client -> Transport : receive(maxBytes, timeoutMs)
+activate Transport
+Transport -> Socket : receive(maxBytes, timeoutMs)
+activate Socket
+Socket -> OS : poll(&pfd, 1, timeoutMs)
+activate OS
+OS --> Socket : revents: POLLIN
+deactivate OS
+Socket -> OS : recv(fd, buffer, maxBytes, 0)
+activate OS
+OS --> Socket : bytesRead
+deactivate OS
+
+alt Normal Payload (bytesRead > 0)
+    Socket --> Transport : data: vector<uint8_t>
+    Transport --> Client : data
+else Peer Disconnected (bytesRead == 0)
+    Socket --> Transport : 0 bytes
+    Transport -> Transport : state = DISCONNECTED
+    Transport --> Client : throw TransportException(CONNECTION_CLOSED)
+else Receive Timeout (> 10 s)
+    Socket -> OS : close(fd)
+    Transport -> Transport : state = CLOSED
+    Transport --> Client : throw TransportException(OPERATION_TIMEOUT)
+end
+deactivate Socket
+deactivate Transport
+
+== Scenario 6: Transport Termination and Resource Teardown (UC6) ==
+
+Client -> Transport : close()
+activate Transport
+Transport -> Socket : close()
+activate Socket
+Socket -> OS : close(fd)
+activate OS
+OS --> Socket
+deactivate OS
+opt UDS Server Socket
+    Socket -> OS : unlink(socketPath)
+    activate OS
+    OS --> Socket
+    deactivate OS
+end
+Socket --> Transport
+deactivate Socket
+Transport -> Transport : state = CLOSED\nclear endpoints
+Transport --> Client
+deactivate Transport
+
+@enduml
