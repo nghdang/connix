@@ -131,7 +131,7 @@ component is detailed in
 7. **`Operating System (POSIX Sockets)`**:
    - The underlying Linux network subsystem and standard POSIX socket APIs (`<sys/socket.h>`, `<netinet/in.h>`, `<sys/un.h>`, `<poll.h>`, `<unistd.h>`).
 
-### 2.2 Design Principles & Architectural Alignment
+### 3.2 Design Principles & Architectural Alignment
 
 - **Clean Architecture:** `Transport` belongs to the Infrastructure / Frameworks & Drivers layer. It implements inward-facing abstractions (`ITransport`, `ITransportFactory`), preventing operating-system networking details from leaking into Domain Entities or Application Use Cases.
 - **Open-Closed Principle (OCP):** Additional protocols can be introduced by creating new classes implementing `ITransport` and registering them with `TransportFactory`, leaving core orchestration engines untouched.
@@ -248,9 +248,137 @@ The data structures, enums, exception types, and their relationships are modeled
 
 ---
 
-## 6. Design Decisions
+## 6. Runtime View
 
-### 6.1 Socket Readiness Polling Mechanism (`poll` vs `select` vs `epoll`)
+The runtime interactions between Transport modules, the operating system,
+and external clients during transport creation, connection establishment,
+acceptance, data transfer, and teardown are modeled in
+
+```plantuml
+!include runtime_view.puml
+```
+
+### 6.1 Runtime Sequence Specifications
+
+1. **Scenario 1: Transport Factory Creation (UC1)**:
+   - `Client` requests `TransportFactory::createTransport(protocol)` passing
+     a strongly typed `TransportProtocol` (`TCP`, `UDP`, `UDS_STREAM`,
+     `UDS_DATAGRAM`).
+   - `TransportFactory` instantiates the internal `Socket` descriptor
+     abstraction (`ISocket`).
+   - `TransportFactory` instantiates the corresponding concrete transport
+     (`TcpTransport`, `UdpTransport`, or `UdsTransport`) in the
+     `TransportState::CLOSED` state with underlying socket resources
+     unallocated until bound or connected.
+   - `TransportFactory` returns a `std::unique_ptr<ITransport>` to `Client`.
+   - If an unsupported protocol is requested, `TransportFactory` raises a
+     typed `TransportException` with `TransportErrorCode::UNSUPPORTED_PROTOCOL`.
+
+2. **Scenario 2: Outbound Connection Establishment (UC2)**:
+   - `Client` initiates connection via
+     `ITransport::connect(endpoint, timeoutMs)`.
+   - `Transport` verifies state is not already connecting, connected, or
+     listening, and transitions state to `TransportState::CONNECTING`.
+   - If the underlying socket is unallocated, `Transport` queries endpoint
+     type and opens the socket via `Socket::open(domain, type, protocol)`
+     (POSIX `socket(2)`).
+   - `Transport` invokes `Socket::connect(endpoint, timeoutMs)`.
+   - `Socket` initiates non-blocking connection via POSIX `connect(2)` and
+     polls for write-readiness (`POLLOUT`) via `poll(2)` bounded by `timeoutMs`
+     (5 seconds per
+     `SW_REQ_CONNECTION_MANAGEMENT_CONNECT_AND_ACCEPT_TIMEOUT_BOUNDS`).
+   - On successful connection:
+     - `Transport` queries `Socket::getLocalEndpoint()`, caches local and
+       remote endpoints, and transitions state to `TransportState::CONNECTED`.
+     - Control returns cleanly to `Client`.
+   - On timeout or network failure:
+     - `Transport` invokes `Socket::close()`, immediately closing descriptor
+       (`SW_REQ_CONNECTION_MANAGEMENT_TIMEOUT_SOCKET_CLOSURE`).
+     - State resets to `TransportState::CLOSED`.
+     - Throws typed `TransportException` with `OPERATION_TIMEOUT` or
+       `CONNECT_FAILED`.
+
+3. **Scenario 3: Server Inbound Connection Acceptance (UC3)**:
+   - **Local Binding**:
+     - `Client` invokes `ITransport::bind(endpoint)`.
+     - `Transport` opens the descriptor if closed, applies
+       `SocketOption::REUSE_ADDRESS` via POSIX `setsockopt(2)`, binds to
+       local endpoint via POSIX `bind(2)`, and transitions state to
+       `TransportState::BOUND`.
+   - **Passive Listening**:
+     - `Client` invokes `ITransport::listen(backlog)`.
+     - For stream sockets, `Transport` calls POSIX `listen(2)` via `Socket`
+       and transitions state to `TransportState::LISTENING`.
+   - **Inbound Peer Acceptance**:
+     - `Client` invokes `ITransport::accept(timeoutMs)` (bounded by 5 seconds
+       per `SW_REQ_CONNECTION_MANAGEMENT_SERVER_ACCEPT_TIMEOUT`).
+     - `Socket` monitors inbound queue readiness (`POLLIN`) via POSIX
+       `poll(2)`.
+     - On inbound connection, `Socket` calls `accept4(2)` (or `accept(2)`) to
+       obtain a new non-blocking client descriptor, wrapped in a concrete
+       `clientSocket` instance.
+     - `Transport` wraps `clientSocket` into a newly instantiated concrete
+       `TcpTransport` (or `UdsTransport`) in `TransportState::CONNECTED`
+       state populated with local and peer remote endpoints.
+     - Returns `std::unique_ptr<ITransport>` client session to `Client`.
+   - On timeout:
+     - Throws `TransportException(TransportErrorCode::OPERATION_TIMEOUT)` and
+       promptly closes listening socket resources.
+
+4. **Scenario 4: Data Transmission (UC4)**:
+   - `Client` invokes `ITransport::send(data, timeoutMs)` providing byte
+     payload and timeout (bounded by 5 seconds per
+     `SW_REQ_CONNECTION_MANAGEMENT_SEND_TIMEOUT_BOUND`).
+   - `Transport` verifies state is `TransportState::CONNECTED`.
+   - `Socket` monitors socket write-readiness (`POLLOUT`) via POSIX `poll(2)`.
+   - `Socket` transmits bytes using POSIX `send(2)` (with `MSG_NOSIGNAL`) or
+     `sendto(2)` for datagrams.
+   - Returns the total number of bytes transmitted to `Client`.
+   - On timeout:
+     - Closes affected socket immediately via `Socket::close()`, resets
+       state to `TransportState::CLOSED`, and throws
+       `TransportException(TransportErrorCode::OPERATION_TIMEOUT)`
+       (`SW_REQ_CONNECTION_MANAGEMENT_TIMEOUT_SOCKET_CLOSURE`).
+   - On peer reset / broken pipe:
+     - Transitions state to `TransportState::DISCONNECTED` and throws
+       `TransportException` with `SEND_FAILED` or `CONNECTION_CLOSED`.
+
+5. **Scenario 5: Data Reception (UC5)**:
+   - `Client` invokes `ITransport::receive(maxBytes, timeoutMs)` specifying
+     maximum capacity and timeout (bounded by 10 seconds per
+     `SW_REQ_CONNECTION_MANAGEMENT_RECEIVE_TIMEOUT_BOUND`).
+   - `Transport` verifies state is `TransportState::CONNECTED`.
+   - `Socket` monitors socket read-readiness (`POLLIN`) via POSIX `poll(2)`.
+   - `Socket` receives bytes via POSIX `recv(2)` (or `recvfrom(2)` for
+     datagrams).
+   - **Normal Reception**:
+     - Returns received `std::vector<uint8_t>` to `Client`.
+   - **Graceful Peer Disconnect (`recv(2)` returns 0)**:
+     - `Transport` transitions state to `TransportState::DISCONNECTED`.
+     - Throws `TransportException(TransportErrorCode::CONNECTION_CLOSED)`.
+   - On timeout:
+     - Closes socket descriptor immediately, resets state to
+       `TransportState::CLOSED`, and throws
+       `TransportException(TransportErrorCode::OPERATION_TIMEOUT)`.
+
+6. **Scenario 6: Transport Termination and Resource Teardown (UC6)**:
+   - `Client` invokes `ITransport::close()`.
+   - `Transport` calls `Socket::close()`, which issues POSIX `close(2)` to
+     release underlying file descriptors.
+   - For UDS server transports, `Socket` unlinks filesystem socket node path
+     via POSIX `unlink(2)`.
+   - `Transport` resets state to `TransportState::CLOSED` and clears cached
+     endpoints.
+   - Operation is idempotent and safe to invoke repeatedly from any state
+     without throwing exceptions
+     (`SW_REQ_CONNECTION_MANAGEMENT_TIMEOUT_SOCKET_CLOSURE`,
+     `SW_REQ_CONNECTION_MANAGEMENT_HYBRID_INDEPENDENT_CLOSURE`).
+
+---
+
+## 7. Design Decisions
+
+### 7.1 Socket Readiness Polling Mechanism (`poll` vs `select` vs `epoll`)
 
 The `Socket` abstraction and concrete transport implementations utilize POSIX
 `poll(2)` to monitor socket read and write readiness within configured
