@@ -1,0 +1,143 @@
+@startuml Filesystem Component - Interface View
+
+namespace ConnixCore::Infrastructure::Filesystem {
+
+package "Public" {
+
+    interface IFilesystemWatcher {
+        + {abstract} start(): void
+        + {abstract} stop(): void
+        + {abstract} isWatching(): bool const
+        + {abstract} getPath(): const string& const
+        + {abstract} getDebounce(): milliseconds const
+        + {abstract} getState(): FilesystemWatcherState const
+        + {abstract} setCallback(callback: FilesystemCallback): void
+    }
+
+    interface IFilesystemWatcherFactory {
+        + {abstract} createWatcher(path: string, debounce: milliseconds, \
+callback: FilesystemCallback): shared_ptr<IFilesystemWatcher>
+    }
+
+    interface IFileIo {
+        + {abstract} exists(path: string): bool const
+        + {abstract} isRegularFile(path: string): bool const
+        + {abstract} isDirectory(path: string): bool const
+        + {abstract} getFileSize(path: string): uint64_t const
+        + {abstract} readText(path: string): string const
+        + {abstract} readBinary(path: string): vector<uint8_t> const
+        + {abstract} writeText(path: string, content: string): void const
+        + {abstract} writeBinary(path: string, data: const vector<uint8_t>&): \
+void const
+        + {abstract} appendText(path: string, content: string): void const
+        + {abstract} createDirectories(path: string): bool const
+        + {abstract} removeFile(path: string): bool const
+    }
+
+    interface IFilesystemService {
+        + {abstract} watch(path: string, debounce: milliseconds): string
+        + {abstract} unwatch(watchId: string): void
+        + {abstract} getWatcher(watchId: string): \
+shared_ptr<IFilesystemWatcher> const
+        + {abstract} hasWatcher(watchId: string): bool const
+        + {abstract} stopAll(): void
+        + {abstract} setEventHandler(handler: FilesystemEventHandler): void
+        + {abstract} getFileIo(): const IFileIo& const
+    }
+
+    class FilesystemWatcherFactory {
+        - inotify: shared_ptr<IInotify>
+        - fileIo: shared_ptr<IFileIo>
+        + createWatcher(path: string, debounce: milliseconds, \
+callback: FilesystemCallback): shared_ptr<IFilesystemWatcher>
+    }
+
+    class FilesystemService {
+        - watcherFactory: shared_ptr<IFilesystemWatcherFactory>
+        - fileIo: shared_ptr<IFileIo>
+        - watchers: unordered_map<string, shared_ptr<IFilesystemWatcher>>
+        - eventHandler: FilesystemEventHandler
+        + watch(path: string, debounce: milliseconds): string
+        + unwatch(watchId: string): void
+        + getWatcher(watchId: string): shared_ptr<IFilesystemWatcher> const
+        + hasWatcher(watchId: string): bool const
+        + stopAll(): void
+        + setEventHandler(handler: FilesystemEventHandler): void
+        + getFileIo(): const IFileIo& const
+    }
+
+    class FileIo {
+        + exists(path: string): bool const
+        + isRegularFile(path: string): bool const
+        + isDirectory(path: string): bool const
+        + getFileSize(path: string): uint64_t const
+        + readText(path: string): string const
+        + readBinary(path: string): vector<uint8_t> const
+        + writeText(path: string, content: string): void const
+        + writeBinary(path: string, data: const vector<uint8_t>&): void const
+        + appendText(path: string, content: string): void const
+        + createDirectories(path: string): bool const
+        + removeFile(path: string): bool const
+    }
+
+    IFilesystemWatcherFactory <|.. FilesystemWatcherFactory
+    IFilesystemService <|.. FilesystemService
+    IFileIo <|.. FileIo
+
+}
+
+package "Internal" {
+
+    interface IInotify {
+        + {abstract} init(): int
+        + {abstract} addWatch(path: string, mask: uint32_t): int
+        + {abstract} rmWatch(watchDescriptor: int): int
+        + {abstract} readEvents(buffer: vector<uint8_t>&): int
+        + {abstract} close(): void
+    }
+
+    class Inotify {
+        - fd: int
+        + init(): int
+        + addWatch(path: string, mask: uint32_t): int
+        + rmWatch(watchDescriptor: int): int
+        + readEvents(buffer: vector<uint8_t>&): int
+        + close(): void
+    }
+
+    class FilesystemWatcher {
+        - inotify: shared_ptr<IInotify>
+        - fileIo: shared_ptr<IFileIo>
+        - path: string
+        - debounce: milliseconds
+        - state: FilesystemWatcherState
+        - callback: FilesystemCallback
+        - watchDescriptor: int
+        + start(): void
+        + stop(): void
+        + isWatching(): bool const
+        + getPath(): const string& const
+        + getDebounce(): milliseconds const
+        + getState(): FilesystemWatcherState const
+        + setCallback(callback: FilesystemCallback): void
+    }
+
+    IInotify <|.. Inotify
+    IFilesystemWatcher <|.. FilesystemWatcher
+
+    FilesystemWatcher o-- IInotify : uses
+    FilesystemWatcher o-- IFileIo : uses
+    FilesystemWatcherFactory o-- IInotify : uses
+    FilesystemWatcherFactory o-- IFileIo : uses
+    FilesystemService o-- IFilesystemWatcherFactory : uses
+    FilesystemService o-- IFilesystemWatcher : manages
+    FilesystemService o-- IFileIo : uses
+
+}
+
+FilesystemWatcherFactory ..> IFilesystemWatcher : creates
+FilesystemWatcherFactory ..> FilesystemWatcher : creates
+
+}
+
+@enduml

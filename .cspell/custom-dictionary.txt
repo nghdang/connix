@@ -17,6 +17,10 @@ socat
 netcat
 nohup
 tanp
+inotify
+INOTIFY
+Inotify
+CLOEXEC
 
 # PlantUML
 startuml
@@ -68,6 +72,8 @@ daemonizing
 scriptable
 automatable
 unrepresentatively
+unwatch
+Unwatch
 
 # Contributor
 Hadan

@@ -1,0 +1,36 @@
+@startuml Filesystem Component - Static Component Diagram
+
+[Client]
+
+rectangle "Filesystem" as fs_module {
+    [FilesystemService]
+    [FilesystemWatcherFactory]
+    [FilesystemWatcher]
+    [FileIo]
+    [Inotify]
+}
+
+rectangle "Operating System" {
+    [Linux inotify / VFS APIs] as os_inotify
+    [POSIX File I/O APIs] as posix_file_io
+}
+
+Client -right(0- FilesystemService
+Client -(0- FilesystemWatcherFactory
+Client -(0- FilesystemWatcher
+Client -(0- FileIo
+
+FilesystemService -(0- FilesystemWatcher
+FilesystemService -(0- FileIo
+
+FilesystemWatcherFactory ..> FilesystemWatcher : creates
+FilesystemWatcherFactory -(0- Inotify
+FilesystemWatcherFactory -(0- FileIo
+
+FilesystemWatcher -(0- Inotify
+FilesystemWatcher -(0- FileIo
+
+Inotify ..> os_inotify
+FileIo ..> posix_file_io
+
+@enduml

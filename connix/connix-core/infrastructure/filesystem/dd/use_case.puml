@@ -1,0 +1,25 @@
+@startuml Filesystem Component - Use Case Diagram
+
+left to right direction
+
+actor Client
+
+rectangle "Filesystem Component" {
+    usecase "Watch Path" as UC1
+    usecase "Unwatch Path" as UC2
+    usecase "Dispatch Filesystem Event" as UC3
+    usecase "Read File Content" as UC4
+    usecase "Write File Content" as UC5
+    usecase "Manage File Properties" as UC6
+    usecase "Stop All Watchers" as UC7
+}
+
+Client --> UC1
+Client --> UC2
+Client --> UC3
+Client --> UC4
+Client --> UC5
+Client --> UC6
+Client --> UC7
+
+@enduml

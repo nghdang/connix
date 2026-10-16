@@ -1,0 +1,134 @@
+@startuml Filesystem Component - Runtime View
+
+participant Client
+
+box "Filesystem"
+    participant FilesystemService
+    participant FilesystemWatcherFactory
+    participant FilesystemWatcher
+    participant FileIo
+    participant Inotify
+end box
+
+participant "Operating System" as OS
+
+== Scenario 1: Watcher Creation and Registration ==
+
+Client -> FilesystemService : watch(path, debounce)
+activate FilesystemService
+FilesystemService -> FilesystemWatcherFactory : createWatcher(path, \
+debounce, callback)
+activate FilesystemWatcherFactory
+FilesystemWatcherFactory -> FilesystemWatcher ** : create(path, debounce, \
+inotify, fileIo)
+FilesystemWatcherFactory --> FilesystemService : watcher: \
+shared_ptr<IFilesystemWatcher>
+deactivate FilesystemWatcherFactory
+FilesystemService -> FilesystemWatcher : start()
+activate FilesystemWatcher
+FilesystemWatcher -> Inotify : addWatch(path, IN_MODIFY | IN_CLOSE_WRITE)
+activate Inotify
+Inotify -> OS : inotify_add_watch(fd, path, mask)
+activate OS
+OS --> Inotify : watchDescriptor
+deactivate OS
+Inotify --> FilesystemWatcher : watchDescriptor
+deactivate Inotify
+FilesystemWatcher -> FilesystemWatcher : state = WATCHING
+FilesystemWatcher --> FilesystemService
+deactivate FilesystemWatcher
+FilesystemService -> FilesystemService : record watcher in registry
+FilesystemService --> Client : watchId: string
+deactivate FilesystemService
+
+== Scenario 2: Filesystem Modification Event and Debounce Processing ==
+
+OS -> Inotify : inotify event (IN_MODIFY)
+activate Inotify
+Inotify --> FilesystemWatcher : raw inotify event
+deactivate Inotify
+activate FilesystemWatcher
+FilesystemWatcher -> FilesystemWatcher : arm / reset debounce deadline\n\
+(deadline = now + debounce)
+... debounce duration elapses without further events ...
+FilesystemWatcher -> FilesystemWatcher : debounce expired
+FilesystemWatcher -> FilesystemService : onWatcherCallback(path, MODIFIED)
+deactivate FilesystemWatcher
+activate FilesystemService
+FilesystemService -> FilesystemService : create FilesystemEvent(\
+watchId, path, MODIFIED, timestamp)
+FilesystemService -> Client : onFilesystemEvent(event)
+deactivate FilesystemService
+
+== Scenario 3: File Reading (Text & Binary) ==
+
+Client -> FileIo : readText(filePath)
+activate FileIo
+FileIo -> OS : stat / access(filePath)
+activate OS
+OS --> FileIo : file exists, regular file
+deactivate OS
+FileIo -> OS : read(filePath)
+activate OS
+OS --> FileIo : file content
+deactivate OS
+FileIo --> Client : content: string
+deactivate FileIo
+
+== Scenario 4: Output File Writing & Redirection ==
+
+Client -> FileIo : appendText(outputPath, logData)
+activate FileIo
+FileIo -> OS : stat(parentDir)
+activate OS
+OS --> FileIo : parent directory exists
+deactivate OS
+FileIo -> OS : open / write(outputPath, logData)
+activate OS
+OS --> FileIo : bytes written
+deactivate OS
+FileIo --> Client
+deactivate FileIo
+
+== Scenario 5: Watcher Teardown and Bulk Teardown ==
+
+Client -> FilesystemService : unwatch(watchId)
+activate FilesystemService
+FilesystemService -> FilesystemWatcher : stop()
+activate FilesystemWatcher
+FilesystemWatcher -> Inotify : rmWatch(watchDescriptor)
+activate Inotify
+Inotify -> OS : inotify_rm_watch(fd, wd)
+activate OS
+OS --> Inotify : success
+deactivate OS
+Inotify --> FilesystemWatcher : success
+deactivate Inotify
+FilesystemWatcher -> FilesystemWatcher : state = STOPPED
+FilesystemWatcher --> FilesystemService
+deactivate FilesystemWatcher
+FilesystemService -> FilesystemService : remove watcher from registry
+FilesystemService --> Client
+deactivate FilesystemService
+
+Client -> FilesystemService : stopAll()
+activate FilesystemService
+loop for each registered watcher
+    FilesystemService -> FilesystemWatcher : stop()
+    activate FilesystemWatcher
+    FilesystemWatcher -> Inotify : rmWatch(watchDescriptor)
+    activate Inotify
+    Inotify -> OS : inotify_rm_watch(fd, wd)
+    activate OS
+    OS --> Inotify : success
+    deactivate OS
+    Inotify --> FilesystemWatcher : success
+    deactivate Inotify
+    FilesystemWatcher -> FilesystemWatcher : state = STOPPED
+    FilesystemWatcher --> FilesystemService
+    deactivate FilesystemWatcher
+end
+FilesystemService --> Client
+deactivate FilesystemService
+
+@enduml
