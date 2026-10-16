@@ -3,3 +3,6 @@ create_unit_test(TransportInterfacesUnitTest.cpp)
 create_unit_test(TcpTransportUnitTest.cpp)
 create_unit_test(UdpTransportUnitTest.cpp)
 create_unit_test(UdsTransportUnitTest.cpp)
+create_unit_test(SocketUnitTest.cpp)
+create_unit_test(TransportFactoryUnitTest.cpp)
+

@@ -1,0 +1,60 @@
+@startuml Filesystem Component - Data Structures
+
+namespace ConnixCore::Infrastructure::Filesystem {
+
+package "Public" {
+
+    enum FilesystemEventType {
+        MODIFIED
+        CREATED
+        DELETED
+        ATTRIBUTES_CHANGED
+    }
+
+    enum FilesystemWatcherState {
+        STOPPED
+        WATCHING
+        ERROR
+    }
+
+    enum FilesystemErrorCode {
+        FILE_NOT_FOUND
+        PATH_NOT_FOUND
+        NOT_A_REGULAR_FILE
+        NOT_A_DIRECTORY
+        PERMISSION_DENIED
+        FILE_READ_FAILED
+        FILE_WRITE_FAILED
+        WATCH_FAILED
+        WATCH_NOT_FOUND
+        WATCH_ALREADY_EXISTS
+        INOTIFY_INIT_FAILED
+        DEBOUNCE_TIMER_FAILED
+    }
+
+    class FilesystemException {
+        - errorCode: FilesystemErrorCode
+        - message: string
+        + getErrorCode(): FilesystemErrorCode const
+        + what(): const char* const
+    }
+
+    class FilesystemEvent {
+        - watchId: string
+        - path: string
+        - eventType: FilesystemEventType
+        - timestamp: steady_clock::time_point
+        + getWatchId(): const string& const
+        + getPath(): const string& const
+        + getEventType(): FilesystemEventType const
+        + getTimestamp(): steady_clock::time_point const
+    }
+
+    FilesystemErrorCode <-- FilesystemException : defines
+    FilesystemEventType <-- FilesystemEvent : classifies
+
+}
+
+}
+
+@enduml
